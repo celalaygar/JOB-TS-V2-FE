@@ -17,19 +17,24 @@ export default function KanbanCard({ issue }: KanbanCardProps) {
 
 
 
-  const handleDragEnd = () => {
+  const handleDragEnd = (e: React.DragEvent) => {
     setIsDragging(false)
+    const target = e.currentTarget as HTMLElement
+    target.classList.remove("opacity-100")
   }
+
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
     e.dataTransfer.setData("text/plain", issue.id)
+    e.dataTransfer.effectAllowed = "move"
     setIsDragging(true)
 
+    const target = e.currentTarget as HTMLElement
     // Kartın görünür bir kopyasını oluştur
     const dragImage = e.currentTarget.cloneNode(true) as HTMLElement
     dragImage.style.position = "absolute"
     dragImage.style.top = "-1000px"
     dragImage.style.left = "-1000px"
-    dragImage.style.opacity = "1"
+    dragImage.style.background = "ffffff"
     dragImage.style.pointerEvents = "none" // Mouse etkileşimini engelle
     dragImage.style.zIndex = "1000"
     document.body.appendChild(dragImage)
@@ -39,8 +44,10 @@ export default function KanbanCard({ issue }: KanbanCardProps) {
 
     // Drag işlemi hemen başladığı için kopyayı biraz sonra temizliyoruz
     setTimeout(() => {
+      target.classList.add("opacity-100")
       document.body.removeChild(dragImage)
     }, 0)
+
   }
   const getTypeIcon = () => {
     switch (issue.taskType) {
@@ -72,8 +79,7 @@ export default function KanbanCard({ issue }: KanbanCardProps) {
 
   return (
     <div
-      className={`bg-card p-3 rounded-lg border shadow-sm cursor-grab ${isDragging ? "opacity-700 bg-white-100" : ""
-        } hover:border-primary transition-colors`}
+      className={`bg-card p-3 rounded-lg border shadow-sm cursor-grab hover:border-primary transition-colors`}
       draggable
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
