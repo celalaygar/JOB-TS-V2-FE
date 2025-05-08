@@ -1,6 +1,22 @@
 
 export type TaskType = "bug" | "feature" | "story" | "subtask" | string
 
+export interface Comment {
+  id: string
+  text: string
+  content: string
+  userId: string
+  type: string
+  author: {
+    id: string
+    name: string
+    avatar: string
+    initials: string
+  }
+  createdAt: string
+  isActivity?: boolean
+}
+
 export interface Task {
   id: string
   taskNumber: string
@@ -28,21 +44,7 @@ export interface Task {
   completedAt?: string
   parentTaskId?: string
   subtasks?: string[]
-  comments?: {
-    id: string
-    text: string
-    content: string
-    userId: string
-    type: string
-    author: {
-      id: string
-      name: string
-      avatar: string
-      initials: string
-    }
-    createdAt: string
-    isActivity?: boolean
-  }[]
+  comments?: Comment[]
   labels?: string[]
   attachments?: {
     id: string
