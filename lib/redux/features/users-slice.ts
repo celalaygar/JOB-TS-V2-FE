@@ -6,6 +6,7 @@ export interface User {
   name: string
   email: string
   avatar: string
+  initials: string
   role: string
   department: string
   location: string
@@ -20,7 +21,7 @@ interface UsersState {
 }
 
 const initialState: UsersState = {
-  users,
+  users: [],
 }
 
 export const usersSlice = createSlice({

@@ -1,12 +1,15 @@
+
+export type TaskType = "bug" | "feature" | "story" | "subtask" | string
+
 export interface Task {
   id: string
   taskNumber: string
   title: string
   description: string
   acceptanceCriteria?: string
-  status: "to-do" | "in-progress" | "review" | "done"
+  status: "to-do" | "in-progress" | "review" | "done" | "completed"
   priority: "High" | "Medium" | "Low"
-  taskType: "bug" | "feature" | "story" | "subtask" | string
+  taskType: TaskType
   project: string
   projectName: string
   assignee: {
@@ -17,6 +20,9 @@ export interface Task {
   }
   sprint: "current" | "next" | "backlog" | string
   createdAt: string
+  updatedAt: string
+  createdBy: string
+  updatedBy: string
   dueDate?: string
   estimatedHours?: number
   completedAt?: string
@@ -25,6 +31,9 @@ export interface Task {
   comments?: {
     id: string
     text: string
+    content: string
+    userId: string
+    type: string
     author: {
       id: string
       name: string
