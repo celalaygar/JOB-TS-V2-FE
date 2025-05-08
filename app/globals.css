@@ -1,0 +1,232 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Fixed colors that don't change with theme */
+:root {
+  /* Core UI colors */
+  --fixed-background: #f8f9fa;
+  --fixed-foreground: #1e293b;
+
+  /* Sidebar specific colors */
+  --fixed-sidebar-bg: #ffffff;
+  --fixed-sidebar-fg: #1e293b;
+  --fixed-sidebar-muted: #64748b;
+  --fixed-sidebar-accent: #3b82f6;
+  --fixed-sidebar-accent-hover: #eff6ff;
+  --fixed-sidebar-border: #e2e8f0;
+  --fixed-sidebar-active-bg: #f1f5f9;
+
+  /* Header specific colors */
+  --fixed-header-bg: #ffffff;
+  --fixed-header-fg: #1e293b;
+  --fixed-header-border: #e2e8f0;
+
+  /* Card and content colors */
+  --fixed-card-bg: #ffffff;
+  --fixed-card-fg: #1e293b;
+  --fixed-card-border: #e2e8f0;
+  --fixed-card-shadow: rgba(0, 0, 0, 0.05);
+
+  /* Accent colors */
+  --fixed-primary: #3b82f6;
+  --fixed-primary-fg: #ffffff;
+  --fixed-secondary: #f1f5f9;
+  --fixed-secondary-fg: #1e293b;
+
+  /* Status colors */
+  --fixed-success: #10b981;
+  --fixed-warning: #f59e0b;
+  --fixed-danger: #ef4444;
+  --fixed-info: #3b82f6;
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    --primary: 210 100% 50%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 100% 50%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 210 100% 50%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
+
+    --card: 222 47% 11%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 100% 50%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 20%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 210 100% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Fixed component styles that don't change with theme */
+.fixed-sidebar {
+  background-color: var(--fixed-sidebar-bg);
+  color: var(--fixed-sidebar-fg);
+  border-color: var(--fixed-sidebar-border);
+}
+
+.fixed-sidebar-header {
+  border-color: var(--fixed-sidebar-border);
+}
+
+.fixed-sidebar-title {
+  color: var(--fixed-sidebar-fg);
+}
+
+.fixed-sidebar-icon {
+  color: var(--fixed-sidebar-accent);
+}
+
+.fixed-sidebar-muted {
+  color: var(--fixed-sidebar-muted);
+}
+
+.fixed-sidebar-item {
+  color: var(--fixed-sidebar-fg);
+}
+
+.fixed-sidebar-item:hover {
+  background-color: var(--fixed-sidebar-accent-hover);
+}
+
+.fixed-sidebar-item-active {
+  background-color: var(--fixed-sidebar-active-bg);
+  color: var(--fixed-sidebar-accent);
+}
+
+.fixed-header {
+  background-color: var(--fixed-header-bg);
+  color: var(--fixed-header-fg);
+  border-color: var(--fixed-header-border);
+}
+
+.fixed-card {
+  background-color: var(--fixed-card-bg);
+  color: var(--fixed-card-fg);
+  border-color: var(--fixed-card-border);
+  box-shadow: 0 1px 3px var(--fixed-card-shadow);
+}
+
+.fixed-primary-button {
+  background-color: var(--fixed-primary);
+  color: var(--fixed-primary-fg);
+}
+
+.fixed-primary-button:hover {
+  background-color: var(--fixed-primary);
+  opacity: 0.9;
+}
+
+.fixed-secondary-button {
+  background-color: var(--fixed-secondary);
+  color: var(--fixed-secondary-fg);
+}
+
+.fixed-secondary-button:hover {
+  background-color: var(--fixed-secondary);
+  opacity: 0.9;
+}
+
+/* Add custom scrollbar styling at the end of the file */
+/* Hidden scrollbar styling */
+.sidebar-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: 20px;
+}
+
+/* Show scrollbar on hover */
+.sidebar-scrollbar:hover {
+  scrollbar-color: var(--fixed-sidebar-muted) transparent;
+}
+
+.sidebar-scrollbar:hover::-webkit-scrollbar-thumb {
+  background-color: var(--fixed-sidebar-muted);
+}
