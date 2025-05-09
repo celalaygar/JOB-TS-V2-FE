@@ -17,3 +17,7 @@ export interface User {
   location?: string
   workHours?: string
 }
+
+export interface AuthenticationUser extends User {
+
+}

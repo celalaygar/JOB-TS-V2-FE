@@ -14,12 +14,15 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Home, Loader2 } from "lucide-react"
 import { login, clearError } from "@/lib/redux/features/auth-slice"
 import { useLanguage } from "@/lib/i18n/context"
+import { signIn } from 'next-auth/react';
 
 export default function LoginPage() {
   const { translations } = useLanguage()
   const router = useRouter()
   const dispatch = useDispatch()
-  const { loading, error } = useSelector((state: any) => state.auth)
+  //const { loading, error } = useSelector((state: any) => state.auth)
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -27,14 +30,38 @@ export default function LoginPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    dispatch(login(email, password) as any)
+    // dispatch(login(email, password) as any)
 
-    // Redirect to dashboard after successful login
-    // In a real app, this would happen after the async action completes
+    // // Redirect to dashboard after successful login
+    // // In a real app, this would happen after the async action completes
     setTimeout(() => {
       router.push("/dashboard")
     }, 1500)
   }
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true)
+    try {
+      const res = await signIn("credentials", {
+        email,
+        password,
+        redirect: false
+      });
+      if (res?.error !== null) {
+        console.log("res?.error ", res?.error)
+        setError("Invalid email or password");
+      } else {
+        router.push("/dashboard")
+      }
+    } catch (error) {
+      console.log(error)
+      setError("Invalid email or password");
+    }
+    setLoading(false)
+
+  };
+
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value)
@@ -63,7 +90,7 @@ export default function LoginPage() {
             <CardDescription>Enter your email and password to access your account</CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleLogin}>
               <div className="grid gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="email">Email</Label>

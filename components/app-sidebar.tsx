@@ -37,6 +37,7 @@ import type { SidebarRoute } from "@/types/sidebarRoute"
 import { useSelector } from "react-redux"
 import { RootState } from "@/lib/redux/store"
 import { Badge } from "@/components/ui/badge"
+import { signOut } from "next-auth/react"
 
 
 function AppSidebar() {
@@ -115,6 +116,15 @@ function AppSidebar() {
   ];
 
 
+  const handleLogout = async () => {
+    try {
+      const currentOrigin = window.location.origin;
+      await fetch("/api/auth/logout");
+      await signOut({ callbackUrl: currentOrigin + "/" });
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  };
 
 
   // Initialize open categories based on current path
@@ -218,14 +228,12 @@ function AppSidebar() {
                 <Users className="mr-2 h-5 w-5" />
                 <span>Profile</span>
               </Link>
-              <Link
-                href="/logout"
+              <div onClick={handleLogout}
                 className="flex items-center h-10 px-3 py-2 rounded-md text-sm fixed-sidebar-item"
-                prefetch={true}
               >
                 <LogOut className="h-5 w-5 mr-3" />
                 <span>{translations.sidebar.logOut}</span>
-              </Link>
+              </div>
             </div>
           </nav>
         </ScrollArea>
