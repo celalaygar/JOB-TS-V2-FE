@@ -33,30 +33,29 @@ import {
   Building2,
   BuildingIcon as Buildings,
 } from "lucide-react"
-import type { SidebarRoute } from "@/types/sidebarRoute"
+import type { SidebarRoutes } from "@/types/sidebarRoute"
 import { useSelector } from "react-redux"
 import { RootState } from "@/lib/redux/store"
 import { Badge } from "@/components/ui/badge"
-import { signOut } from "next-auth/react"
+import { signOut, useSession } from "next-auth/react"
+import { AuthUser, AuthUserResponse } from "@/types/user"
 
 
 function AppSidebar() {
+  const { data: session } = useSession();
+  const selectedUser: AuthUser = session?.user || {};
+
   const pathname = usePathname()
   const { isOpen, toggleSidebar } = useSidebar()
   const { translations } = useLanguage()
   const [openCategories, setOpenCategories] = useState<string[]>([])
-  const currentUser = useSelector((state: RootState) => state.auth.currentUser)
   const [userRole, setUserRole] = useState<string | null>(null)
   const unreadNotifications = useSelector(
     (state: RootState) => state.notifications?.notifications.filter((n) => !n.read).length || 0,
   )
-  useEffect(() => {
-    if (currentUser?.role) {
-      setUserRole(currentUser.role)
-    }
-  }, [currentUser])
 
-  const routes: SidebarRoute[] = [
+
+  const routes: SidebarRoutes[] = [
     {
       key: "mainMenu",
       category: translations.sidebar.mainMenu,
@@ -214,9 +213,9 @@ function AppSidebar() {
                 <span className="text-xs font-semibold fixed-sidebar-muted uppercase tracking-wider">
                   {translations.sidebar.user}
                 </span>
-                {userRole && (
+                {selectedUser && (
                   <span className="text-xs py-1 px-2 rounded-full bg-[var(--fixed-secondary)] text-[var(--fixed-secondary-fg)]">
-                    {userRole}
+                    {selectedUser.email}
                   </span>
                 )}
               </div>

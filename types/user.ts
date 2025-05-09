@@ -21,3 +21,19 @@ export interface User {
 export interface AuthenticationUser extends User {
 
 }
+
+
+export interface AuthUserResponse {
+  user: AuthUser;
+  token: string;
+}
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  username: string | null;
+  firstname: string | null;
+  lastname: string | null;
+  password: string | null;
+  systemRoles: string[];
+}

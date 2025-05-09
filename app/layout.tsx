@@ -7,13 +7,14 @@ import { ReduxProvider } from "@/lib/redux/provider"
 import { LanguageProvider } from "@/lib/i18n/context"
 import { AppLayoutClient } from "@/components/app-layout-client"
 import "./globals.css"
+import Providers from "./providers"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "Issue Tracker",
   description: "A modern issue tracking system",
-    generator: 'v0.dev'
+  generator: 'v0.dev'
 }
 
 export default function RootLayout({
@@ -24,14 +25,16 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange>
-          <ReduxProvider>
-            <LanguageProvider>
-              <AppLayoutClient>{children}</AppLayoutClient>
-            </LanguageProvider>
-          </ReduxProvider>
-          <Toaster />
-        </ThemeProvider>
+        <Providers>
+          <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange>
+            <ReduxProvider>
+              <LanguageProvider>
+                <AppLayoutClient>{children}</AppLayoutClient>
+              </LanguageProvider>
+            </ReduxProvider>
+            <Toaster />
+          </ThemeProvider>
+        </Providers>
       </body>
     </html>
   )

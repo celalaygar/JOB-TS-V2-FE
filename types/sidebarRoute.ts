@@ -1,11 +1,7 @@
 import type { ElementType } from "react"
+import { IconType } from "recharts/types/component/DefaultLegendContent"
 
-export interface SidebarRouteItem {
-    href: string
-    icon: ElementType
-    label: string
-    badge?: number
-}
+
 
 export interface SidebarDropdownItem {
     href: string
@@ -23,7 +19,15 @@ export interface SidebarDropdownSection {
     nested?: boolean
 }
 
+export interface SidebarRouteItem {
+    href: string;
+    icon: IconType | ElementType;
+    label: string;
+    badge?: number | string;
+}
+
 export interface SidebarRoutes {
-    main: SidebarRouteItem[]
-    [key: string]: SidebarRouteItem[] | SidebarDropdownSection | undefined
+    key: string;
+    category: string;
+    routes: SidebarRouteItem[];
 }
