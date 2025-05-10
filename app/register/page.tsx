@@ -18,6 +18,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar as CalendarComponent } from "@/components/ui/calendar"
 import { format } from "date-fns"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import BaseService from "@/lib/BaseService"
+import { toast } from "@/hooks/use-toast"
 
 export default function RegisterPage() {
   const { language, translations, setLanguage } = useLanguage()
@@ -133,8 +135,21 @@ export default function RegisterPage() {
           body: formData,
         });
         console.log('Register success:', response);
-      } catch (error) {
-        console.error('Register failed:', error);
+        toast({
+          title: "Register success:" + response,
+          description: `Register ${formData.email} success.`,
+        })
+      } catch (error: any) {
+        if (error.status === 400 && error.message) {
+          toast({
+            title: `Register ${formData.email} failed.`,
+            description: error.message,
+            variant: "destructive",
+          })
+          console.error('Register failed with 400:', error.message);
+        } else {
+          console.error('Register failed:', error);
+        }
       }
     }
   }

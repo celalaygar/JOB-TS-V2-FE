@@ -30,22 +30,28 @@ class BaseService {
 
         try {
             const response = await fetch(fullUrl, config);
+            const contentType = response.headers.get('Content-Type');
+            const isJson = contentType?.includes('application/json');
 
             if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`[${response.status}] ${response.statusText}: ${errorText}`);
+                const errorBody = isJson ? await response.json() : await response.text();
+                const errorMessage = isJson && errorBody?.error ? errorBody.error : response.statusText;
+                throw {
+                    status: response.status,
+                    message: errorMessage,
+                    raw: errorBody,
+                };
             }
 
-            const contentType = response.headers.get('Content-Type');
-            if (contentType?.includes('application/json')) {
-                return await response.json();
-            } else {
-                // if response is not JSON
-                return (await response.text()) as any;
-            }
+            return isJson ? await response.json() : ((await response.text()) as any);
         } catch (error: any) {
-            console.error('API Request Error:', error.message);
-            throw new Error(`API Error: ${error.message}`);
+            console.error("BaseService url catch: " + url)
+            console.error('BaseService API Request Error:', error);
+            throw {
+                status: error?.status,
+                message: error?.message || 'Unexpected error',
+                raw: error?.raw || error,
+            };
         }
     }
 }

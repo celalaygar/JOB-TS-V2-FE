@@ -1,7 +1,8 @@
 // app/api/auth/register/route.ts
 
+import BaseService from '@/lib/BaseService';
 import { NextRequest, NextResponse } from 'next/server';
-import BaseService from '@/lib/api/BaseService';
+
 
 export async function POST(req: NextRequest) {
     try {
@@ -14,13 +15,8 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json(result, { status: 200 });
     } catch (error: any) {
-        const statusCode = getStatusFromError(error.message);
-        return NextResponse.json({ error: error.message }, { status: statusCode });
+        const statusCode = error?.status || 500; // ❗ Doğrudan kullan
+        return NextResponse.json({ error: error.message || 'Unexpected error' }, { status: statusCode });
     }
 }
 
-// Utility: parse status code from error message string
-function getStatusFromError(message: string): number {
-    const match = message.match(/\[(\d{3})\]/);
-    return match ? parseInt(match[1], 10) : 500;
-}
