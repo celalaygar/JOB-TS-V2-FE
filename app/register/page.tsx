@@ -26,7 +26,7 @@ export default function RegisterPage() {
   const router = useRouter()
   const dispatch = useDispatch()
   const { loading, error } = useSelector((state: any) => state.auth)
-
+  const [open, setOpen] = useState(false); // Popover açık/kapalı durumu
   const [formData, setFormData] = useState({
     firstname: "",
     lastname: "",
@@ -139,6 +139,7 @@ export default function RegisterPage() {
           title: "Register success:" + response,
           description: `Register ${formData.email} success.`,
         })
+        resetInputs();
       } catch (error: any) {
         if (error.status === 400 && error.message) {
           toast({
@@ -154,6 +155,20 @@ export default function RegisterPage() {
     }
   }
 
+  const resetInputs = () => {
+    setFormData({
+      firstname: "",
+      lastname: "",
+      username: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+      phone: "",
+      dateOfBirth: undefined,
+      gender: "male",
+    });
+    setFormErrors({});
+  }
   return (
     <div className="min-h-screen flex items-center justify-center bg-[var(--fixed-background)] p-4">
       <div className="w-full max-w-2xl">
@@ -270,12 +285,11 @@ export default function RegisterPage() {
 
                 <div className="grid gap-2">
                   <Label htmlFor="dateOfBirth">{translations.register.dateOfBirthLabel}</Label>
-                  <Popover>
+                  <Popover open={open} onOpenChange={setOpen}>
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
-                        className={`w-full justify-start text-left font-normal ${formErrors.dateOfBirth ? "border-red-500" : ""
-                          }`}
+                        className={`w-full justify-start text-left font-normal ${formErrors.dateOfBirth ? "border-red-500" : ""}`}
                       >
                         <Calendar className="mr-2 h-4 w-4" />
                         {formData.dateOfBirth ? (
@@ -289,12 +303,19 @@ export default function RegisterPage() {
                       <CalendarComponent
                         mode="single"
                         selected={formData.dateOfBirth}
-                        onSelect={handleDateChange}
+                        onSelect={(date) => {
+                          // Set the selected date without showing today's date
+                          if (date) {
+                            handleDateChange(date);
+                            setOpen(false); // Close popover after selecting a date
+                          }
+                        }}
                         initialFocus
-                        disabled={(date) => date > new Date()}
+                        disabled={(date) => date > new Date()} // Disable future dates
                       />
                     </PopoverContent>
                   </Popover>
+
                   {formErrors.dateOfBirth && <p className="text-red-500 text-xs mt-1">{formErrors.dateOfBirth}</p>}
                 </div>
 

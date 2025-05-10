@@ -6,8 +6,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useLanguage } from "@/lib/i18n/context"
-import type { LeaveApprovalRequest } from "@/data/approval-requests"
 import { LeaveApprovalDetailModal } from "./leave-approval-detail-modal"
+import { LeaveApprovalRequest } from "@/types/approval-request"
 
 interface LeaveApprovalsTableProps {
   requests: LeaveApprovalRequest[]
