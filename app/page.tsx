@@ -75,7 +75,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[var(--fixed-background)] p-4">
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-xl">
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center text-2xl font-bold text-[var(--fixed-primary)]">
             <Home className="mr-2 h-6 w-6" />

@@ -141,34 +141,37 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[var(--fixed-background)] p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center text-2xl font-bold text-[var(--fixed-primary)]">
-            <Home className="mr-2 h-6 w-6" />
-            Issue Tracker
-          </Link>
-          <p className="text-[var(--fixed-sidebar-muted)] mt-2">{translations.register.subtitle}</p>
+      <div className="w-full max-w-2xl">
+        <div className="relative mb-8">
+          <div className="text-center logoDiv">
+            <Link href="/" className="inline-flex items-center text-2xl font-bold text-[var(--fixed-primary)]">
+              <Home className="mr-2 h-6 w-6" />
+              Issue Tracker
+            </Link>
+            <p className="text-[var(--fixed-sidebar-muted)] mt-2">{translations.register.subtitle}</p>
+          </div>
+
+          <div className=" mt-4 sm:mt-2 flex justify-center sm:absolute sm:top-0 sm:right-0 languageDiv" >
+            <Select value={language} onValueChange={handleLanguageChange}>
+              <SelectTrigger className="w-[120px]">
+                <SelectValue placeholder="Language" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="en">
+                  <div className="flex items-center">
+                    <span className="mr-2">🇺🇸</span> English
+                  </div>
+                </SelectItem>
+                <SelectItem value="tr">
+                  <div className="flex items-center">
+                    <span className="mr-2">🇹🇷</span> Türkçe
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
-        <div className="absolute top-4 right-4">
-          <Select value={language} onValueChange={handleLanguageChange}>
-            <SelectTrigger className="w-[120px]">
-              <SelectValue placeholder="Language" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="en">
-                <div className="flex items-center">
-                  <span className="mr-2">🇺🇸</span> English
-                </div>
-              </SelectItem>
-              <SelectItem value="tr">
-                <div className="flex items-center">
-                  <span className="mr-2">🇹🇷</span> Türkçe
-                </div>
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
 
         <Card>
           <CardHeader>
