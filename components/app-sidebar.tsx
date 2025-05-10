@@ -228,7 +228,7 @@ function AppSidebar() {
                 <span>Profile</span>
               </Link>
               <div onClick={handleLogout}
-                className="flex items-center h-10 px-3 py-2 rounded-md text-sm fixed-sidebar-item"
+                className="cursor-pointer flex items-center h-10 px-3 py-2 rounded-md text-sm fixed-sidebar-item"
               >
                 <LogOut className="h-5 w-5 mr-3" />
                 <span>{translations.sidebar.logOut}</span>

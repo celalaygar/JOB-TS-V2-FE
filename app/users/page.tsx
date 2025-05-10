@@ -8,6 +8,7 @@ import { UsersSearch } from "@/components/users/users-search"
 import { UserFilters } from "@/components/users/user-filters"
 import { useSelector } from "react-redux"
 import type { RootState } from "@/lib/redux/store"
+import { users as userList } from "@/data/users"
 
 export default function Users() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
@@ -17,10 +18,10 @@ export default function Users() {
   const [sortOption, setSortOption] = useState("name-asc")
   const [showFilters, setShowFilters] = useState(true)
 
-  const users = useSelector((state: RootState) => state.users.users)
+  const users = userList
 
   // Get unique departments for filter options
-  const departments = [...new Set(users.map((user) => user.department))].sort()
+  const departments = [...new Set(userList.map((user) => user.department))].sort()
 
   // Calculate filtered users count for the filters component
   const filteredUsers = users.filter((user) => {

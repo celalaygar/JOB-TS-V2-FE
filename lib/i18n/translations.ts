@@ -179,10 +179,24 @@ export const en = {
     title: "Create Account",
     description: "Enter your information to create a new account",
     subtitle: "Sign up for a new account",
-    nameLabel: "Full Name",
-    namePlaceholder: "John Doe",
+    firstNameLabel: "First Name",
+    firstNamePlaceholder: "John",
+    lastNameLabel: "Last Name",
+    lastNamePlaceholder: "Doe",
+    usernameLabel: "Username",
+    usernamePlaceholder: "johndoe",
     emailLabel: "Email",
     emailPlaceholder: "name@example.com",
+    phoneLabel: "Phone Number (with area code)",
+    phonePlaceholder: "+1 (555) 123-4567",
+    dateOfBirthLabel: "Date of Birth",
+    pickDate: "Pick a date",
+    genderLabel: "Gender",
+    genderOptions: {
+      male: "Male",
+      female: "Female",
+      other: "Other",
+    },
     passwordLabel: "Password",
     confirmPasswordLabel: "Confirm Password",
     roleLabel: "Role",
@@ -192,9 +206,14 @@ export const en = {
     haveAccount: "Already have an account?",
     signIn: "Sign in",
     errors: {
-      nameRequired: "Name is required",
+      firstNameRequired: "First name is required",
+      lastNameRequired: "Last name is required",
+      usernameRequired: "Username is required",
       emailRequired: "Email is required",
       emailInvalid: "Please enter a valid email",
+      phoneRequired: "Phone number is required",
+      phoneInvalid: "Please enter a valid phone number with area code",
+      dateRequired: "Date of birth is required",
       passwordRequired: "Password is required",
       passwordLength: "Password must be at least 6 characters",
       passwordsMatch: "Passwords do not match",
@@ -757,7 +776,6 @@ export const en = {
     passwordMatch: "Passwords do not match",
     invalidFormat: "Invalid format",
   },
-
 }
 
 // Turkish translations
@@ -940,10 +958,24 @@ export const tr = {
     title: "Hesap Oluştur",
     description: "Yeni bir hesap oluşturmak için bilgilerinizi girin",
     subtitle: "Yeni bir hesap için kaydolun",
-    nameLabel: "Ad Soyad",
-    namePlaceholder: "Ahmet Yılmaz",
+    firstNameLabel: "Ad",
+    firstNamePlaceholder: "Ahmet",
+    lastNameLabel: "Soyad",
+    lastNamePlaceholder: "Yılmaz",
+    usernameLabel: "Kullanıcı Adı",
+    usernamePlaceholder: "ahmetyilmaz",
     emailLabel: "E-posta",
     emailPlaceholder: "ad@ornek.com",
+    phoneLabel: "Telefon Numarası (alan koduyla)",
+    phonePlaceholder: "+90 (555) 123-4567",
+    dateOfBirthLabel: "Doğum Tarihi",
+    pickDate: "Tarih seçin",
+    genderLabel: "Cinsiyet",
+    genderOptions: {
+      male: "Erkek",
+      female: "Kadın",
+      other: "Diğer",
+    },
     passwordLabel: "Şifre",
     confirmPasswordLabel: "Şifreyi Onayla",
     roleLabel: "Rol",
@@ -953,9 +985,14 @@ export const tr = {
     haveAccount: "Zaten bir hesabınız var mı?",
     signIn: "Giriş yap",
     errors: {
-      nameRequired: "Ad gereklidir",
+      firstNameRequired: "Ad gereklidir",
+      lastNameRequired: "Soyad gereklidir",
+      usernameRequired: "Kullanıcı adı gereklidir",
       emailRequired: "E-posta gereklidir",
       emailInvalid: "Lütfen geçerli bir e-posta girin",
+      phoneRequired: "Telefon numarası gereklidir",
+      phoneInvalid: "Lütfen alan koduyla geçerli bir telefon numarası girin",
+      dateRequired: "Doğum tarihi gereklidir",
       passwordRequired: "Şifre gereklidir",
       passwordLength: "Şifre en az 6 karakter olmalıdır",
       passwordsMatch: "Şifreler eşleşmiyor",
@@ -1385,7 +1422,6 @@ export const tr = {
     employeeCount: "Çalışan Sayısı",
     email: "E-posta",
     phone: "Telefon",
-
   },
   teams: {
     projectTeams: {
@@ -1519,7 +1555,6 @@ export const tr = {
     passwordMatch: "Şifreler eşleşmiyor",
     invalidFormat: "Geçersiz format",
   },
-
 }
 
 export type Language = "en" | "tr"

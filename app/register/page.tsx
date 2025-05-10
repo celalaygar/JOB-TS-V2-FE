@@ -10,23 +10,31 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Home, Loader2 } from "lucide-react"
+import { Home, Loader2, Calendar } from "lucide-react"
 import { register, clearError } from "@/lib/redux/features/auth-slice"
 import { useLanguage } from "@/lib/i18n/context"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Calendar as CalendarComponent } from "@/components/ui/calendar"
+import { format } from "date-fns"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export default function RegisterPage() {
-  const { translations } = useLanguage()
+  const { language, translations, setLanguage } = useLanguage()
   const router = useRouter()
   const dispatch = useDispatch()
   const { loading, error } = useSelector((state: any) => state.auth)
 
   const [formData, setFormData] = useState({
-    name: "",
+    firstname: "",
+    lastname: "",
+    username: "",
     email: "",
     password: "",
     confirmPassword: "",
-    role: "Developer",
+    phone: "",
+    dateOfBirth: undefined as Date | undefined,
+    gender: "male",
   })
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
 
@@ -49,21 +57,56 @@ export default function RegisterPage() {
     }
   }
 
-  const handleRoleChange = (value: string) => {
-    setFormData((prev) => ({ ...prev, role: value }))
+  const handleGenderChange = (value: string) => {
+    setFormData((prev) => ({ ...prev, gender: value }))
+  }
+
+  const handleDateChange = (date: Date | undefined) => {
+    setFormData((prev) => ({ ...prev, dateOfBirth: date }))
+
+    // Clear date error if exists
+    if (formErrors.dateOfBirth) {
+      setFormErrors((prev) => {
+        const newErrors = { ...prev }
+        delete newErrors.dateOfBirth
+        return newErrors
+      })
+    }
+  }
+
+  const handleLanguageChange = (value: string) => {
+    setLanguage(value as "en" | "tr")
   }
 
   const validateForm = () => {
     const errors: Record<string, string> = {}
 
-    if (!formData.name.trim()) {
-      errors.name = translations.register.errors.nameRequired
+    if (!formData.firstname.trim()) {
+      errors.firstname = translations.register.errors.firstNameRequired
+    }
+
+    if (!formData.lastname.trim()) {
+      errors.lastname = translations.register.errors.lastNameRequired
+    }
+
+    if (!formData.username.trim()) {
+      errors.username = translations.register.errors.usernameRequired
     }
 
     if (!formData.email.trim()) {
       errors.email = translations.register.errors.emailRequired
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       errors.email = translations.register.errors.emailInvalid
+    }
+
+    if (!formData.phone.trim()) {
+      errors.phone = translations.register.errors.phoneRequired
+    } else if (!/^\+?[0-9\s-()]{10,15}$/.test(formData.phone)) {
+      errors.phone = translations.register.errors.phoneInvalid
+    }
+
+    if (!formData.dateOfBirth) {
+      errors.dateOfBirth = translations.register.errors.dateRequired
     }
 
     if (!formData.password) {
@@ -80,17 +123,19 @@ export default function RegisterPage() {
     return Object.keys(errors).length === 0
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (validateForm()) {
-      dispatch(register(formData.name, formData.email, formData.password, formData.role) as any)
-
-      // Redirect to dashboard after successful registration
-      // In a real app, this would happen after the async action completes
-      setTimeout(() => {
-        router.push("/dashboard")
-      }, 1500)
+      try {
+        const response = await BaseService.request('/api/auth/register', {
+          method: 'POST',
+          body: formData,
+        });
+        console.log('Register success:', response);
+      } catch (error) {
+        console.error('Register failed:', error);
+      }
     }
   }
 
@@ -105,6 +150,26 @@ export default function RegisterPage() {
           <p className="text-[var(--fixed-sidebar-muted)] mt-2">{translations.register.subtitle}</p>
         </div>
 
+        <div className="absolute top-4 right-4">
+          <Select value={language} onValueChange={handleLanguageChange}>
+            <SelectTrigger className="w-[120px]">
+              <SelectValue placeholder="Language" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="en">
+                <div className="flex items-center">
+                  <span className="mr-2">🇺🇸</span> English
+                </div>
+              </SelectItem>
+              <SelectItem value="tr">
+                <div className="flex items-center">
+                  <span className="mr-2">🇹🇷</span> Türkçe
+                </div>
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
         <Card>
           <CardHeader>
             <CardTitle>{translations.register.title}</CardTitle>
@@ -113,18 +178,48 @@ export default function RegisterPage() {
           <CardContent>
             <form onSubmit={handleSubmit}>
               <div className="grid gap-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="firstname">{translations.register.firstNameLabel}</Label>
+                    <Input
+                      id="firstname"
+                      name="firstname"
+                      type="text"
+                      placeholder={translations.register.firstNamePlaceholder}
+                      value={formData.firstname}
+                      onChange={handleChange}
+                      className={formErrors.firstname ? "border-red-500" : ""}
+                    />
+                    {formErrors.firstname && <p className="text-red-500 text-xs mt-1">{formErrors.firstname}</p>}
+                  </div>
+
+                  <div className="grid gap-2">
+                    <Label htmlFor="lastname">{translations.register.lastNameLabel}</Label>
+                    <Input
+                      id="lastname"
+                      name="lastname"
+                      type="text"
+                      placeholder={translations.register.lastNamePlaceholder}
+                      value={formData.lastname}
+                      onChange={handleChange}
+                      className={formErrors.lastname ? "border-red-500" : ""}
+                    />
+                    {formErrors.lastname && <p className="text-red-500 text-xs mt-1">{formErrors.lastname}</p>}
+                  </div>
+                </div>
+
                 <div className="grid gap-2">
-                  <Label htmlFor="name">{translations.register.nameLabel}</Label>
+                  <Label htmlFor="username">{translations.register.usernameLabel}</Label>
                   <Input
-                    id="name"
-                    name="name"
+                    id="username"
+                    name="username"
                     type="text"
-                    placeholder={translations.register.namePlaceholder}
-                    value={formData.name}
+                    placeholder={translations.register.usernamePlaceholder}
+                    value={formData.username}
                     onChange={handleChange}
-                    className={formErrors.name ? "border-red-500" : ""}
+                    className={formErrors.username ? "border-red-500" : ""}
                   />
-                  {formErrors.name && <p className="text-red-500 text-xs mt-1">{formErrors.name}</p>}
+                  {formErrors.username && <p className="text-red-500 text-xs mt-1">{formErrors.username}</p>}
                 </div>
 
                 <div className="grid gap-2">
@@ -139,6 +234,74 @@ export default function RegisterPage() {
                     className={formErrors.email ? "border-red-500" : ""}
                   />
                   {formErrors.email && <p className="text-red-500 text-xs mt-1">{formErrors.email}</p>}
+                </div>
+
+                <div className="grid gap-2">
+                  <Label htmlFor="phone">{translations.register.phoneLabel}</Label>
+                  <Input
+                    id="phone"
+                    name="phone"
+                    type="tel"
+                    placeholder={translations.register.phonePlaceholder}
+                    value={formData.phone}
+                    onChange={handleChange}
+                    className={formErrors.phone ? "border-red-500" : ""}
+                  />
+                  {formErrors.phone && <p className="text-red-500 text-xs mt-1">{formErrors.phone}</p>}
+                </div>
+
+                <div className="grid gap-2">
+                  <Label htmlFor="dateOfBirth">{translations.register.dateOfBirthLabel}</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={`w-full justify-start text-left font-normal ${formErrors.dateOfBirth ? "border-red-500" : ""
+                          }`}
+                      >
+                        <Calendar className="mr-2 h-4 w-4" />
+                        {formData.dateOfBirth ? (
+                          format(formData.dateOfBirth, "PPP")
+                        ) : (
+                          <span>{translations.register.pickDate}</span>
+                        )}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <CalendarComponent
+                        mode="single"
+                        selected={formData.dateOfBirth}
+                        onSelect={handleDateChange}
+                        initialFocus
+                        disabled={(date) => date > new Date()}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  {formErrors.dateOfBirth && <p className="text-red-500 text-xs mt-1">{formErrors.dateOfBirth}</p>}
+                </div>
+
+                <div className="grid gap-2">
+                  <Label>{translations.register.genderLabel}</Label>
+                  <RadioGroup value={formData.gender} onValueChange={handleGenderChange} className="flex gap-4">
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="male" id="male" />
+                      <Label htmlFor="male" className="cursor-pointer">
+                        {translations.register.genderOptions.male}
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="female" id="female" />
+                      <Label htmlFor="female" className="cursor-pointer">
+                        {translations.register.genderOptions.female}
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="other" id="other" />
+                      <Label htmlFor="other" className="cursor-pointer">
+                        {translations.register.genderOptions.other}
+                      </Label>
+                    </div>
+                  </RadioGroup>
                 </div>
 
                 <div className="grid gap-2">
@@ -167,21 +330,6 @@ export default function RegisterPage() {
                   {formErrors.confirmPassword && (
                     <p className="text-red-500 text-xs mt-1">{formErrors.confirmPassword}</p>
                   )}
-                </div>
-
-                <div className="grid gap-2">
-                  <Label htmlFor="role">{translations.register.roleLabel}</Label>
-                  <Select value={formData.role} onValueChange={handleRoleChange}>
-                    <SelectTrigger>
-                      <SelectValue placeholder={translations.register.rolePlaceholder} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Developer">{translations.register.roles.developer}</SelectItem>
-                      <SelectItem value="Designer">{translations.register.roles.designer}</SelectItem>
-                      <SelectItem value="Product Manager">{translations.register.roles.productManager}</SelectItem>
-                      <SelectItem value="QA Engineer">{translations.register.roles.qaEngineer}</SelectItem>
-                    </SelectContent>
-                  </Select>
                 </div>
 
                 {error && (
