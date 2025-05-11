@@ -15,9 +15,10 @@ import { Home, Loader2 } from "lucide-react"
 import { login, clearError } from "@/lib/redux/features/auth-slice"
 import { useLanguage } from "@/lib/i18n/context"
 import { signIn } from 'next-auth/react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export default function LoginPage() {
-  const { translations } = useLanguage()
+  const { language, translations, setLanguage } = useLanguage()
   const router = useRouter()
   const dispatch = useDispatch()
   //const { loading, error } = useSelector((state: any) => state.auth)
@@ -72,17 +73,42 @@ export default function LoginPage() {
     setPassword(e.target.value)
     if (error) dispatch(clearError())
   }
-
+  const handleLanguageChange = (value: string) => {
+    setLanguage(value as "en" | "tr")
+  }
   return (
     <div className="min-h-screen flex items-center justify-center bg-[var(--fixed-background)] p-4">
       <div className="w-full max-w-xl">
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center text-2xl font-bold text-[var(--fixed-primary)]">
-            <Home className="mr-2 h-6 w-6" />
-            Issue Tracker
-          </Link>
-          <p className="text-[var(--fixed-sidebar-muted)] mt-2">Sign in to your account</p>
+        <div className="relative mb-8">
+          <div className="text-center logoDiv">
+            <Link href="/" className="inline-flex items-center text-2xl font-bold text-[var(--fixed-primary)]">
+              <Home className="mr-2 h-6 w-6" />
+              Issue Tracker
+            </Link>
+            <p className="text-[var(--fixed-sidebar-muted)] mt-2">{translations.register.subtitle}</p>
+          </div>
+
+          <div className=" mt-4 sm:mt-2 flex justify-center sm:absolute sm:top-0 sm:right-0 languageDiv" >
+            <Select value={language} onValueChange={handleLanguageChange}>
+              <SelectTrigger className="w-[120px]">
+                <SelectValue placeholder="Language" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="en">
+                  <div className="flex items-center">
+                    <span className="mr-2">🇺🇸</span> English
+                  </div>
+                </SelectItem>
+                <SelectItem value="tr">
+                  <div className="flex items-center">
+                    <span className="mr-2">🇹🇷</span> Türkçe
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
+
 
         <Card>
           <CardHeader>
