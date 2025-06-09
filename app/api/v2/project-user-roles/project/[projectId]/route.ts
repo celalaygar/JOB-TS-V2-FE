@@ -2,7 +2,7 @@
 // app/api/v2/project/route.ts
 
 import RouteBaseService from '@/lib/service/RouteBaseService';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 
 const URL = process.env.BASE_V2_URL
 const USER_ROLES = "project-user-roles"
