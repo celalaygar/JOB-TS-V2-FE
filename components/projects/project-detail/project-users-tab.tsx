@@ -72,14 +72,14 @@ export function ProjectUsersTab({
     } catch (error: any) {
       if (error.status === 400 && error.message) {
         toast({
-          title: `Get Projec tUsers failed. (400)`,
+          title: `Get Project Users failed. (400)`,
           description: error.message,
           variant: "destructive",
         })
       } else {
-        console.error('Get Projec tUsers failed:', error)
+        console.error('Get Project Users failed:', error)
         toast({
-          title: `Get Projec tUsers failed.`,
+          title: `Get Project Users failed.`,
           description: error.message,
           variant: "destructive",
         })
