@@ -221,7 +221,10 @@ export function InvitationDetailsDialog({
                                 <DialogFooter className="flex sm:justify-between gap-2 mt-6">
                                     <div className="flex gap-2 w-full">
                                         <Button
-                                            disabled={invitation.status === InvitationStatus.ACCEPTED}
+                                            disabled={
+                                                invitation.status === InvitationStatus.ACCEPTED ||
+                                                invitation.status === InvitationStatus.DECLINED
+                                            }
                                             variant="outline"
                                             className="flex-1 border-[var(--fixed-card-border)] text-[var(--fixed-danger)]"
                                             onClick={() => {
@@ -232,7 +235,10 @@ export function InvitationDetailsDialog({
                                             Decline
                                         </Button>
                                         <Button
-                                            disabled={invitation.status === InvitationStatus.ACCEPTED}
+                                            disabled={
+                                                invitation.status === InvitationStatus.ACCEPTED ||
+                                                invitation.status === InvitationStatus.DECLINED
+                                            }
                                             className="flex-1 bg-[var(--fixed-success)] text-white hover:bg-[var(--fixed-success)]/90"
                                             onClick={() => {
                                                 acceptInvitations()
@@ -242,7 +248,10 @@ export function InvitationDetailsDialog({
                                             Accept
                                         </Button>
                                         <Button
-                                            disabled={invitation.status === InvitationStatus.ACCEPTED}
+                                            disabled={
+                                                invitation.status === InvitationStatus.ACCEPTED ||
+                                                invitation.status === InvitationStatus.DECLINED
+                                            }
                                             variant="outline"
                                             className="border-[var(--fixed-card-border)] text-[var(--fixed-sidebar-fg)]"
                                             onClick={() => setConfirmRemove(true)}
