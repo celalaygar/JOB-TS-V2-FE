@@ -117,7 +117,7 @@ export function ProjectsList() {
     </>
   ) : (
     <>
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="topdiv grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {(allProjects && (allProjects.length > 0)) ? allProjects.map((project) => (
           <div key={project.id} className="fixed-card rounded-lg overflow-hidden">
             <div className="p-4 pb-2">
@@ -193,7 +193,7 @@ export function ProjectsList() {
             </div>
           </div>
         )) :
-          <div className="flex flex-col items-center justify-center h-full">
+          <div className="noProjectDiv w-full flex flex-col items-center justify-center col-span-full min-h-[300px]">
             <h1 className="text-2xl font-bold mb-4">Project not found</h1>
             <button
               className="fixed-primary-button h-10 px-4 py-2 rounded-md flex items-center text-sm font-medium"
