@@ -186,7 +186,6 @@ export function ProjectSprintsFilters({ filters, onFilterChange, teams }: Projec
                         {team.name}
                       </SelectItem>
                     ))}
-                    <SelectItem value="none">Project-wide (No Team)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
