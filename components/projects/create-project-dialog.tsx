@@ -204,13 +204,7 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
     return project;
   }
 
-  return loading ? (
-    <>
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
-      </div>
-    </>
-  ) : (
+  return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
@@ -219,51 +213,59 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
               <DialogTitle>Create New Project</DialogTitle>
               <DialogDescription>Add a new project to your workspace. Fill out the details below.</DialogDescription>
             </DialogHeader>
+            {
+              loading ?
+                <div className="grid gap-4 py-4">
+                  <div className="flex items-center justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+                  </div>
+                </div>
+                :
+                <>
+                  <div className="grid gap-4 py-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="name" className={errors.name ? "text-[var(--fixed-danger)]" : ""}>
+                        Project Name
+                      </Label>
+                      <Input
+                        id="name"
+                        value={formData.name}
+                        onChange={(e) => handleChange("name", e.target.value)}
+                        className={errors.name ? "border-[var(--fixed-danger)]" : "border-[var(--fixed-card-border)]"}
+                      />
+                      {errors.name && <p className="text-xs text-[var(--fixed-danger)]">{errors.name}</p>}
+                    </div>
 
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="name" className={errors.name ? "text-[var(--fixed-danger)]" : ""}>
-                  Project Name
-                </Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => handleChange("name", e.target.value)}
-                  className={errors.name ? "border-[var(--fixed-danger)]" : "border-[var(--fixed-card-border)]"}
-                />
-                {errors.name && <p className="text-xs text-[var(--fixed-danger)]">{errors.name}</p>}
-              </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="description" className={errors.description ? "text-[var(--fixed-danger)]" : ""}>
+                        Description
+                      </Label>
+                      <Textarea
+                        id="description"
+                        value={formData.description}
+                        onChange={(e) => handleChange("description", e.target.value)}
+                        className={errors.description ? "border-[var(--fixed-danger)]" : "border-[var(--fixed-card-border)]"}
+                        rows={3}
+                      />
+                      {errors.description && <p className="text-xs text-[var(--fixed-danger)]">{errors.description}</p>}
+                    </div>
 
-              <div className="grid gap-2">
-                <Label htmlFor="description" className={errors.description ? "text-[var(--fixed-danger)]" : ""}>
-                  Description
-                </Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => handleChange("description", e.target.value)}
-                  className={errors.description ? "border-[var(--fixed-danger)]" : "border-[var(--fixed-card-border)]"}
-                  rows={3}
-                />
-                {errors.description && <p className="text-xs text-[var(--fixed-danger)]">{errors.description}</p>}
-              </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="status">Status</Label>
+                      <Select value={formData.status} onValueChange={(value) => handleChange("status", value)}>
+                        <SelectTrigger id="status" className="border-[var(--fixed-card-border)]">
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Planning">Planning</SelectItem>
+                          <SelectItem value="In Progress">In Progress</SelectItem>
+                          <SelectItem value="On Hold">On Hold</SelectItem>
+                          <SelectItem value="Completed">Completed</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-              <div className="grid gap-2">
-                <Label htmlFor="status">Status</Label>
-                <Select value={formData.status} onValueChange={(value) => handleChange("status", value)}>
-                  <SelectTrigger id="status" className="border-[var(--fixed-card-border)]">
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Planning">Planning</SelectItem>
-                    <SelectItem value="In Progress">In Progress</SelectItem>
-                    <SelectItem value="On Hold">On Hold</SelectItem>
-                    <SelectItem value="Completed">Completed</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* <div className="grid gap-2">
+                    {/* <div className="grid gap-2">
                 <Label className={errors.team ? "text-[var(--fixed-danger)]" : ""}>Team Members</Label>
                 <Popover>
                   <PopoverTrigger asChild>
@@ -334,89 +336,91 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
                 {errors.team && <p className="text-xs text-[var(--fixed-danger)]">{errors.team}</p>}
               </div> */}
 
-              <div className="grid gap-2">
-                <Label htmlFor="startDate">Start Date</Label>
-                <Input
-                  id="startDate"
-                  type="date"
-                  value={formData.startDate}
-                  onChange={(e) => handleChange("startDate", e.target.value)}
-                  className="border-[var(--fixed-card-border)]"
-                />
-              </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="startDate">Start Date</Label>
+                      <Input
+                        id="startDate"
+                        type="date"
+                        value={formData.startDate}
+                        onChange={(e) => handleChange("startDate", e.target.value)}
+                        className="border-[var(--fixed-card-border)]"
+                      />
+                    </div>
 
-              <div className="grid gap-2">
-                <Label htmlFor="endDate" className={errors.endDate ? "text-[var(--fixed-danger)]" : ""}>
-                  End Date
-                </Label>
-                <Input
-                  id="endDate"
-                  type="date"
-                  value={formData.endDate}
-                  onChange={(e) => handleChange("endDate", e.target.value)}
-                  className={errors.endDate ? "border-[var(--fixed-danger)]" : "border-[var(--fixed-card-border)]"}
-                />
-                {errors.endDate && <p className="text-xs text-[var(--fixed-danger)]">{errors.endDate}</p>}
-              </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="endDate" className={errors.endDate ? "text-[var(--fixed-danger)]" : ""}>
+                        End Date
+                      </Label>
+                      <Input
+                        id="endDate"
+                        type="date"
+                        value={formData.endDate}
+                        onChange={(e) => handleChange("endDate", e.target.value)}
+                        className={errors.endDate ? "border-[var(--fixed-danger)]" : "border-[var(--fixed-card-border)]"}
+                      />
+                      {errors.endDate && <p className="text-xs text-[var(--fixed-danger)]">{errors.endDate}</p>}
+                    </div>
 
-              <div className="grid gap-2">
-                <Label htmlFor="repository">Repository URL</Label>
-                <Input
-                  id="repository"
-                  value={formData.repository}
-                  onChange={(e) => handleChange("repository", e.target.value)}
-                  placeholder="https://github.com/your-org/repository"
-                  className="border-[var(--fixed-card-border)]"
-                />
-              </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="repository">Repository URL</Label>
+                      <Input
+                        id="repository"
+                        value={formData.repository}
+                        onChange={(e) => handleChange("repository", e.target.value)}
+                        placeholder="https://github.com/your-org/repository"
+                        className="border-[var(--fixed-card-border)]"
+                      />
+                    </div>
 
-              <div className="grid gap-2">
-                <Label htmlFor="tags">Tags</Label>
-                <div className="flex flex-wrap gap-2 mb-2">
-                  {formData.tags.map((tag) => (
-                    <Badge
-                      key={tag}
-                      variant="secondary"
-                      className="flex items-center gap-1 bg-[var(--fixed-secondary)] text-[var(--fixed-secondary-fg)]"
+                    <div className="grid gap-2">
+                      <Label htmlFor="tags">Tags</Label>
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        {formData.tags.map((tag) => (
+                          <Badge
+                            key={tag}
+                            variant="secondary"
+                            className="flex items-center gap-1 bg-[var(--fixed-secondary)] text-[var(--fixed-secondary-fg)]"
+                          >
+                            {tag}
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-4 w-4 p-0 text-[var(--fixed-sidebar-muted)] hover:text-[var(--fixed-sidebar-fg)]"
+                              onClick={() => handleRemoveTag(tag)}
+                            >
+                              <X className="h-3 w-3" />
+                              <span className="sr-only">Remove</span>
+                            </Button>
+                          </Badge>
+                        ))}
+                      </div>
+                      <Input
+                        id="tags"
+                        value={tagInput}
+                        onChange={(e) => setTagInput(e.target.value)}
+                        onKeyDown={handleAddTag}
+                        placeholder="Type a tag and press Enter"
+                        className="border-[var(--fixed-card-border)]"
+                      />
+                      <p className="text-xs text-[var(--fixed-sidebar-muted)]">Press Enter to add a tag</p>
+                    </div>
+                  </div>
+
+                  <DialogFooter>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => onOpenChange(false)}
+                      className="border-[var(--fixed-card-border)] text-[var(--fixed-sidebar-fg)]"
                     >
-                      {tag}
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-4 w-4 p-0 text-[var(--fixed-sidebar-muted)] hover:text-[var(--fixed-sidebar-fg)]"
-                        onClick={() => handleRemoveTag(tag)}
-                      >
-                        <X className="h-3 w-3" />
-                        <span className="sr-only">Remove</span>
-                      </Button>
-                    </Badge>
-                  ))}
-                </div>
-                <Input
-                  id="tags"
-                  value={tagInput}
-                  onChange={(e) => setTagInput(e.target.value)}
-                  onKeyDown={handleAddTag}
-                  placeholder="Type a tag and press Enter"
-                  className="border-[var(--fixed-card-border)]"
-                />
-                <p className="text-xs text-[var(--fixed-sidebar-muted)]">Press Enter to add a tag</p>
-              </div>
-            </div>
-
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                className="border-[var(--fixed-card-border)] text-[var(--fixed-sidebar-fg)]"
-              >
-                Cancel
-              </Button>
-              <Button type="submit" className="bg-[var(--fixed-primary)] text-white">
-                Create Project
-              </Button>
-            </DialogFooter>
+                      Cancel
+                    </Button>
+                    <Button type="submit" className="bg-[var(--fixed-primary)] text-white">
+                      Create Project
+                    </Button>
+                  </DialogFooter>
+                </>
+            }
           </form>
         </DialogContent>
       </Dialog>
