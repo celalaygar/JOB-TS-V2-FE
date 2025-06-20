@@ -25,8 +25,8 @@ import type { TaskType } from "@/types/task"
 import { toast } from "@/hooks/use-toast"
 import BaseService from "@/lib/service/BaseService"
 import { httpMethods } from "@/lib/service/HttpService"
-import { PROJECT_URL } from "@/lib/service/BasePath"
-import { Project } from "@/types/project"
+import { GET_PROJECT_USERS, PROJECT_URL } from "@/lib/service/BasePath"
+import { Project, ProjectUser } from "@/types/project"
 
 interface CreateTaskDialogProps {
   open: boolean
@@ -41,6 +41,7 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
   const users = useSelector((state: RootState) => state.users.users)
   const allTasks = useSelector((state: RootState) => state.tasks.tasks)
   const [loading, setLoading] = useState(false);
+  const [projectUsers, setprojectUsers] = useState<ProjectUser[]>()
 
   const [formData, setFormData] = useState({
     title: "",
@@ -70,6 +71,9 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
+    if (field === "project" && !!value && value !== "all") {
+      getProjectUsers(value)
+    }
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -210,6 +214,37 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
     return project;
   }
 
+  const getProjectUsers = async (projectId: string) => {
+    setprojectUsers([])
+    setLoading(true)
+    try {
+      const response: ProjectUser[] = await BaseService.request(GET_PROJECT_USERS + "/" + projectId, {
+        method: httpMethods.GET,
+      })
+      toast({
+        title: `Get All Invitations.`,
+        description: `Get All Invitations `,
+      })
+      setprojectUsers(response)
+
+    } catch (error: any) {
+      if (error.status === 400 && error.message) {
+        toast({
+          title: `Get Project Users failed. (400)`,
+          description: error.message,
+          variant: "destructive",
+        })
+      } else {
+        console.error('Get Project Users failed:', error)
+        toast({
+          title: `Get Project Users failed.`,
+          description: error.message,
+          variant: "destructive",
+        })
+      }
+    }
+    setLoading(false)
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -336,9 +371,9 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
                           <SelectValue placeholder="Assign to" />
                         </SelectTrigger>
                         <SelectContent>
-                          {users.map((user) => (
+                          {!!projectUsers && projectUsers.map((user: ProjectUser) => (
                             <SelectItem key={user.id} value={user.id}>
-                              {user.name}
+                              {user.email}
                             </SelectItem>
                           ))}
                         </SelectContent>
