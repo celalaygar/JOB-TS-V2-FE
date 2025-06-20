@@ -1,16 +1,21 @@
 "use client"
 
-import { useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
-import { CalendarIcon, FilterX } from "lucide-react"
+import { CalendarIcon, FilterX, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import type { DateRange } from "react-day-picker"
 import { projects as dummyProjects } from "@/data/projects"
+import { toast } from "@/components/ui/use-toast"
+import { PROJECT_URL } from "@/lib/service/BasePath"
+import { httpMethods } from "@/lib/service/HttpService"
+import { Project } from "@/types/project"
+import BaseService from "@/lib/service/BaseService"
 
 interface ProjectSprintsFiltersProps {
   filters: {
@@ -25,6 +30,42 @@ interface ProjectSprintsFiltersProps {
 
 export function ProjectSprintsFilters({ filters, onFilterChange, teams }: ProjectSprintsFiltersProps) {
   const [dateRange, setDateRange] = useState<DateRange | undefined>(filters.dateRange)
+  const [projectList, setProjectList] = useState<Project[] | []>([]);
+
+  const [loading, setLoading] = useState(false);
+  const getAllProjects = useCallback(async () => {
+    setLoading(true)
+    try {
+      const response = await BaseService.request(PROJECT_URL, {
+        method: httpMethods.GET,
+      })
+      let projectList = response as Project[];
+      setProjectList(projectList)
+    } catch (error: any) {
+      if (error.status === 400 && error.message) {
+        toast({
+          title: `Project find all failed. (400)`,
+          description: error.message,
+          variant: "destructive",
+        })
+      } else {
+        console.error('Project failed:', error)
+        toast({
+          title: `Project find all failed.`,
+          description: error.message,
+          variant: "destructive",
+        })
+      }
+    }
+    setLoading(false)
+  }, [])
+
+
+  useEffect(() => {
+    getAllProjects()
+  }, [getAllProjects])
+
+
 
   const handleProjectChange = (value: string) => {
     onFilterChange({ ...filters, project: value })
@@ -67,96 +108,106 @@ export function ProjectSprintsFilters({ filters, onFilterChange, teams }: Projec
           Reset Filters
         </Button>
       </div>
+      {
+        loading ?
+          <div className="grid gap-4 py-4">
+            <div className="flex items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+            </div>
+          </div>
+          :
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="project">Project</Label>
+                <Select value={filters.project} onValueChange={handleProjectChange}>
+                  <SelectTrigger id="project" className="border-[var(--fixed-card-border)]">
+                    <SelectValue placeholder="All Projects" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Projects</SelectItem>
+                    {!!projectList && projectList.map((project: Project) => (
+                      <SelectItem key={project.id} value={project.id}>
+                        {project.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="project">Project</Label>
-          <Select value={filters.project} onValueChange={handleProjectChange}>
-            <SelectTrigger id="project" className="border-[var(--fixed-card-border)]">
-              <SelectValue placeholder="All Projects" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Projects</SelectItem>
-              {dummyProjects.map((project) => (
-                <SelectItem key={project.id} value={project.id}>
-                  {project.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+              <div className="space-y-2">
+                <Label htmlFor="team">Team</Label>
+                <Select value={filters.team} onValueChange={handleTeamChange}>
+                  <SelectTrigger id="team" className="border-[var(--fixed-card-border)]">
+                    <SelectValue placeholder="All Teams" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Teams</SelectItem>
+                    {teams.map((team) => (
+                      <SelectItem key={team.id} value={team.name}>
+                        {team.name}
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="none">Project-wide (No Team)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="team">Team</Label>
-          <Select value={filters.team} onValueChange={handleTeamChange}>
-            <SelectTrigger id="team" className="border-[var(--fixed-card-border)]">
-              <SelectValue placeholder="All Teams" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Teams</SelectItem>
-              {teams.map((team) => (
-                <SelectItem key={team.id} value={team.name}>
-                  {team.name}
-                </SelectItem>
-              ))}
-              <SelectItem value="none">Project-wide (No Team)</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+              <div className="space-y-2">
+                <Label htmlFor="status">Status</Label>
+                <Select value={filters.status} onValueChange={handleStatusChange}>
+                  <SelectTrigger id="status" className="border-[var(--fixed-card-border)]">
+                    <SelectValue placeholder="All Statuses" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Statuses</SelectItem>
+                    <SelectItem value="planned">Planned</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="status">Status</Label>
-          <Select value={filters.status} onValueChange={handleStatusChange}>
-            <SelectTrigger id="status" className="border-[var(--fixed-card-border)]">
-              <SelectValue placeholder="All Statuses" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
-              <SelectItem value="planned">Planned</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label>Date Range</Label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-full justify-start text-left font-normal border-[var(--fixed-card-border)]",
-                  !dateRange && "text-muted-foreground",
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {dateRange?.from ? (
-                  dateRange.to ? (
-                    <>
-                      {format(dateRange.from, "LLL dd, y")} - {format(dateRange.to, "LLL dd, y")}
-                    </>
-                  ) : (
-                    format(dateRange.from, "LLL dd, y")
-                  )
-                ) : (
-                  <span>Select date range</span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                initialFocus
-                mode="range"
-                defaultMonth={dateRange?.from}
-                selected={dateRange}
-                onSelect={handleDateRangeChange}
-                numberOfMonths={2}
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
-      </div>
+              <div className="space-y-2">
+                <Label>Date Range</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal border-[var(--fixed-card-border)]",
+                        !dateRange && "text-muted-foreground",
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {dateRange?.from ? (
+                        dateRange.to ? (
+                          <>
+                            {format(dateRange.from, "LLL dd, y")} - {format(dateRange.to, "LLL dd, y")}
+                          </>
+                        ) : (
+                          format(dateRange.from, "LLL dd, y")
+                        )
+                      ) : (
+                        <span>Select date range</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      initialFocus
+                      mode="range"
+                      defaultMonth={dateRange?.from}
+                      selected={dateRange}
+                      onSelect={handleDateRangeChange}
+                      numberOfMonths={2}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+          </>
+      }
     </div>
   )
 }

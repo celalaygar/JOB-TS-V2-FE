@@ -65,6 +65,12 @@ export function TasksHeader({ filters, setFilters }: TasksHeaderProps) {
     setLoading(false)
   }, [])
 
+
+  useEffect(() => {
+    getAllProjects()
+  }, [getAllProjects])
+
+
   const getAllProjectTaskStatus = async (projectId: string) => {
     setProjectTaskStatus([])
     setLoading(true)
@@ -95,12 +101,6 @@ export function TasksHeader({ filters, setFilters }: TasksHeaderProps) {
     }
     setLoading(false)
   }
-
-  useEffect(() => {
-    getAllProjects()
-  }, [getAllProjects])
-
-
   const getProjectUsers = async (projectId: string) => {
     setLoading(true)
     setprojectUsers([])
