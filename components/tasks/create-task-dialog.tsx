@@ -222,8 +222,8 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
         method: httpMethods.GET,
       })
       toast({
-        title: `Get All Invitations.`,
-        description: `Get All Invitations `,
+        title: `Get All Project Users.`,
+        description: `Get All Project Users `,
       })
       setprojectUsers(response)
 
