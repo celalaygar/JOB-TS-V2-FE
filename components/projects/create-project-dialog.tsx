@@ -23,8 +23,8 @@ import { Check, ChevronsUpDown, Loader2, X } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { toast } from "@/hooks/use-toast"
-import { PROJECT_URL } from "@/lib/service/BasePath"
-import { Project } from "@/types/project"
+import { GET_PROJECT_USERS, PROJECT_URL } from "@/lib/service/BasePath"
+import { Project, ProjectUser } from "@/types/project"
 import BaseService from "@/lib/service/BaseService"
 import { httpMethods } from "@/lib/service/HttpService"
 
@@ -37,6 +37,7 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
   const dispatch = useDispatch()
   const users = useSelector((state: RootState) => state.users.users)
   const [loading, setLoading] = useState(false);
+  const [projectUsers, setprojectUsers] = useState<ProjectUser[]>()
 
   const [formData, setFormData] = useState({
     name: "",
@@ -204,6 +205,36 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
     return project;
   }
 
+  const getProjectUsers = async (projectId: string) => {
+    setLoading(true)
+    try {
+      const response: ProjectUser[] = await BaseService.request(GET_PROJECT_USERS + "/" + projectId, {
+        method: httpMethods.GET,
+      })
+      toast({
+        title: `Get All Invitations.`,
+        description: `Get All Invitations `,
+      })
+      setprojectUsers(response)
+
+    } catch (error: any) {
+      if (error.status === 400 && error.message) {
+        toast({
+          title: `Get Project Users failed. (400)`,
+          description: error.message,
+          variant: "destructive",
+        })
+      } else {
+        console.error('Get Project Users failed:', error)
+        toast({
+          title: `Get Project Users failed.`,
+          description: error.message,
+          variant: "destructive",
+        })
+      }
+    }
+    setLoading(false)
+  }
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>

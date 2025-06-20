@@ -8,10 +8,10 @@ import { useSelector } from "react-redux"
 import type { RootState } from "@/lib/redux/store"
 import { Plus, Search, Filter, Bug, Lightbulb, BookOpen, GitBranch, Loader2 } from "lucide-react"
 import { CreateTaskDialog } from "@/components/tasks/create-task-dialog"
-import { PROJECT_TASK_STATUS_URL, PROJECT_URL } from "@/lib/service/BasePath"
+import { GET_PROJECT_USERS, PROJECT_TASK_STATUS_URL, PROJECT_URL } from "@/lib/service/BasePath"
 import BaseService from "@/lib/service/BaseService"
 import { httpMethods } from "@/lib/service/HttpService"
-import { Project, ProjectTaskStatus } from "@/types/project"
+import { Project, ProjectTaskStatus, ProjectUser } from "@/types/project"
 import { toast } from "@/hooks/use-toast"
 
 interface TasksHeaderProps {
@@ -36,6 +36,7 @@ export function TasksHeader({ filters, setFilters }: TasksHeaderProps) {
   const [loading, setLoading] = useState(false);
   const [projectList, setProjectList] = useState<Project[] | []>([]);
   const [projectTaskStatus, setProjectTaskStatus] = useState<ProjectTaskStatus[]>([])
+  const [projectUsers, setprojectUsers] = useState<ProjectUser[]>()
 
   const getAllProjects = useCallback(async () => {
     setLoading(true)
@@ -65,6 +66,7 @@ export function TasksHeader({ filters, setFilters }: TasksHeaderProps) {
   }, [])
 
   const getAllProjectTaskStatus = async (projectId: string) => {
+    setProjectTaskStatus([])
     setLoading(true)
     try {
       const response = await BaseService.request(PROJECT_TASK_STATUS_URL + "/project/" + projectId, {
@@ -99,10 +101,42 @@ export function TasksHeader({ filters, setFilters }: TasksHeaderProps) {
   }, [getAllProjects])
 
 
+  const getProjectUsers = async (projectId: string) => {
+    setLoading(true)
+    setprojectUsers([])
+    try {
+      const response: ProjectUser[] = await BaseService.request(GET_PROJECT_USERS + "/" + projectId, {
+        method: httpMethods.GET,
+      })
+      toast({
+        title: `Get All Invitations.`,
+        description: `Get All Invitations `,
+      })
+      setprojectUsers(response)
+
+    } catch (error: any) {
+      if (error.status === 400 && error.message) {
+        toast({
+          title: `Get Project Users failed. (400)`,
+          description: error.message,
+          variant: "destructive",
+        })
+      } else {
+        console.error('Get Project Users failed:', error)
+        toast({
+          title: `Get Project Users failed.`,
+          description: error.message,
+          variant: "destructive",
+        })
+      }
+    }
+    setLoading(false)
+  }
   const handleFilterChange = (key: string, value: string) => {
     setFilters({ ...filters, [key]: value })
-    if (key === "project") {
+    if (key === "project" && !!value && value !== "all") {
       getAllProjectTaskStatus(value)
+      getProjectUsers(value)
     }
   }
 
@@ -207,9 +241,9 @@ export function TasksHeader({ filters, setFilters }: TasksHeaderProps) {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Assignees</SelectItem>
-                      {users.map((user) => (
+                      {!!projectUsers && projectUsers.map((user: ProjectUser) => (
                         <SelectItem key={user.id} value={user.id}>
-                          {user.name}
+                          {user.email}
                         </SelectItem>
                       ))}
                     </SelectContent>
