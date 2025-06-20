@@ -320,6 +320,7 @@ export function SprintDetailTasks({ sprintId, tasks }: SprintDetailTasksProps) {
                       <ArrowUpDown className="h-3 w-3" />
                     </Button>
                   </TableHead>
+                  <TableHead className="w-[70px]"></TableHead>
                   <TableHead className="w-[70px]">Action</TableHead>
                 </TableRow>
               </TableHeader>
@@ -363,6 +364,41 @@ export function SprintDetailTasks({ sprintId, tasks }: SprintDetailTasksProps) {
                         ) : (
                           <span className="text-sm text-muted-foreground">Unassigned</span>
                         )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex justify-end">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8">
+                                <MoreHorizontal className="h-4 w-4" />
+                                <span className="sr-only">Actions</span>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem asChild>
+                                <Link href={`/tasks/${task.id}`}>
+                                  <Eye className="mr-2 h-4 w-4" />
+                                  View
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <Link href={`/tasks/${task.id}/edit`}>
+                                  <Edit className="mr-2 h-4 w-4" />
+                                  Edit
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem>
+                                <UserPlus className="mr-2 h-4 w-4" />
+                                Assign
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem className="text-red-600">
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Remove from Sprint
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex justify-end">
