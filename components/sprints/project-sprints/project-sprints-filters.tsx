@@ -72,6 +72,7 @@ export function ProjectSprintsFilters({ filters, onFilterChange, teams }: Projec
 
   const handleProjectChange = (value: string) => {
     onFilterChange({ ...filters, project: value })
+    setProjectTeams([])
     if (!!value && value !== "all") {
       getAllProjectTeams(value)
     }
@@ -102,7 +103,6 @@ export function ProjectSprintsFilters({ filters, onFilterChange, teams }: Projec
 
   const getAllProjectTeams = async (projectId: String) => {
     setLoading(true)
-    setProjectTeams([])
     try {
       const response: ProjectTeam[] = await BaseService.request(PROJECT_TEAM_URL + "/project/" + projectId, {
         method: httpMethods.GET,
