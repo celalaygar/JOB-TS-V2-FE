@@ -10,9 +10,11 @@ import { CalendarIcon, FilterX } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import type { DateRange } from "react-day-picker"
+import { projects as dummyProjects } from "@/data/projects"
 
 interface ProjectSprintsFiltersProps {
   filters: {
+    project: string
     team: string
     status: string
     dateRange: DateRange | undefined
@@ -23,6 +25,10 @@ interface ProjectSprintsFiltersProps {
 
 export function ProjectSprintsFilters({ filters, onFilterChange, teams }: ProjectSprintsFiltersProps) {
   const [dateRange, setDateRange] = useState<DateRange | undefined>(filters.dateRange)
+
+  const handleProjectChange = (value: string) => {
+    onFilterChange({ ...filters, project: value })
+  }
 
   const handleTeamChange = (value: string) => {
     onFilterChange({ ...filters, team: value })
@@ -40,6 +46,7 @@ export function ProjectSprintsFilters({ filters, onFilterChange, teams }: Projec
   const handleResetFilters = () => {
     setDateRange(undefined)
     onFilterChange({
+      project: "",
       team: "",
       status: "",
       dateRange: undefined,
@@ -61,7 +68,24 @@ export function ProjectSprintsFilters({ filters, onFilterChange, teams }: Projec
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="project">Project</Label>
+          <Select value={filters.project} onValueChange={handleProjectChange}>
+            <SelectTrigger id="project" className="border-[var(--fixed-card-border)]">
+              <SelectValue placeholder="All Projects" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Projects</SelectItem>
+              {dummyProjects.map((project) => (
+                <SelectItem key={project.id} value={project.id}>
+                  {project.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
         <div className="space-y-2">
           <Label htmlFor="team">Team</Label>
           <Select value={filters.team} onValueChange={handleTeamChange}>
