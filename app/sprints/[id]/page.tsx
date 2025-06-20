@@ -8,7 +8,7 @@ import { SprintDetailHeader } from "@/components/sprints/sprint-detail/sprint-de
 import { DraggableTaskList } from "@/components/sprints/sprint-detail/draggable-task-list"
 import { AddTaskDialog } from "@/components/sprints/sprint-detail/add-task-dialog"
 import { ViewTaskDialog } from "@/components/sprints/sprint-detail/view-task-dialog"
-import { EditTaskDialog } from "@/components/sprints/sprint-detail/edit-task-dialog"
+import { EditTaskDialog } from "@/components/tasks/edit-task-dialog"
 import { AssignTaskDialog } from "@/components/sprints/sprint-detail/assign-task-dialog"
 import { MoveTaskDialog } from "@/components/sprints/sprint-detail/move-task-dialog"
 import { DeleteTaskDialog } from "@/components/sprints/sprint-detail/delete-task-dialog"
