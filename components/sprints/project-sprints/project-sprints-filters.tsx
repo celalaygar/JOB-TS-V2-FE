@@ -10,12 +10,11 @@ import { CalendarIcon, FilterX, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import type { DateRange } from "react-day-picker"
-import { projects as dummyProjects } from "@/data/projects"
-import { toast } from "@/components/ui/use-toast"
-import { PROJECT_URL } from "@/lib/service/BasePath"
+import { PROJECT_TEAM_URL, PROJECT_URL } from "@/lib/service/BasePath"
 import { httpMethods } from "@/lib/service/HttpService"
-import { Project } from "@/types/project"
+import { Project, ProjectTeam } from "@/types/project"
 import BaseService from "@/lib/service/BaseService"
+import { toast } from "@/hooks/use-toast"
 
 interface ProjectSprintsFiltersProps {
   filters: {
@@ -31,9 +30,13 @@ interface ProjectSprintsFiltersProps {
 export function ProjectSprintsFilters({ filters, onFilterChange, teams }: ProjectSprintsFiltersProps) {
   const [dateRange, setDateRange] = useState<DateRange | undefined>(filters.dateRange)
   const [projectList, setProjectList] = useState<Project[] | []>([]);
+  const [projectTeams, setProjectTeams] = useState<ProjectTeam[]>([]);
 
   const [loading, setLoading] = useState(false);
+
+
   const getAllProjects = useCallback(async () => {
+    setProjectList([])
     setLoading(true)
     try {
       const response = await BaseService.request(PROJECT_URL, {
@@ -69,6 +72,9 @@ export function ProjectSprintsFilters({ filters, onFilterChange, teams }: Projec
 
   const handleProjectChange = (value: string) => {
     onFilterChange({ ...filters, project: value })
+    if (!!value && value !== "all") {
+      getAllProjectTeams(value)
+    }
   }
 
   const handleTeamChange = (value: string) => {
@@ -92,6 +98,38 @@ export function ProjectSprintsFilters({ filters, onFilterChange, teams }: Projec
       status: "",
       dateRange: undefined,
     })
+  }
+
+  const getAllProjectTeams = async (projectId: String) => {
+    setLoading(true)
+    setProjectTeams([])
+    try {
+      const response: ProjectTeam[] = await BaseService.request(PROJECT_TEAM_URL + "/project/" + projectId, {
+        method: httpMethods.GET,
+      })
+      toast({
+        title: `Project Team get all.`,
+        description: `Project Team get all `,
+      })
+      setProjectTeams(response)
+
+    } catch (error: any) {
+      if (error.status === 400 && error.message) {
+        toast({
+          title: `Project Team failed. (400)`,
+          description: error.message,
+          variant: "destructive",
+        })
+      } else {
+        console.error('Project Team failed:', error)
+        toast({
+          title: `Project Team failed.`,
+          description: error.message,
+          variant: "destructive",
+        })
+      }
+    }
+    setLoading(false)
   }
 
   return (
@@ -143,7 +181,7 @@ export function ProjectSprintsFilters({ filters, onFilterChange, teams }: Projec
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Teams</SelectItem>
-                    {teams.map((team) => (
+                    {!!projectTeams && projectTeams.map((team) => (
                       <SelectItem key={team.id} value={team.name}>
                         {team.name}
                       </SelectItem>

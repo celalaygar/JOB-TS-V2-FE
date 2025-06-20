@@ -85,9 +85,6 @@ export function ProjectTeamTab({ project, onInviteClick, onCreateTeamClick, crea
   const [selectedprojectTeam, setSelectedProjectTeam] = useState<ProjectTeam | undefined | null>();
 
 
-
-
-
   // Filter teams based on search query
   const filteredTeams = projectTeams.filter(
     (team) =>

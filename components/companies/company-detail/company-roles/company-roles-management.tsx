@@ -10,13 +10,12 @@ import { DeleteRoleDialog } from "./delete-role-dialog"
 import { useLanguage } from "@/lib/i18n/context"
 import { companyRoles } from "@/data/company-roles"
 import type { CompanyRole } from "@/types/company-role"
-import { useToast } from "@/components/ui/use-toast"
+import { toast } from "@/hooks/use-toast"
 
 export function CompanyRolesManagement() {
   const { translations } = useLanguage()
   const params = useParams()
   const companyId = params.id as string
-  const { toast } = useToast()
 
   // Filter roles for the current company
   const filteredRoles = companyRoles // Show all roles for demonstration purposes

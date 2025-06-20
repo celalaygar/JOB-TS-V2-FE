@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { useToast } from "@/components/ui/use-toast"
 import { useLanguage } from "@/lib/i18n/context"
 import { SpendingRequestTable } from "@/components/requests/spending/spending-request-table"
 import { CreateSpendingRequestDialog } from "@/components/requests/spending/create-spending-request-dialog"
@@ -11,10 +10,10 @@ import { spendingRequests, type SpendingRequest } from "@/data/spending-requests
 import { Card, CardContent } from "@/components/ui/card"
 import { CalendarIcon, Clock } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { toast } from "@/hooks/use-toast"
 
 export default function SpendingRequestClientPage() {
   const { translations, language } = useLanguage()
-  const { toast } = useToast()
 
   // State for requests
   const [requests, setRequests] = useState<SpendingRequest[]>(spendingRequests)
