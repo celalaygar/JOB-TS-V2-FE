@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useMemo, useCallback } from "react"
+import { useState, useMemo, useCallback, useEffect } from "react"
 import { useDispatch } from "react-redux"
 import {
   Dialog,
@@ -17,7 +17,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Calendar as CalendarComponent } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+// Removed Radix Select imports
 import { Calendar, CalendarIcon, Loader2 } from "lucide-react"
 import { format } from "date-fns"
 import { addSprint } from "@/lib/redux/features/sprints-slice"
@@ -28,6 +28,7 @@ import { PROJECT_TASK_STATUS_URL, SPRINT_URL } from "@/lib/service/BasePath"
 import BaseService from "@/lib/service/BaseService"
 import { httpMethods } from "@/lib/service/HttpService"
 import { Sprint } from "@/types/sprint"
+import Select from "react-select"
 
 interface CreateSprintDialogProps {
   open: boolean
@@ -36,17 +37,29 @@ interface CreateSprintDialogProps {
   projectList: Project[] | []
 }
 
+// Define types for react-select options
+interface SelectOption {
+  value: string
+  label: string
+}
+
+const sprintTypeOptions: SelectOption[] = [
+  { value: "standard", label: "Standard Sprint" },
+  { value: "project-team", label: "Project Team Sprint" }
+]
+
 export function CreateSprintDialog({ projectList, open, onOpenChange, projectId }: CreateSprintDialogProps) {
   const dispatch = useDispatch()
 
   const [name, setName] = useState("")
-  const [description, setDescription] = useState("")
-  const [selectedProjectId, setSelectedProjectId] = useState(projectId || "")
+  const [description, setDescription]
+    = useState("")
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(projectId || null)
   const [startDate, setStartDate] = useState<Date | undefined>(new Date())
   const [endDate, setEndDate] = useState<Date | undefined>(new Date(new Date().setDate(new Date().getDate() + 14)))
-  const [completionStatus, setCompletionStatus] = useState<string>("")
-  const [sprintType, setSprintType] = useState<"standard" | "project-team">("standard")
-  const [selectedTeamId, setSelectedTeamId] = useState("")
+  const [completionStatus, setCompletionStatus] = useState<string | null>(null)
+  const [sprintType, setSprintType] = useState<string>("standard") // Default to 'standard'
+  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null)
   const [loading, setLoading] = useState(false);
   const [taskStatuses, setTaskStatuses] = useState<ProjectTaskStatus[] | []>([])
 
@@ -55,16 +68,45 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
 
   const projectTeams = useMemo(() => teams.filter((team) => team.projectId === selectedProjectId), [selectedProjectId])
 
+  // Options for react-select components
+  const projectOptions = useMemo(() => projectList.map(project => ({ value: project.id, label: project.name })), [projectList]);
+  const teamOptions = useMemo(() => projectTeams.map(team => ({ value: team.id, label: team.name })), [projectTeams]);
+  const taskStatusOptions = useMemo(() => taskStatuses.map(status => ({ value: status.id, label: status.name })), [taskStatuses]);
+
+  useEffect(() => {
+    if (projectId) {
+      setSelectedProjectId(projectId);
+    }
+  }, [projectId]);
+
+  useEffect(() => {
+    if (selectedProjectId && selectedProjectId !== "all") {
+      getAllProjectTaskStatus(selectedProjectId);
+    } else {
+      setTaskStatuses([]);
+      setCompletionStatus(null);
+    }
+  }, [selectedProjectId]);
 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (!name || !selectedProjectId || !startDate || !endDate) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
       return
     }
 
     if (sprintType === "project-team" && !selectedTeamId) {
+      toast({
+        title: "Missing Team",
+        description: "Please select a project team for 'Project Team Sprint' type.",
+        variant: "destructive",
+      });
       return
     }
 
@@ -76,7 +118,7 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
       startDate: startDate.toISOString(),
       endDate: endDate.toISOString(),
       status: "planning",
-      completionStatus,
+      completionStatus: completionStatus || "done", // Default to 'done' if not selected
       sprintType,
       teamId: sprintType === "project-team" ? selectedTeamId : undefined,
       tasks: [],
@@ -91,46 +133,37 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
   const resetForm = useCallback(() => {
     setName("")
     setDescription("")
-    setSelectedProjectId(projectId || "")
+    setSelectedProjectId(projectId || null)
     setStartDate(new Date())
     setEndDate(new Date(new Date().setDate(new Date().getDate() + 14)))
-    setCompletionStatus("done")
+    setCompletionStatus(null) // Reset to null for react-select
     setSprintType("standard")
-    setSelectedTeamId("")
+    setSelectedTeamId(null) // Reset to null for react-select
   }, [projectId])
-
 
   const saveSprint = async (newSprint: Sprint) => {
     setLoading(true)
     try {
-
       const response: Sprint = await BaseService.request(SPRINT_URL, {
         method: httpMethods.POST,
         body: { ...newSprint }
       })
       toast({
-        title: `saved Sprint.`,
-        description: `saved Sprint.`,
+        title: `Sprint saved.`,
+        description: `Sprint "${response.name}" has been successfully saved.`,
       })
       dispatch(addSprint(response))
     } catch (error: any) {
-      if (error.status === 400 && error.message) {
-        toast({
-          title: `saved Sprint failed. (400)`,
-          description: error.message,
-          variant: "destructive",
-        })
-      } else {
-        console.error('saved Sprint failed.', error)
-        toast({
-          title: `saved Sprint failed..`,
-          description: error.message,
-          variant: "destructive",
-        })
-      }
+      console.error('Failed to save sprint:', error);
+      toast({
+        title: `Failed to save Sprint.`,
+        description: error.message || "An unexpected error occurred.",
+        variant: "destructive",
+      })
     }
     setLoading(false)
   }
+
   const getAllProjectTaskStatus = async (projectId: string) => {
     setLoading(true)
     try {
@@ -138,44 +171,21 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
         method: httpMethods.GET
       })
       toast({
-        title: `Project Task Status get All.`,
-        description: `Project Task Status get All `,
+        title: `Project Task Statuses loaded.`,
+        description: `Task statuses for project ${projectId} have been retrieved.`,
       })
       setTaskStatuses(response as ProjectTaskStatus[])
     } catch (error: any) {
-      if (error.status === 400 && error.message) {
-        toast({
-          title: `Project find all failed. (400)`,
-          description: error.message,
-          variant: "destructive",
-        })
-      } else {
-        console.error('Projects Task Status  failed:', error)
-        toast({
-          title: `Projects Task Status  find all failed.`,
-          description: error.message,
-          variant: "destructive",
-        })
-      }
+      console.error('Failed to fetch project task statuses:', error)
+      toast({
+        title: `Failed to load Project Task Statuses.`,
+        description: error.message || "An unexpected error occurred.",
+        variant: "destructive",
+      })
     }
     setLoading(false)
   }
-  const handleProjectChange = (value: string) => {
-    setSelectedProjectId(value)
-    setTaskStatuses([])
-    setCompletionStatus("")
-    if (!!value && value !== "all") {
-      getAllProjectTaskStatus(value)
-    }
-  }
-  const openStartPopover = (value: boolean) => {
-    console.log(value)
-    setOpenStartDatePopover(true)
-  }
-  const openEndPopover = (value: boolean) => {
-    console.log(value)
-    setOpenEndDatePopover(value)
-  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
@@ -211,43 +221,42 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
                       className="col-span-3"
                     />
                   </div>
+
                   <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="project" className="text-right">
                       Project
                     </Label>
                     <div className="col-span-3">
-                      <Select value={selectedProjectId} onValueChange={handleProjectChange} disabled={!!projectId}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a project" />
-                        </SelectTrigger>
-                        <SelectContent>
-
-                          {!!projectList && projectList.map((project: Project) => (
-                            <SelectItem key={project.id} value={project.id}>
-                              {project.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <Select
+                        id="project"
+                        options={projectOptions}
+                        value={projectOptions.find(option => option.value === selectedProjectId)}
+                        onChange={(option) => {
+                          setSelectedProjectId(option ? option.value : null);
+                          setCompletionStatus(null); // Reset completion status when project changes
+                          setTaskStatuses([]); // Clear task statuses
+                        }}
+                        placeholder="Select a project"
+                        isDisabled={!!projectId}
+                        isClearable
+                      />
                     </div>
                   </div>
-
+                  {/* 
                   <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="sprintType" className="text-right">
                       Sprint Type
                     </Label>
                     <div className="col-span-3">
-                      <Select value={sprintType} onValueChange={(value: "standard" | "project-team") => setSprintType(value)}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select Sprint Type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="standard">Standard Sprint</SelectItem>
-                          <SelectItem value="project-team">Project Team Sprint</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <Select
+                        id="sprintType"
+                        value={sprintTypeOptions.find(option => option.value === sprintType)}
+                        onChange={(option) => setSprintType(option?.value || "standard")}
+                        options={sprintTypeOptions}
+                        placeholder="Select Sprint Type"
+                      />
                     </div>
-                  </div>
+                  </div> */}
 
                   {sprintType === "project-team" && selectedProjectId && (
                     <div className="grid grid-cols-4 items-center gap-4">
@@ -255,24 +264,15 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
                         Project Team
                       </Label>
                       <div className="col-span-3">
-                        <Select value={selectedTeamId} onValueChange={setSelectedTeamId}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a team" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {projectTeams.length > 0 ? (
-                              projectTeams.map((team) => (
-                                <SelectItem key={team.id} value={team.id}>
-                                  {team.name}
-                                </SelectItem>
-                              ))
-                            ) : (
-                              <SelectItem value="no-teams" disabled>
-                                No teams available for this project
-                              </SelectItem>
-                            )}
-                          </SelectContent>
-                        </Select>
+                        <Select
+                          id="team"
+                          options={teamOptions}
+                          value={teamOptions.find(option => option.value === selectedTeamId)}
+                          onChange={(option) => setSelectedTeamId(option ? option.value : null)}
+                          placeholder="Select a team"
+                          isClearable
+                          noOptionsMessage={() => "No teams available for this project"}
+                        />
                       </div>
                     </div>
                   )}
@@ -283,20 +283,15 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
                     </Label>
                     <div className="col-span-3">
                       <Select
-                        value={completionStatus}
-                        onValueChange={setCompletionStatus}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select status for tasks" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {!!taskStatuses && taskStatuses.map((status: ProjectTaskStatus) => (
-                            <SelectItem key={status.id} value={status.id}>
-                              {status.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        id="completionStatus"
+                        options={taskStatusOptions}
+                        value={taskStatusOptions.find(option => option.value === completionStatus)}
+                        onChange={(option) => setCompletionStatus(option ? option.value : null)}
+                        placeholder="Select status for tasks"
+                        isClearable
+                        isDisabled={!selectedProjectId || taskStatuses.length === 0}
+                        noOptionsMessage={() => "No task statuses available for this project. Please select a project first."}
+                      />
                     </div>
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
@@ -308,13 +303,13 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
                         <PopoverTrigger asChild>
                           <Button
                             variant="outline"
-                            className={`w-full justify-start text-left font-normal ${startDate ? "border-red-500" : ""}`}
+                            className={`w-full justify-start text-left font-normal ${startDate ? "" : "text-muted-foreground"}`}
                           >
-                            <Calendar className="mr-2 h-4 w-12" /> {openStartDatePopover + " "}
+                            <CalendarIcon className="mr-2 h-4 w-4" />
                             {startDate ? (
                               format(startDate, "PPP")
                             ) : (
-                              <span>pickDate</span>
+                              <span>Pick a date</span>
                             )}
                           </Button>
                         </PopoverTrigger>
@@ -323,14 +318,13 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
                             mode="single"
                             selected={startDate}
                             onSelect={(date) => {
-                              // Set the selected date without showing today's date
-                              if (date) {
-                                setStartDate(date);
-                                setOpenStartDatePopover(false); // Close popover after selecting a date
-                              }
+                              setStartDate(date);
+                              setOpenStartDatePopover(false);
                             }}
                             initialFocus
-                            disabled={(date) => date > new Date()} // Disable future dates
+                            // You might want to adjust this disabled logic. Currently, it disables future dates.
+                            // If sprints can start in the future, remove this.
+                            disabled={(date) => date < new Date("1900-01-01")} // Example: allow all dates after a very early date
                           />
                         </PopoverContent>
                       </Popover>
@@ -342,21 +336,17 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
                       End Date
                     </Label>
                     <div className="col-span-3">
-                      <Popover open={openEndDatePopover}
-                        onOpenChange={(open) => {
-                          console.log("end popover changed: ", open)
-                          setOpenEndDatePopover(open)
-                        }} >
+                      <Popover open={openEndDatePopover} onOpenChange={setOpenEndDatePopover}>
                         <PopoverTrigger asChild>
                           <Button
                             variant="outline"
-                            className={`w-full justify-start text-left font-normal ${endDate ? "border-red-500" : ""}`}
+                            className={`w-full justify-start text-left font-normal ${endDate ? "" : "text-muted-foreground"}`}
                           >
-                            <Calendar className="mr-2 h-4 w-12" /> {openEndDatePopover + " "}
+                            <CalendarIcon className="mr-2 h-4 w-4" />
                             {endDate ? (
                               format(endDate, "PPP")
                             ) : (
-                              <span>pick Date</span>
+                              <span>Pick a date</span>
                             )}
                           </Button>
                         </PopoverTrigger>
@@ -365,14 +355,12 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
                             mode="single"
                             selected={endDate}
                             onSelect={(date) => {
-                              // Set the selected date without showing today's date
-                              if (date) {
-                                setEndDate(date);
-                                setOpenEndDatePopover(false); // Close popover after selecting a date
-                              }
+                              setEndDate(date);
+                              setOpenEndDatePopover(false);
                             }}
                             initialFocus
-                            disabled={(date) => date > new Date()} // Disable future dates
+                            // You might want to adjust this disabled logic as well.
+                            disabled={(date) => date < new Date("1900-01-01")}
                           />
                         </PopoverContent>
                       </Popover>
