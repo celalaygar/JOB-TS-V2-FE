@@ -80,7 +80,7 @@ export interface ProjectRole {
 }
 
 export interface ProjectTaskStatus {
-  id: string | undefined | null
+  id: string
   projectId: string | null
   name: string
   label: string

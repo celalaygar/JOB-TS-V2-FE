@@ -22,6 +22,7 @@ export const INVITATION_BY_PENDING = INVITATION_PROJECT + "/pending";
 export const INVITATION_BY_PROJECTID = INVITATION_PROJECT + "/all-by-projectId";
 
 
+export const SPRINT_URL = BASE_PATH_V2 + "sprint";
 
 
 

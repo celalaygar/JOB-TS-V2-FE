@@ -170,6 +170,10 @@ export default function RegisterPage() {
     });
     setFormErrors({});
   }
+  const openPopover = (value: boolean) => {
+    console.log(value)
+    setOpen(true)
+  }
   return (
     <div className="min-h-screen flex items-center justify-center bg-[var(--fixed-background)] p-4">
       <div className="w-full max-w-2xl">
@@ -286,7 +290,7 @@ export default function RegisterPage() {
 
                 <div className="grid gap-2">
                   <Label htmlFor="dateOfBirth">{translations.register.dateOfBirthLabel}</Label>
-                  <Popover open={open} onOpenChange={setOpen}>
+                  <Popover open={open} onOpenChange={openPopover}>
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"

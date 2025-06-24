@@ -23,55 +23,24 @@ interface ProjectSprintsFiltersProps {
     status: string
     dateRange: DateRange | undefined
   }
+  projectList: Project[] | []
   onFilterChange: (filters: any) => void
   teams: any[]
 }
 
-export function ProjectSprintsFilters({ filters, onFilterChange, teams }: ProjectSprintsFiltersProps) {
+export function ProjectSprintsFilters({ projectList, filters, onFilterChange, teams }: ProjectSprintsFiltersProps) {
   const [dateRange, setDateRange] = useState<DateRange | undefined>(filters.dateRange)
-  const [projectList, setProjectList] = useState<Project[] | []>([]);
   const [projectTeams, setProjectTeams] = useState<ProjectTeam[]>([]);
 
   const [loading, setLoading] = useState(false);
 
 
-  const getAllProjects = useCallback(async () => {
-    setProjectList([])
-    setLoading(true)
-    try {
-      const response = await BaseService.request(PROJECT_URL, {
-        method: httpMethods.GET,
-      })
-      let projectList = response as Project[];
-      setProjectList(projectList)
-    } catch (error: any) {
-      if (error.status === 400 && error.message) {
-        toast({
-          title: `Project find all failed. (400)`,
-          description: error.message,
-          variant: "destructive",
-        })
-      } else {
-        console.error('Project failed:', error)
-        toast({
-          title: `Project find all failed.`,
-          description: error.message,
-          variant: "destructive",
-        })
-      }
-    }
-    setLoading(false)
-  }, [])
-
-
-  useEffect(() => {
-    getAllProjects()
-  }, [getAllProjects])
 
 
 
   const handleProjectChange = (value: string) => {
     onFilterChange({ ...filters, project: value })
+    console.log("handleProjectChange")
     setProjectTeams([])
     if (!!value && value !== "all") {
       getAllProjectTeams(value)

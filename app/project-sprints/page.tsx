@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useSelector } from "react-redux"
 import type { RootState } from "@/lib/redux/store"
 import { ProjectSprintsHeader } from "@/components/sprints/project-sprints/project-sprints-header"
@@ -10,12 +10,20 @@ import { CreateSprintDialog } from "@/components/sprints/project-sprints/create-
 import { EditSprintDialog } from "@/components/sprints/project-sprints/edit-sprint-dialog"
 import { DeleteSprintDialog } from "@/components/sprints/project-sprints/delete-sprint-dialog"
 import { Pagination } from "@/components/ui/pagination"
+import { PROJECT_URL } from "@/lib/service/BasePath"
+import BaseService from "@/lib/service/BaseService"
+import { Project } from "@/types/project"
+import { httpMethods } from "@/lib/service/HttpService"
+import { toast } from "@/hooks/use-toast"
+import { Loader2 } from "lucide-react"
 
 export default function ProjectSprints() {
   // State for dialogs
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [sprintToEdit, setSprintToEdit] = useState<string | null>(null)
   const [sprintToDelete, setSprintToDelete] = useState<string | null>(null)
+  const [projectList, setProjectList] = useState<Project[] | []>([]);
+  const [loading, setLoading] = useState(false);
 
   // State for filters
   const [filters, setFilters] = useState({
@@ -75,41 +83,90 @@ export default function ProjectSprints() {
     setCurrentPage(1) // Reset to first page when filters change
   }
 
+  const getAllProjects = useCallback(async () => {
+    setProjectList([])
+    setLoading(true)
+    try {
+      const response = await BaseService.request(PROJECT_URL, {
+        method: httpMethods.GET,
+      })
+      let projectList = response as Project[];
+      setProjectList(projectList)
+    } catch (error: any) {
+      if (error.status === 400 && error.message) {
+        toast({
+          title: `Project find all failed. (400)`,
+          description: error.message,
+          variant: "destructive",
+        })
+      } else {
+        console.error('Project failed:', error)
+        toast({
+          title: `Project find all failed.`,
+          description: error.message,
+          variant: "destructive",
+        })
+      }
+    }
+    setLoading(false)
+  }, [])
+
+
+  useEffect(() => {
+    getAllProjects()
+  }, [getAllProjects])
+
+
+
   return (
     <div className="space-y-6">
       <ProjectSprintsHeader onCreateSprint={() => setIsCreateDialogOpen(true)} />
 
-      <ProjectSprintsFilters filters={filters} onFilterChange={handleFilterChange} teams={teams} />
+      {
+        loading ?
+          <div className="grid gap-4 py-4">
+            <div className="flex items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+            </div>
+          </div>
+          :
+          <>
+            <ProjectSprintsFilters projectList={projectList} filters={filters} onFilterChange={handleFilterChange} teams={teams} />
 
-      <ProjectSprintsList
-        sprints={paginatedSprints}
-        onEditSprint={(id) => setSprintToEdit(id)}
-        onDeleteSprint={(id) => setSprintToDelete(id)}
-      />
+            <ProjectSprintsList
+              sprints={paginatedSprints}
+              onEditSprint={(id) => setSprintToEdit(id)}
+              onDeleteSprint={(id) => setSprintToDelete(id)}
+            />
 
-      {totalPages > 1 && (
-        <div className="flex justify-center mt-6">
-          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
-        </div>
-      )}
+            {totalPages > 1 && (
+              <div className="flex justify-center mt-6">
+                <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+              </div>
+            )}
 
-      <CreateSprintDialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen} />
 
-      {sprintToEdit && (
-        <EditSprintDialog
-          sprintId={sprintToEdit}
-          open={!!sprintToEdit}
-          onOpenChange={(open) => !open && setSprintToEdit(null)}
-        />
-      )}
+            {!!projectList && (
+              <CreateSprintDialog projectList={projectList} open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen} />
+            )}
 
-      {sprintToDelete && (
-        <DeleteSprintDialog
-          sprintId={sprintToDelete}
-          open={!!sprintToDelete}
-          onOpenChange={(open) => !open && setSprintToDelete(null)}
-        />
-      )}
+            {sprintToEdit && (
+              <EditSprintDialog
+                sprintId={sprintToEdit}
+                open={!!sprintToEdit}
+                onOpenChange={(open) => !open && setSprintToEdit(null)}
+              />
+            )}
+
+            {sprintToDelete && (
+              <DeleteSprintDialog
+                sprintId={sprintToDelete}
+                open={!!sprintToDelete}
+                onOpenChange={(open) => !open && setSprintToDelete(null)}
+              />
+            )}
+          </>
+      }
     </div>
   )
 }
