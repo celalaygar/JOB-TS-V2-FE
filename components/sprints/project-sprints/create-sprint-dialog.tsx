@@ -61,6 +61,7 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
   const [sprintType, setSprintType] = useState<string>("standard") // Default to 'standard'
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null)
   const [loading, setLoading] = useState(false);
+  const [loadingTaskStatus, setLoadingTaskStatus] = useState(false);
   const [taskStatuses, setTaskStatuses] = useState<ProjectTaskStatus[] | []>([])
 
   const [openStartDatePopover, setOpenStartDatePopover] = useState(false)
@@ -165,7 +166,7 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
   }
 
   const getAllProjectTaskStatus = async (projectId: string) => {
-    setLoading(true)
+    setLoadingTaskStatus(true)
     try {
       const response = await BaseService.request(PROJECT_TASK_STATUS_URL + "/project/" + projectId, {
         method: httpMethods.GET
@@ -183,7 +184,7 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
         variant: "destructive",
       })
     }
-    setLoading(false)
+    setLoadingTaskStatus(false)
   }
 
   return (
@@ -208,13 +209,19 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
                     <Label htmlFor="name" className="text-right">
                       Name
                     </Label>
-                    <Input id="name" value={name} onChange={(e) => setName(e.target.value)} className="col-span-3" required />
+                    <Input
+                      placeholder="Write Name"
+                      id="name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="col-span-3" required />
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="description" className="text-right">
+                    <Label htmlFor="Write Description" className="text-right">
                       Description
                     </Label>
                     <Textarea
+                      placeholder="Description"
                       id="description"
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
@@ -281,18 +288,29 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
                     <Label htmlFor="completionStatus" className="text-right">
                       Task Status on Completion
                     </Label>
-                    <div className="col-span-3">
-                      <Select
-                        id="completionStatus"
-                        options={taskStatusOptions}
-                        value={taskStatusOptions.find(option => option.value === completionStatus)}
-                        onChange={(option) => setCompletionStatus(option ? option.value : null)}
-                        placeholder="Select status for tasks"
-                        isClearable
-                        isDisabled={!selectedProjectId || taskStatuses.length === 0}
-                        noOptionsMessage={() => "No task statuses available for this project. Please select a project first."}
-                      />
-                    </div>
+                    {
+                      loadingTaskStatus ?
+                        <div className="grid gap-4 py-4">
+                          <div className="flex items-center justify-center">
+                            <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+                          </div>
+                        </div>
+                        :
+                        <>
+                          <div className="col-span-3">
+                            <Select
+                              id="completionStatus"
+                              options={taskStatusOptions}
+                              value={taskStatusOptions.find(option => option.value === completionStatus)}
+                              onChange={(option) => setCompletionStatus(option ? option.value : null)}
+                              placeholder="Select status for tasks"
+                              isClearable
+                              isDisabled={!selectedProjectId || taskStatuses.length === 0}
+                              noOptionsMessage={() => "No task statuses available for this project. Please select a project first."}
+                            />
+                          </div>
+                        </>
+                    }
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="startDate" className="text-right">
