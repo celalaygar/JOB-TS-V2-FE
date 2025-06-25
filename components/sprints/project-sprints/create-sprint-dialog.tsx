@@ -61,7 +61,7 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(projectId || null)
   const [startDate, setStartDate] = useState<Date | null>(new Date()) // Change to Date | null
   const [endDate, setEndDate] = useState<Date | null>(new Date(new Date().setDate(new Date().getDate() + 14))) // Change to Date | null
-  const [completionStatus, setCompletionStatus] = useState<string | null>(null)
+  const [projectTaskStatusId, setProjectTaskStatusId] = useState<string | null>(null)
   const [sprintType, setSprintType] = useState<string>("standard")
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null)
   const [loading, setLoading] = useState(false);
@@ -87,7 +87,7 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
       getAllProjectTaskStatus(selectedProjectId);
     } else {
       setTaskStatuses([]);
-      setCompletionStatus(null);
+      setProjectTaskStatusId(null);
     }
   }, [selectedProjectId]);
 
@@ -113,14 +113,14 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
     }
 
     const newSprint: Sprint = {
-      id: `sprint-${Date.now()}`,
+      id: null,
       name,
       description,
       projectId: selectedProjectId,
       startDate: startDate.toISOString(),
       endDate: endDate.toISOString(),
       status: "planning",
-      completionStatus: completionStatus || "done",
+      projectTaskStatusId: projectTaskStatusId,
       sprintType,
       teamId: sprintType === "project-team" ? selectedTeamId : undefined,
       tasks: [],
@@ -138,7 +138,7 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
     setSelectedProjectId(projectId || null)
     setStartDate(new Date())
     setEndDate(new Date(new Date().setDate(new Date().getDate() + 14)))
-    setCompletionStatus(null)
+    setProjectTaskStatusId(null)
     setSprintType("standard")
     setSelectedTeamId(null)
   }, [projectId])
@@ -235,7 +235,7 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
                         value={projectOptions.find(option => option.value === selectedProjectId)}
                         onChange={(option) => {
                           setSelectedProjectId(option ? option.value : null);
-                          setCompletionStatus(null);
+                          setProjectTaskStatusId(null);
                           setTaskStatuses([]);
                         }}
                         placeholder="Select a project"
@@ -280,7 +280,7 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
                   )}
 
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="completionStatus" className="text-right">
+                    <Label htmlFor="projectTaskStatusId" className="text-right">
                       Task Status on Completion
                     </Label>
                     <div className="col-span-3">
@@ -294,10 +294,10 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
                           :
                           <>
                             <Select
-                              id="completionStatus"
+                              id="projectTaskStatusId"
                               options={taskStatusOptions}
-                              value={taskStatusOptions.find(option => option.value === completionStatus)}
-                              onChange={(option) => setCompletionStatus(option ? option.value : null)}
+                              value={taskStatusOptions.find(option => option.value === projectTaskStatusId)}
+                              onChange={(option) => setProjectTaskStatusId(option ? option.value : null)}
                               placeholder="Select status for tasks"
                               isClearable
                               isDisabled={!selectedProjectId || taskStatuses.length === 0}
