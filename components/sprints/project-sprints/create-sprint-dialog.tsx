@@ -15,10 +15,11 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Calendar as CalendarComponent } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-// Removed Radix Select imports
-import { Calendar, CalendarIcon, Loader2 } from "lucide-react"
+// Removed Calendar component imports from shadcn/ui
+// import { Calendar as CalendarComponent } from "@/components/ui/calendar"
+// Removed Popover component imports from shadcn/ui
+// import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { CalendarIcon, Loader2 } from "lucide-react" // Still need CalendarIcon
 import { format } from "date-fns"
 import { addSprint } from "@/lib/redux/features/sprints-slice"
 import { teams } from "@/data/teams"
@@ -30,6 +31,11 @@ import { httpMethods } from "@/lib/service/HttpService"
 import { Sprint } from "@/types/sprint"
 import Select from "react-select"
 
+// react-datepicker imports
+import DatePicker from "react-datepicker"
+import "react-datepicker/dist/react-datepicker.css" // Don't forget to import the CSS!
+
+
 interface CreateSprintDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -37,7 +43,6 @@ interface CreateSprintDialogProps {
   projectList: Project[] | []
 }
 
-// Define types for react-select options
 interface SelectOption {
   value: string
   label: string
@@ -52,24 +57,21 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
   const dispatch = useDispatch()
 
   const [name, setName] = useState("")
-  const [description, setDescription]
-    = useState("")
+  const [description, setDescription] = useState("")
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(projectId || null)
-  const [startDate, setStartDate] = useState<Date | undefined>(new Date())
-  const [endDate, setEndDate] = useState<Date | undefined>(new Date(new Date().setDate(new Date().getDate() + 14)))
+  const [startDate, setStartDate] = useState<Date | null>(new Date()) // Change to Date | null
+  const [endDate, setEndDate] = useState<Date | null>(new Date(new Date().setDate(new Date().getDate() + 14))) // Change to Date | null
   const [completionStatus, setCompletionStatus] = useState<string | null>(null)
-  const [sprintType, setSprintType] = useState<string>("standard") // Default to 'standard'
+  const [sprintType, setSprintType] = useState<string>("standard")
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null)
   const [loading, setLoading] = useState(false);
-  const [loadingTaskStatus, setLoadingTaskStatus] = useState(false);
   const [taskStatuses, setTaskStatuses] = useState<ProjectTaskStatus[] | []>([])
+  const [loadingTaskStatuses, setLoadingTaskStatuses] = useState(false);
 
-  const [openStartDatePopover, setOpenStartDatePopover] = useState(false)
-  const [openEndDatePopover, setOpenEndDatePopover] = useState(false)
+  // No longer need separate state for popover open/close with react-datepicker
 
   const projectTeams = useMemo(() => teams.filter((team) => team.projectId === selectedProjectId), [selectedProjectId])
 
-  // Options for react-select components
   const projectOptions = useMemo(() => projectList.map(project => ({ value: project.id, label: project.name })), [projectList]);
   const teamOptions = useMemo(() => projectTeams.map(team => ({ value: team.id, label: team.name })), [projectTeams]);
   const taskStatusOptions = useMemo(() => taskStatuses.map(status => ({ value: status.id, label: status.name })), [taskStatuses]);
@@ -88,7 +90,6 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
       setCompletionStatus(null);
     }
   }, [selectedProjectId]);
-
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -119,7 +120,7 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
       startDate: startDate.toISOString(),
       endDate: endDate.toISOString(),
       status: "planning",
-      completionStatus: completionStatus || "done", // Default to 'done' if not selected
+      completionStatus: completionStatus || "done",
       sprintType,
       teamId: sprintType === "project-team" ? selectedTeamId : undefined,
       tasks: [],
@@ -137,9 +138,9 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
     setSelectedProjectId(projectId || null)
     setStartDate(new Date())
     setEndDate(new Date(new Date().setDate(new Date().getDate() + 14)))
-    setCompletionStatus(null) // Reset to null for react-select
+    setCompletionStatus(null)
     setSprintType("standard")
-    setSelectedTeamId(null) // Reset to null for react-select
+    setSelectedTeamId(null)
   }, [projectId])
 
   const saveSprint = async (newSprint: Sprint) => {
@@ -166,7 +167,7 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
   }
 
   const getAllProjectTaskStatus = async (projectId: string) => {
-    setLoadingTaskStatus(true)
+    setLoadingTaskStatuses(true)
     try {
       const response = await BaseService.request(PROJECT_TASK_STATUS_URL + "/project/" + projectId, {
         method: httpMethods.GET
@@ -184,7 +185,7 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
         variant: "destructive",
       })
     }
-    setLoadingTaskStatus(false)
+    setLoadingTaskStatuses(false)
   }
 
   return (
@@ -209,19 +210,13 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
                     <Label htmlFor="name" className="text-right">
                       Name
                     </Label>
-                    <Input
-                      placeholder="Write Name"
-                      id="name"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="col-span-3" required />
+                    <Input id="name" value={name} onChange={(e) => setName(e.target.value)} className="col-span-3" required />
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="Write Description" className="text-right">
+                    <Label htmlFor="description" className="text-right">
                       Description
                     </Label>
                     <Textarea
-                      placeholder="Description"
                       id="description"
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
@@ -240,8 +235,8 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
                         value={projectOptions.find(option => option.value === selectedProjectId)}
                         onChange={(option) => {
                           setSelectedProjectId(option ? option.value : null);
-                          setCompletionStatus(null); // Reset completion status when project changes
-                          setTaskStatuses([]); // Clear task statuses
+                          setCompletionStatus(null);
+                          setTaskStatuses([]);
                         }}
                         placeholder="Select a project"
                         isDisabled={!!projectId}
@@ -249,7 +244,7 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
                       />
                     </div>
                   </div>
-                  {/* 
+
                   <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="sprintType" className="text-right">
                       Sprint Type
@@ -263,7 +258,7 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
                         placeholder="Select Sprint Type"
                       />
                     </div>
-                  </div> */}
+                  </div>
 
                   {sprintType === "project-team" && selectedProjectId && (
                     <div className="grid grid-cols-4 items-center gap-4">
@@ -288,16 +283,16 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
                     <Label htmlFor="completionStatus" className="text-right">
                       Task Status on Completion
                     </Label>
-                    {
-                      loadingTaskStatus ?
-                        <div className="grid gap-4 py-4">
-                          <div className="flex items-center justify-center">
-                            <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+                    <div className="col-span-3">
+                      {
+                        loadingTaskStatuses ?
+                          <div className="grid gap-4 py-4">
+                            <div className="flex items-center justify-center">
+                              <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+                            </div>
                           </div>
-                        </div>
-                        :
-                        <>
-                          <div className="col-span-3">
+                          :
+                          <>
                             <Select
                               id="completionStatus"
                               options={taskStatusOptions}
@@ -308,44 +303,30 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
                               isDisabled={!selectedProjectId || taskStatuses.length === 0}
                               noOptionsMessage={() => "No task statuses available for this project. Please select a project first."}
                             />
-                          </div>
-                        </>
-                    }
+                          </>
+                      }
+                    </div>
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="startDate" className="text-right">
                       Start Date
                     </Label>
                     <div className="col-span-3">
-                      <Popover open={openStartDatePopover} onOpenChange={setOpenStartDatePopover}>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className={`w-full justify-start text-left font-normal ${startDate ? "" : "text-muted-foreground"}`}
-                          >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {startDate ? (
-                              format(startDate, "PPP")
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
-                          <CalendarComponent
-                            mode="single"
-                            selected={startDate}
-                            onSelect={(date) => {
-                              setStartDate(date);
-                              setOpenStartDatePopover(false);
-                            }}
-                            initialFocus
-                            // You might want to adjust this disabled logic. Currently, it disables future dates.
-                            // If sprints can start in the future, remove this.
-                            disabled={(date) => date < new Date("1900-01-01")} // Example: allow all dates after a very early date
-                          />
-                        </PopoverContent>
-                      </Popover>
+                      <div className="relative">
+                        <DatePicker
+                          selected={startDate}
+                          onChange={(date: Date | null) => setStartDate(date)}
+                          dateFormat="PPP" // Consistent with format(date, "PPP")
+                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                          wrapperClassName="w-full"
+                          placeholderText="Pick a date"
+                          showPopperArrow={false} // Hides the arrow on the popover
+                          popperPlacement="bottom-start" // Adjust placement if needed
+                        // You can add minDate and maxDate props if you need date restrictions
+                        // minDate={new Date()} // Example: disable past dates
+                        />
+                        <CalendarIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none" />
+                      </div>
                     </div>
                   </div>
 
@@ -354,34 +335,20 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
                       End Date
                     </Label>
                     <div className="col-span-3">
-                      <Popover open={openEndDatePopover} onOpenChange={setOpenEndDatePopover}>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className={`w-full justify-start text-left font-normal ${endDate ? "" : "text-muted-foreground"}`}
-                          >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {endDate ? (
-                              format(endDate, "PPP")
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
-                          <CalendarComponent
-                            mode="single"
-                            selected={endDate}
-                            onSelect={(date) => {
-                              setEndDate(date);
-                              setOpenEndDatePopover(false);
-                            }}
-                            initialFocus
-                            // You might want to adjust this disabled logic as well.
-                            disabled={(date) => date < new Date("1900-01-01")}
-                          />
-                        </PopoverContent>
-                      </Popover>
+                      <div className="relative">
+                        <DatePicker
+                          selected={endDate}
+                          onChange={(date: Date | null) => setEndDate(date)}
+                          dateFormat="PPP"
+                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                          wrapperClassName="w-full"
+                          placeholderText="Pick a date"
+                          showPopperArrow={false}
+                          popperPlacement="bottom-start"
+                        // minDate={startDate || new Date()} // Example: End date must be after start date
+                        />
+                        <CalendarIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none" />
+                      </div>
                     </div>
                   </div>
                 </div>

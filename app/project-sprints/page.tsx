@@ -152,6 +152,7 @@ export default function ProjectSprints() {
 
             {sprintToEdit && (
               <EditSprintDialog
+                projectList={projectList}
                 sprintId={sprintToEdit}
                 open={!!sprintToEdit}
                 onOpenChange={(open) => !open && setSprintToEdit(null)}
