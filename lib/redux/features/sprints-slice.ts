@@ -1,5 +1,4 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit"
-import { sprints } from "@/data/sprints"
 
 export interface Sprint {
   id: string
@@ -22,7 +21,7 @@ interface SprintsState {
 }
 
 const initialState: SprintsState = {
-  sprints: sprints,
+  sprints: [],
   selectedSprint: null,
 }
 

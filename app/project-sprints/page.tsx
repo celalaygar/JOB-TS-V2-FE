@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
-import { useSelector } from "react-redux"
+import { useDispatch, useSelector } from "react-redux"
 import type { RootState } from "@/lib/redux/store"
 import { ProjectSprintsHeader } from "@/components/sprints/project-sprints/project-sprints-header"
 import { ProjectSprintsList } from "@/components/sprints/project-sprints/project-sprints-list"
@@ -10,12 +10,14 @@ import { CreateSprintDialog } from "@/components/sprints/project-sprints/create-
 import { EditSprintDialog } from "@/components/sprints/project-sprints/edit-sprint-dialog"
 import { DeleteSprintDialog } from "@/components/sprints/project-sprints/delete-sprint-dialog"
 import { Pagination } from "@/components/ui/pagination"
-import { PROJECT_URL } from "@/lib/service/BasePath"
+import { PROJECT_URL, SPRINT_GET_ALL_URL } from "@/lib/service/BasePath"
 import BaseService from "@/lib/service/BaseService"
 import { Project } from "@/types/project"
 import { httpMethods } from "@/lib/service/HttpService"
 import { toast } from "@/hooks/use-toast"
 import { Loader2 } from "lucide-react"
+import { Sprint } from "@/types/sprint"
+import { setSprints } from "@/lib/redux/features/sprints-slice"
 
 export default function ProjectSprints() {
   // State for dialogs
@@ -24,6 +26,8 @@ export default function ProjectSprints() {
   const [sprintToDelete, setSprintToDelete] = useState<string | null>(null)
   const [projectList, setProjectList] = useState<Project[] | []>([]);
   const [loading, setLoading] = useState(false);
+  const [sprintList, setSprintList] = useState<Sprint[]>([]);
+  const dispatch = useDispatch()
 
   // State for filters
   const [filters, setFilters] = useState({
@@ -111,17 +115,46 @@ export default function ProjectSprints() {
     setLoading(false)
   }, [])
 
+  const getAllSprints = useCallback(async () => {
+    setProjectList([])
+    setLoading(true)
+    try {
+      const response = await BaseService.request(SPRINT_GET_ALL_URL, {
+        method: httpMethods.GET,
+      })
+      let list = response as Sprint[];
+      setSprintList(list)
+      dispatch(setSprints(list))
+    } catch (error: any) {
+      if (error.status === 400 && error.message) {
+        toast({
+          title: `Sprint find all failed. (400)`,
+          description: error.message,
+          variant: "destructive",
+        })
+      } else {
+        console.error('Sprint failed:', error)
+        toast({
+          title: `Sprint find all failed.`,
+          description: error.message,
+          variant: "destructive",
+        })
+      }
+    }
+    setLoading(false)
+  }, [])
+
 
   useEffect(() => {
     getAllProjects()
-  }, [getAllProjects])
+    getAllSprints()
+  }, [getAllProjects, getAllSprints])
 
 
 
   return (
     <div className="space-y-6">
       <ProjectSprintsHeader onCreateSprint={() => setIsCreateDialogOpen(true)} />
-
       {
         loading ?
           <div className="grid gap-4 py-4">
