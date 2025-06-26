@@ -45,9 +45,10 @@ export function SprintDetailInfo({ sprint, team }: SprintDetailInfoProps) {
               <div className="flex-shrink-1"> {/* flex-shrink-0 bunun küçülmesini engeller */}
                 <h3 className="text-sm font-medium mb-2">Sprint Code</h3>
                 <p className="text-sm text-muted-foreground">{sprint.sprintCode}</p>
+
                 <h3 className="text-sm font-medium mb-2">Created By</h3>
-                <p className="text-sm text-muted-foreground">{sprint.createdBy.email}</p>
-                <p className="text-sm text-muted-foreground">{sprint.createdBy.firstname + " " + sprint.createdBy.lastname}</p>
+                <p className="text-sm text-muted-foreground">{sprint.createdBy?.email}</p>
+                <p className="text-sm text-muted-foreground">{sprint.createdBy?.firstname + " " + sprint.createdBy?.lastname}</p>
               </div>
             )}
           </div>
