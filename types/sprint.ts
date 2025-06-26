@@ -7,6 +7,35 @@ export interface SprintTeamMember {
   initials: string
 }
 
+
+
+
+export interface SprintCreatedUser {
+  id: string;
+  email: string;
+  firstname: string;
+  lastname: string;
+  username: string;
+}
+
+export interface CreatedProject {
+  id: string;
+  name: string;
+}
+
+export interface TaskStatusOnCompletion {
+  id: string;
+  name: string;
+  label: string;
+  turkish: string;
+  english: string;
+  order: number;
+  createdProject: CreatedProject;
+  createdBy: SprintCreatedUser;
+}
+
+
+
 export interface Sprint {
   id: string
   name: string
@@ -22,7 +51,13 @@ export interface Sprint {
   completedIssues: number
   team: SprintTeamMember[]
   tasks?: any[]
+  createdProject: CreatedProject;
+  sprintCode: string;
+  sprintStatus: string;
+  taskStatusOnCompletion: TaskStatusOnCompletion;
+  createdBy: SprintCreatedUser;
   createdAt?: string
   updatedAt?: string
 
-} 
+}
+

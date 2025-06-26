@@ -50,9 +50,9 @@ export default function ProjectSprints() {
   // Apply filters
   const filteredSprints = sprints.filter((sprint) => {
     // Filter by team
-    if (filters.team && !sprint.team.some((member) => member.name.includes(filters.team))) {
-      return false
-    }
+    // if (filters.team && !sprint.team.some((member) => member.name.includes(filters.team))) {
+    //   return false
+    // }
 
     // Filter by status
     if (filters.status && sprint.status !== filters.status) {

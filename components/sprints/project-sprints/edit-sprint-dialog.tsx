@@ -17,7 +17,6 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 
 import { CalendarIcon, Loader2 } from "lucide-react"
-import { format } from "date-fns"
 import { updateSprint } from "@/lib/redux/features/sprints-slice"
 import type { RootState } from "@/lib/redux/store"
 import { teams } from "@/data/teams"
@@ -30,6 +29,7 @@ import { SPRINT_URL, PROJECT_TASK_STATUS_URL } from "@/lib/service/BasePath"
 import BaseService from "@/lib/service/BaseService"
 import { httpMethods } from "@/lib/service/HttpService"
 import { toast } from "@/hooks/use-toast"
+import { Sprint } from "@/types/sprint"
 
 
 interface EditSprintDialogProps {
@@ -46,7 +46,7 @@ interface SelectOption {
 
 export function EditSprintDialog({ open, onOpenChange, sprintId, projectList }: EditSprintDialogProps) {
   const dispatch = useDispatch()
-  const sprint = useSelector((state: RootState) => state.sprints.sprints.find((s) => s.id === sprintId))
+  const sprint: Sprint = useSelector((state: RootState) => state.sprints.sprints.find((s) => s.id === sprintId))
   // const projects = useSelector((state: RootState) => state.projects.projects) // Bu satır artık kullanılmıyor
 
   const [name, setName] = useState("")
@@ -55,7 +55,7 @@ export function EditSprintDialog({ open, onOpenChange, sprintId, projectList }: 
   const [startDate, setStartDate] = useState<Date | null>(null)
   const [endDate, setEndDate] = useState<Date | null>(null)
   const [status, setStatus] = useState<string>("planning")
-  const [completionStatus, setCompletionStatus] = useState<string | null>(null)
+  const [projectTaskStatusId, setProjectTaskStatusId] = useState<string | null>(null)
   const [sprintType, setSprintType] = useState<string>("standard")
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null)
   const [taskStatuses, setTaskStatuses] = useState<ProjectTaskStatus[] | []>([])
@@ -85,11 +85,11 @@ export function EditSprintDialog({ open, onOpenChange, sprintId, projectList }: 
     if (sprint) {
       setName(sprint.name)
       setDescription(sprint.description || "")
-      setSelectedProjectId(sprint.projectId)
+      setSelectedProjectId(sprint.createdProject.id)
       setStartDate(sprint.startDate ? new Date(sprint.startDate) : null)
       setEndDate(sprint.endDate ? new Date(sprint.endDate) : null)
       setStatus(sprint.status)
-      setCompletionStatus(sprint.completionStatus || null)
+      setProjectTaskStatusId(sprint?.taskStatusOnCompletion?.id || null)
       setSprintType(sprint.sprintType || "standard")
       setSelectedTeamId(sprint.teamId || null)
     }
@@ -100,7 +100,7 @@ export function EditSprintDialog({ open, onOpenChange, sprintId, projectList }: 
       getAllProjectTaskStatus(selectedProjectId);
     } else {
       setTaskStatuses([]);
-      setCompletionStatus(null);
+      setProjectTaskStatusId(null);
     }
   }, [selectedProjectId]);
 
@@ -132,7 +132,7 @@ export function EditSprintDialog({ open, onOpenChange, sprintId, projectList }: 
       startDate: startDate!.toISOString(),
       endDate: endDate!.toISOString(),
       status: status as "planning" | "active" | "completed" | "cancelled",
-      completionStatus: completionStatus || "done",
+      projectTaskStatusId: projectTaskStatusId,
       sprintType: sprintType as "standard" | "project-team",
       teamId: sprintType === "project-team" ? selectedTeamId : undefined,
       updatedAt: new Date().toISOString(),
@@ -144,7 +144,7 @@ export function EditSprintDialog({ open, onOpenChange, sprintId, projectList }: 
   const updateExistingSprint = async (updatedSprint: any) => {
     setLoading(true);
     try {
-      const response = await BaseService.request(`${SPRINT_URL}/${updatedSprint.id}`, {
+      const response: Sprint = await BaseService.request(`${SPRINT_URL}/${updatedSprint.id}`, {
         method: httpMethods.PUT,
         body: updatedSprint
       });
@@ -172,8 +172,8 @@ export function EditSprintDialog({ open, onOpenChange, sprintId, projectList }: 
         method: httpMethods.GET
       });
       setTaskStatuses(response as ProjectTaskStatus[]);
-      if (completionStatus && !(response as ProjectTaskStatus[]).some(s => s.id === completionStatus)) {
-        setCompletionStatus(null);
+      if (projectTaskStatusId && !(response as ProjectTaskStatus[]).some(s => s.id === projectTaskStatusId)) {
+        setProjectTaskStatusId(null);
       }
     } catch (error: any) {
       console.error('Failed to fetch project task statuses:', error)
@@ -186,6 +186,26 @@ export function EditSprintDialog({ open, onOpenChange, sprintId, projectList }: 
       setLoadingTaskStatuses(false);
     }
   };
+
+
+
+
+  useEffect(() => {
+    if (!projectTaskStatusId && sprint?.taskStatusOnCompletion?.id && completionStatusOptions.length > 0) {
+      const matched = completionStatusOptions.find(opt => opt.value === sprint.taskStatusOnCompletion.id)
+      if (matched) {
+        setProjectTaskStatusId(matched.value)
+      }
+    }
+  }, [completionStatusOptions, sprint, projectTaskStatusId])
+
+  const selectedCompletionStatus = useMemo(() => {
+    const found = completionStatusOptions.find(option => option.value === projectTaskStatusId)
+
+    return found;
+  }, [completionStatusOptions, projectTaskStatusId])
+
+
 
   if (!sprint) {
     return null
@@ -208,13 +228,13 @@ export function EditSprintDialog({ open, onOpenChange, sprintId, projectList }: 
           ) : (
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="name" className="text-right">
+                <Label className="text-right">
                   Name
                 </Label>
                 <Input id="name" value={name} onChange={(e) => setName(e.target.value)} className="col-span-3" required />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="description" className="text-right">
+                <Label className="text-right">
                   Description
                 </Label>
                 <Textarea
@@ -225,7 +245,7 @@ export function EditSprintDialog({ open, onOpenChange, sprintId, projectList }: 
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="project" className="text-right">
+                <Label className="text-right">
                   Project
                 </Label>
                 <div className="col-span-3">
@@ -235,7 +255,7 @@ export function EditSprintDialog({ open, onOpenChange, sprintId, projectList }: 
                     value={projectOptions.find(option => option.value === selectedProjectId)}
                     onChange={(option) => {
                       setSelectedProjectId(option ? option.value : null);
-                      setCompletionStatus(null);
+                      setProjectTaskStatusId(null);
                       setSelectedTeamId(null);
                     }}
                     placeholder="Select a project"
@@ -244,7 +264,7 @@ export function EditSprintDialog({ open, onOpenChange, sprintId, projectList }: 
                 </div>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="sprintType" className="text-right">
+                <Label className="text-right">
                   Sprint Type
                 </Label>
                 <div className="col-span-3">
@@ -264,7 +284,7 @@ export function EditSprintDialog({ open, onOpenChange, sprintId, projectList }: 
               </div>
               {sprintType === "project-team" && selectedProjectId && (
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="team" className="text-right">
+                  <Label className="text-right">
                     Project Team
                   </Label>
                   <div className="col-span-3">
@@ -281,7 +301,7 @@ export function EditSprintDialog({ open, onOpenChange, sprintId, projectList }: 
                 </div>
               )}
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="completionStatus" className="text-right">
+                <Label className="text-right">
                   Task Status on Completion
                 </Label>
                 <div className="col-span-3">
@@ -295,10 +315,10 @@ export function EditSprintDialog({ open, onOpenChange, sprintId, projectList }: 
                       :
                       <>
                         <Select
-                          id="completionStatus"
+                          id="projectTaskStatusId"
                           options={completionStatusOptions}
-                          value={completionStatusOptions.find(option => option.value === completionStatus)}
-                          onChange={(option) => setCompletionStatus(option ? option.value : null)}
+                          value={selectedCompletionStatus}
+                          onChange={(option) => setProjectTaskStatusId(option ? option.value : null)}
                           placeholder="Select status for tasks"
                           isClearable
                           isDisabled={!selectedProjectId || taskStatuses.length === 0}
@@ -309,7 +329,7 @@ export function EditSprintDialog({ open, onOpenChange, sprintId, projectList }: 
                 </div>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="startDate" className="text-right">
+                <Label className="text-right">
                   Start Date
                 </Label>
                 <div className="col-span-3">
@@ -330,7 +350,7 @@ export function EditSprintDialog({ open, onOpenChange, sprintId, projectList }: 
               </div>
 
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="endDate" className="text-right">
+                <Label className="text-right">
                   End Date
                 </Label>
                 <div className="col-span-3">
@@ -350,8 +370,8 @@ export function EditSprintDialog({ open, onOpenChange, sprintId, projectList }: 
                   </div>
                 </div>
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="status" className="text-right">
+              {/* <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right">
                   Status
                 </Label>
                 <div className="col-span-3">
@@ -363,7 +383,7 @@ export function EditSprintDialog({ open, onOpenChange, sprintId, projectList }: 
                     placeholder="Select status"
                   />
                 </div>
-              </div>
+              </div> */}
             </div>
           )}
           <DialogFooter>
@@ -377,6 +397,6 @@ export function EditSprintDialog({ open, onOpenChange, sprintId, projectList }: 
           </DialogFooter>
         </form>
       </DialogContent>
-    </Dialog>
+    </Dialog >
   )
 }

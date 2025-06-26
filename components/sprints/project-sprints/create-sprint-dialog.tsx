@@ -13,14 +13,12 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 // Removed Calendar component imports from shadcn/ui
 // import { Calendar as CalendarComponent } from "@/components/ui/calendar"
 // Removed Popover component imports from shadcn/ui
 // import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { CalendarIcon, Loader2 } from "lucide-react" // Still need CalendarIcon
-import { format } from "date-fns"
+import { CalendarIcon, Loader2 } from "lucide-react" // Still need CalendarIcon 
 import { addSprint } from "@/lib/redux/features/sprints-slice"
 import { teams } from "@/data/teams"
 import { Project, ProjectTaskStatus } from "@/types/project"
@@ -34,6 +32,7 @@ import Select from "react-select"
 // react-datepicker imports
 import DatePicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css" // Don't forget to import the CSS!
+import { Label } from "@/components/ui/label"
 
 
 interface CreateSprintDialogProps {
@@ -207,13 +206,13 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
               <>
                 <div className="grid gap-4 py-4">
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="name" className="text-right">
+                    <Label className="text-right">
                       Name
                     </Label>
                     <Input id="name" value={name} onChange={(e) => setName(e.target.value)} className="col-span-3" required />
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="description" className="text-right">
+                    <Label className="text-right">
                       Description
                     </Label>
                     <Textarea
@@ -225,11 +224,11 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
                   </div>
 
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="project" className="text-right">
+                    <Label className="text-right">
                       Project
                     </Label>
                     <div className="col-span-3">
-                      <Select
+                      <Select className="border-red-500"
                         id="project"
                         options={projectOptions}
                         value={projectOptions.find(option => option.value === selectedProjectId)}
@@ -246,7 +245,7 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
                   </div>
 
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="sprintType" className="text-right">
+                    <Label className="text-right">
                       Sprint Type
                     </Label>
                     <div className="col-span-3">
@@ -262,7 +261,7 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
 
                   {sprintType === "project-team" && selectedProjectId && (
                     <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="team" className="text-right">
+                      <Label className="text-right">
                         Project Team
                       </Label>
                       <div className="col-span-3">
@@ -280,7 +279,7 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
                   )}
 
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="projectTaskStatusId" className="text-right">
+                    <Label className="text-right">
                       Task Status on Completion
                     </Label>
                     <div className="col-span-3">
@@ -308,7 +307,7 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
                     </div>
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="startDate" className="text-right">
+                    <Label className="text-right">
                       Start Date
                     </Label>
                     <div className="col-span-3">
@@ -331,7 +330,7 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
                   </div>
 
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="endDate" className="text-right">
+                    <Label className="text-right">
                       End Date
                     </Label>
                     <div className="col-span-3">
