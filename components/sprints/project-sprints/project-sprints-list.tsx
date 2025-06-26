@@ -52,7 +52,7 @@ export function ProjectSprintsList({ sprints, onEditSprint, onDeleteSprint }: Pr
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {sprints.map((sprint) => (
-        <Card key={sprint.id} className="fixed-card">
+        <Card key={sprint.id} className="fixed-card hover:shadow-lg">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="truncate" title={sprint.name}>
