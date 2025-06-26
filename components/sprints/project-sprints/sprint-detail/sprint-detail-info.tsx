@@ -32,11 +32,27 @@ export function SprintDetailInfo({ sprint, team }: SprintDetailInfoProps) {
           <CardDescription>Details about this sprint and assigned team</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
+          {/* Project and Sprint Code - Yan yana durup, sığmazsa alt satıra geçmesi için flex-wrap kullanıldı */}
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:flex-wrap gap-4"> {/* sm breakpoint'inde yan yana, altında dikey */}
+            {sprint.createdProject && (
+              <div className="flex-1 min-w-0"> {/* flex-1 ve min-w-0 div'in içeriği kadar yer kaplamasını ve taşmasını engellemesini sağlar */}
+                <h3 className="text-sm font-medium mb-2">Project</h3>
+                {/* Uzun project isimlerinin satır sonuna geldiğinde kelime kırmasını sağlar */}
+                <p className="text-sm text-muted-foreground break-words">{sprint.createdProject.name}</p>
+              </div>
+            )}
+            {sprint.sprintCode && (
+              <div className="flex-shrink-0"> {/* flex-shrink-0 bunun küçülmesini engeller */}
+                <h3 className="text-sm font-medium mb-2">Sprint Code</h3>
+                <p className="text-sm text-muted-foreground">{sprint.sprintCode}</p>
+              </div>
+            )}
+          </div>
           {/* Description */}
           {sprint.description && (
             <div>
               <h3 className="text-sm font-medium mb-2">Description</h3>
-              <p className="text-sm text-muted-foreground">{sprint.description}</p>
+              <p className="text-sm text-muted-foreground break-words">{sprint.description}</p> {/* Açıklama için de ekledim */}
             </div>
           )}
 
@@ -62,7 +78,7 @@ export function SprintDetailInfo({ sprint, team }: SprintDetailInfoProps) {
                   </Badge>
                 </div>
 
-                {team.description && <p className="text-sm text-muted-foreground">{team.description}</p>}
+                {team.description && <p className="text-sm text-muted-foreground break-words">{team.description}</p>}
 
                 {sprint.team.length > 0 && (
                   <div className="mt-3">
