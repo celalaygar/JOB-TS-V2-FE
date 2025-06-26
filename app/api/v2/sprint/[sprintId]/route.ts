@@ -6,6 +6,17 @@ import { NextRequest } from 'next/server';
 const URL = process.env.BASE_V2_URL
 const SPRINT = "sprint"
 
+export async function GET(req: NextRequest,
+    { params }: { params: Promise<{ sprintId: string }> }
+) {
+
+    const sId = await (await params).sprintId;
+    return RouteBaseService.request(URL + SPRINT + "/" + sId, {
+        method: 'GET'
+        // withAuth default: true
+    });
+}
+
 export async function PUT(req: NextRequest,
     { params }: { params: Promise<{ sprintId: string }> }
 ) {

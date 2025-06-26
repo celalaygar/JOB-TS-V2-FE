@@ -7,9 +7,10 @@ import Link from "next/link"
 import { format } from "date-fns"
 import { useState } from "react"
 import { CompleteSprintDialog } from "./complete-sprint-dialog"
+import { Sprint, SprintStatus } from "@/types/sprint"
 
 interface SprintDetailHeaderProps {
-  sprint: any // Using any for simplicity, but should be properly typed
+  sprint: Sprint // Using any for simplicity, but should be properly typed
   tasks: any[] // Using any for simplicity, but should be properly typed
   onEdit: () => void
   onDelete: () => void
@@ -17,19 +18,21 @@ interface SprintDetailHeaderProps {
 
 export function SprintDetailHeader({ sprint, tasks, onEdit, onDelete }: SprintDetailHeaderProps) {
   const [isCompleteDialogOpen, setIsCompleteDialogOpen] = useState(false)
+  console.log("sprint")
+  console.log(sprint)
 
   // Helper function to get status badge
   const getStatusBadge = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "active":
+    switch (status) {
+      case SprintStatus.ACTIVE:
         return <Badge className="bg-green-500 hover:bg-green-600 text-white">Active</Badge>
-      case "planned":
+      case SprintStatus.PLANNED:
         return (
           <Badge variant="outline" className="border-[var(--fixed-card-border)]">
             Planned
           </Badge>
         )
-      case "completed":
+      case SprintStatus.COMPLETED:
         return (
           <Badge variant="secondary" className="bg-[var(--fixed-secondary)] text-[var(--fixed-secondary-fg)]">
             Completed
@@ -50,7 +53,7 @@ export function SprintDetailHeader({ sprint, tasks, onEdit, onDelete }: SprintDe
           </Link>
         </Button>
         <div className="flex items-center gap-2">
-          {sprint.status.toLowerCase() === "active" && (
+          {sprint?.sprintStatus === SprintStatus.ACTIVE && (
             <Button
               variant="outline"
               size="sm"
@@ -80,7 +83,7 @@ export function SprintDetailHeader({ sprint, tasks, onEdit, onDelete }: SprintDe
       <div>
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-bold">{sprint.name}</h1>
-          {getStatusBadge(sprint.status)}
+          {getStatusBadge(sprint.sprintStatus)}
         </div>
         <div className="flex items-center text-[var(--fixed-sidebar-muted)] mt-1">
           <Calendar className="h-4 w-4 mr-1" />
@@ -92,7 +95,7 @@ export function SprintDetailHeader({ sprint, tasks, onEdit, onDelete }: SprintDe
 
       {/* Complete Sprint Dialog */}
       <CompleteSprintDialog
-        sprintId={sprint.id}
+        sprint={sprint}
         open={isCompleteDialogOpen}
         onOpenChange={setIsCompleteDialogOpen}
         tasks={tasks}

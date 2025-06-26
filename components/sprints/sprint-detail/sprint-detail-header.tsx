@@ -7,13 +7,10 @@ import Link from "next/link"
 import { useDispatch } from "react-redux"
 import { updateSprint } from "@/lib/redux/features/sprints-slice"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Sprint, SprintStatus } from "@/types/sprint"
 
 interface SprintDetailHeaderProps {
-  sprint: {
-    id: string
-    name: string
-    status: string
-  }
+  sprint: Sprint
   onAddTask: () => void
   onCompleteSprint: () => void
   onAssignTasksToSprint: () => void
@@ -87,13 +84,13 @@ export function SprintDetailHeader({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            {sprint.status !== "planned" && (
+            {sprint.sprintStatus !== SprintStatus.PLANNED && (
               <DropdownMenuItem onClick={() => handleStatusChange("planned")}>Mark as Planned</DropdownMenuItem>
             )}
-            {sprint.status !== "active" && (
+            {sprint.sprintStatus !== SprintStatus.ACTIVE && (
               <DropdownMenuItem onClick={() => handleStatusChange("active")}>Start Sprint</DropdownMenuItem>
             )}
-            {sprint.status === "active" && (
+            {sprint.sprintStatus === SprintStatus.ACTIVE && (
               <DropdownMenuItem onClick={() => onCompleteSprint()}>Complete Sprint</DropdownMenuItem>
             )}
             <DropdownMenuItem asChild>

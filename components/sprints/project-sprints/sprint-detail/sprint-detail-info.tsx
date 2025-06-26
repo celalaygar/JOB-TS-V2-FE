@@ -7,19 +7,10 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { AddSprintMemberDialog } from "./add-sprint-member-dialog"
 import { useState } from "react"
+import { Sprint } from "@/types/sprint"
 
 interface SprintDetailInfoProps {
-  sprint: {
-    id: string
-    name: string
-    description?: string
-    team: Array<{
-      id: string
-      name: string
-      avatar?: string
-      initials: string
-    }>
-  }
+  sprint: Sprint
   team?: {
     id: string
     name: string
@@ -90,7 +81,7 @@ export function SprintDetailInfo({ sprint, team }: SprintDetailInfoProps) {
                   </div>
                 )}
               </div>
-            ) : sprint.team.length > 0 ? (
+            ) : sprint?.team?.length > 0 ? (
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <div className="font-medium">Sprint Team Members</div>

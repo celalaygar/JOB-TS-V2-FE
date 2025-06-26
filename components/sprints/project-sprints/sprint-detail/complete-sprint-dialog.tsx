@@ -27,18 +27,19 @@ import {
 } from "@/components/ui/select"
 import { Progress } from "@/components/ui/progress"
 import { CheckCircle, AlertCircle } from "lucide-react"
+import { Sprint, SprintStatus } from "@/types/sprint"
 
 interface CompleteSprintDialogProps {
-  sprintId: string
+  sprint: Sprint // Using any for simplicity, but should be properly typed
   open: boolean
   onOpenChange: (open: boolean) => void
   tasks: any[] // Using any for simplicity, but should be properly typed
 }
 
-export function CompleteSprintDialog({ sprintId, open, onOpenChange, tasks }: CompleteSprintDialogProps) {
+export function CompleteSprintDialog({ sprint, open, onOpenChange, tasks }: CompleteSprintDialogProps) {
   const dispatch = useDispatch()
   const sprints = useSelector((state: RootState) => state.sprints.sprints)
-  const currentSprint = sprints.find((s) => s.id === sprintId)
+  const currentSprint = sprints.find((s) => s.id === sprint.id)
 
   const [destination, setDestination] = useState<"backlog" | "sprint">("backlog")
   const [targetSprintId, setTargetSprintId] = useState<string>("")
@@ -51,7 +52,7 @@ export function CompleteSprintDialog({ sprintId, open, onOpenChange, tasks }: Co
   const completionPercentage = tasks.length > 0 ? Math.round((completedTasks / tasks.length) * 100) : 0
 
   // Get available sprints (excluding current sprint and completed sprints)
-  const availableSprints = sprints.filter((s) => s.id !== sprintId && s.status.toLowerCase() !== "completed")
+  const availableSprints = sprints.filter((s) => s.id !== sprint.id && s.sprintStatus !== SprintStatus.COMPLETED)
 
   const handleCompleteSprint = () => {
     // Update sprint status to completed

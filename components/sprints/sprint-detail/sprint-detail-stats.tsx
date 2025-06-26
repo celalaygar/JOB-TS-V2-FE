@@ -2,17 +2,11 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
+import { Sprint } from "@/types/sprint"
 import { CheckCircle2, Clock, AlertCircle, BarChart2 } from "lucide-react"
 
 interface SprintDetailStatsProps {
-  sprint: {
-    id: string
-    name: string
-    goal: string
-    startDate: string
-    endDate: string
-    status: string
-  }
+  sprint: Sprint
   tasks: Array<{
     id: string
     title: string
