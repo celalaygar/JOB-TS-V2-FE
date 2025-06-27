@@ -25,10 +25,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import type { ProjectRole, ProjectRolePermission } from "@/types/project-role"
 import { Project } from "@/types/project"
-import BaseService from "@/lib/service/BaseService"
-import { PERMISSIONS, PROJECT_USER_ROLES_URL } from "@/lib/service/BasePath"
-import { toast } from "@/hooks/use-toast"
-import { httpMethods } from "@/lib/service/HttpService"
+import { getAllProjectsRolesHelper, getAllProjectsRolePermissionsHelper } from "@/lib/service/api-helpers"
 
 interface ProjectRolesManagementProps {
   project: Project | {}
@@ -51,67 +48,30 @@ export function ProjectRolesManagement({ project, projectId }: ProjectRolesManag
   const [permissionList, setPermissionList] = useState<ProjectRolePermission[] | null>(null)
 
 
-  const getAllProjectsRoles = useCallback(async () => {
-    setLoading(true)
-    try {
-      const response = await BaseService.request(PROJECT_USER_ROLES_URL + "/project/" + projectId, {
-        method: httpMethods.GET
-      })
-      let list = response as ProjectRole[];
-      setProjectRoleList(list)
-      dispatch(setProjectsRole(list))
-    } catch (error: any) {
-      if (error.status === 400 && error.message) {
-        toast({
-          title: `Project find all failed. (400)`,
-          description: error.message,
-          variant: "destructive",
-        })
-      } else {
-        console.error('Projects Roles  failed:', error)
-        toast({
-          title: `Projects Roles  find all failed.`,
-          description: error.message,
-          variant: "destructive",
-        })
-      }
+  const fetchProjectsRoles = useCallback(async () => {
+    const rolesData = await getAllProjectsRolesHelper(projectId, { setLoading });
+    if (rolesData) {
+      setProjectRoleList(rolesData);
+      dispatch(setProjectsRole(rolesData));
+    } else {
+      setProjectRoleList([]);
     }
-    setLoading(false)
-  }, [])
+  }, [projectId, dispatch]);
 
-  const getAllProjectsRolePermissions = useCallback(async () => {
-    setLoading(true)
-    try {
-      const response = await BaseService.request(PERMISSIONS, {
-        method: 'GET',
-      })
-      let list = response as ProjectRole[];
-      setPermissionList(list)
-    } catch (error: any) {
-      if (error.status === 400 && error.message) {
-        toast({
-          title: `Project find all failed. (400)`,
-          description: error.message,
-          variant: "destructive",
-        })
-      } else {
-        console.error('Projects Roles  failed:', error)
-        toast({
-          title: `Projects Roles  find all failed.`,
-          description: error.message,
-          variant: "destructive",
-        })
-      }
+  const fetchProjectsRolePermissions = useCallback(async () => {
+    const permissionsData = await getAllProjectsRolePermissionsHelper({ setLoading });
+    if (permissionsData) {
+      setPermissionList(permissionsData);
+    } else {
+      setPermissionList([]);
     }
-    setLoading(false)
-  }, [])
+  }, []);
 
   useEffect(() => {
-    getAllProjectsRoles()
-    getAllProjectsRolePermissions()
-  }, [getAllProjectsRoles, getAllProjectsRolePermissions])
+    fetchProjectsRoles();
+    fetchProjectsRolePermissions();
+  }, [fetchProjectsRoles, fetchProjectsRolePermissions]);
 
-  // Handle sorting
   const handleSort = (field: keyof ProjectRole) => {
     if (sortField === field) {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc")
@@ -121,7 +81,6 @@ export function ProjectRolesManagement({ project, projectId }: ProjectRolesManag
     }
   }
 
-  // Handle role deletion
   const handleDeleteRole = () => {
     if (selectedRole) {
       dispatch(removeRole(selectedRole.id))
@@ -130,7 +89,6 @@ export function ProjectRolesManagement({ project, projectId }: ProjectRolesManag
     }
   }
 
-  // Count permissions by category
   const countPermissionsByCategory = (permissions: string[]) => {
     const counts = {
       project: 0,
@@ -251,28 +209,6 @@ export function ProjectRolesManagement({ project, projectId }: ProjectRolesManag
                         >
                           <div className="col-span-1 flex items-center gap-2">
                             <span className="font-medium">{index + 1}</span>
-                            {/* <div className="flex flex-col">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-5 w-5 p-0"
-                                onClick={() => dispatch(moveRoleUp(role.id))}
-                                disabled={index === 0}
-                              >
-                                <ChevronUp className="h-3 w-3" />
-                                <span className="sr-only">Move up</span>
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-5 w-5 p-0"
-                                onClick={() => dispatch(moveRoleDown(role.id))}
-                                disabled={index === allRoles.length - 1}
-                              >
-                                <ChevronDown className="h-3 w-3" />
-                                <span className="sr-only">Move down</span>
-                              </Button>
-                            </div> */}
                           </div>
                           <div className="col-span-3 flex items-center">
                             <div>
@@ -371,13 +307,10 @@ export function ProjectRolesManagement({ project, projectId }: ProjectRolesManag
           </CardContent>
         </Card>
 
-        {/* Add Role Dialog */}
         <AddRoleDialog open={addRoleDialogOpen} permissionList={permissionList} onOpenChange={setAddRoleDialogOpen} projectId={projectId} />
 
-        {/* Edit Role Dialog */}
         <EditRoleDialog open={editRoleDialogOpen} permissionList={permissionList} onOpenChange={setEditRoleDialogOpen} projectId={projectId} role={selectedRole} />
 
-        {/* Delete Confirmation Dialog */}
         <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>

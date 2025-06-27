@@ -6,11 +6,12 @@ import { toast } from "@/hooks/use-toast";
 import type { ProjectUser } from "@/types/project";
 import type { Sprint } from "@/types/sprint";
 import type { ProjectTeam, Project } from "@/types/project";
-import { GET_PROJECT_USERS, SPRINT_NON_COMPLETED_GET_ALL_URL, PROJECT_TEAM_URL, PROJECT_URL, SPRINT_GET_ALL_URL } from "@/lib/service/BasePath";
+import type { ProjectRole, ProjectRolePermission } from "@/types/project-role"; // Import ProjectRole and ProjectRolePermission
+import { GET_PROJECT_USERS, SPRINT_NON_COMPLETED_GET_ALL_URL, PROJECT_TEAM_URL, PROJECT_URL, SPRINT_GET_ALL_URL, PROJECT_USER_ROLES_URL, PERMISSIONS } from "@/lib/service/BasePath";
 
 interface ApiOperationConfig<T> {
   url: string;
-  method: keyof typeof httpMethods;
+  method: httpMethods;
   body?: any;
   setLoading: (loading: boolean) => void;
   successMessage?: string;
@@ -162,5 +163,34 @@ export const createProjectHelper = async (projectData: any, options: FetchEntiti
     errorMessagePrefix: "Failed to create project",
     successToastTitle: "Project Created",
     errorToastTitle: "Error Creating Project",
+  });
+};
+
+export const getAllProjectsRolesHelper = async (projectId: string, options: FetchEntitiesOptions): Promise<ProjectRole[] | null> => {
+  if (!projectId) {
+    options.setLoading(false);
+    return [];
+  }
+
+  return apiCall<ProjectRole[]>({
+    url: `${PROJECT_USER_ROLES_URL}/project/${projectId}`,
+    method: httpMethods.GET,
+    setLoading: options.setLoading,
+    successMessage: `Roles for project ${projectId} have been retrieved.`,
+    errorMessagePrefix: "Failed to load project roles",
+    successToastTitle: "Project Roles Loaded",
+    errorToastTitle: "Error Loading Project Roles",
+  });
+};
+
+export const getAllProjectsRolePermissionsHelper = async (options: FetchEntitiesOptions): Promise<ProjectRolePermission[] | null> => {
+  return apiCall<ProjectRolePermission[]>({
+    url: PERMISSIONS,
+    method: httpMethods.GET,
+    setLoading: options.setLoading,
+    successMessage: "All role permissions have been retrieved.",
+    errorMessagePrefix: "Failed to load role permissions",
+    successToastTitle: "Role Permissions Loaded",
+    errorToastTitle: "Error Loading Role Permissions",
   });
 };
