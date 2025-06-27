@@ -38,10 +38,12 @@ export const sprintsSlice = createSlice({
     addSprint: (state, action: PayloadAction<Sprint>) => {
       state.sprints.push(action.payload)
     },
-    updateSprint: (state, action: PayloadAction<{ id: string; changes: Partial<Sprint> }>) => {
+    updateSprint: (state, action: PayloadAction<string>) => {
+      console.log(action.payload)
+      console.log(state.sprints)
       const sprint = state.sprints.find((sprint) => sprint.id === action.payload.id)
       if (sprint) {
-        Object.assign(sprint, action.payload.changes)
+        Object.assign(sprint, action.payload)
       }
     },
     removeSprint: (state, action: PayloadAction<string>) => {

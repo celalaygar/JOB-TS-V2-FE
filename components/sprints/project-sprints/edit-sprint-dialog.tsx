@@ -35,7 +35,7 @@ import { Sprint } from "@/types/sprint"
 interface EditSprintDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  sprintId: string
+  sprint: Sprint
   projectList: Project[] | [] // projectList prop'u burada kullanılacak
 }
 
@@ -44,9 +44,9 @@ interface SelectOption {
   label: string;
 }
 
-export function EditSprintDialog({ open, onOpenChange, sprintId, projectList }: EditSprintDialogProps) {
+export function EditSprintDialog({ open, onOpenChange, sprint, projectList }: EditSprintDialogProps) {
   const dispatch = useDispatch()
-  const sprint: Sprint = useSelector((state: RootState) => state.sprints.sprints.find((s) => s.id === sprintId))
+  //const sprint: Sprint = useSelector((state: RootState) => state.sprints.sprints.find((s) => s.id === sprintId))
   // const projects = useSelector((state: RootState) => state.projects.projects) // Bu satır artık kullanılmıyor
 
   const [name, setName] = useState("")

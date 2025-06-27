@@ -64,7 +64,11 @@ export function SprintDetailHeader({ sprint, tasks, onEdit, onDelete }: SprintDe
               Complete Sprint
             </Button>
           )}
-          <Button variant="outline" size="sm" className="border-[var(--fixed-card-border)]" onClick={onEdit}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-[var(--fixed-card-border)]"
+            onClick={onEdit}>
             <Edit className="h-4 w-4 mr-1" />
             Edit
           </Button>

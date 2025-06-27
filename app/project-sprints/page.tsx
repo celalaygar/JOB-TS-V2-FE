@@ -22,7 +22,7 @@ import { setSprints } from "@/lib/redux/features/sprints-slice"
 export default function ProjectSprints() {
   // State for dialogs
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
-  const [sprintToEdit, setSprintToEdit] = useState<string | null>(null)
+  const [sprintToEdit, setSprintToEdit] = useState<Sprint | null>(null)
   const [sprintToDelete, setSprintToDelete] = useState<string | null>(null)
   const [projectList, setProjectList] = useState<Project[] | []>([]);
   const [loading, setLoading] = useState(false);
@@ -168,7 +168,7 @@ export default function ProjectSprints() {
 
             <ProjectSprintsList
               sprints={paginatedSprints}
-              onEditSprint={(id) => setSprintToEdit(id)}
+              onEditSprint={(sprint) => setSprintToEdit(sprint)}
               onDeleteSprint={(id) => setSprintToDelete(id)}
             />
 
@@ -186,7 +186,7 @@ export default function ProjectSprints() {
             {sprintToEdit && (
               <EditSprintDialog
                 projectList={projectList}
-                sprintId={sprintToEdit}
+                sprint={sprintToEdit}
                 open={!!sprintToEdit}
                 onOpenChange={(open) => !open && setSprintToEdit(null)}
               />

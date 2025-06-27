@@ -12,7 +12,7 @@ import type { Sprint } from "@/lib/redux/features/sprints-slice"
 
 interface ProjectSprintsListProps {
   sprints: Sprint[]
-  onEditSprint: (id: string) => void
+  onEditSprint: (sprint: Sprint) => void
   onDeleteSprint: (id: string) => void
 }
 
@@ -119,7 +119,7 @@ export function ProjectSprintsList({ sprints, onEditSprint, onDeleteSprint }: Pr
                 variant="outline"
                 size="sm"
                 className="border-[var(--fixed-card-border)]"
-                onClick={() => onEditSprint(sprint.id)}
+                onClick={() => onEditSprint(sprint)}
               >
                 <Edit className="h-4 w-4" />
                 <span className="sr-only md:not-sr-only md:ml-1">Edit</span>

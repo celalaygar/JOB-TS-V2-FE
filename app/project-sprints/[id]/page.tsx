@@ -148,7 +148,7 @@ export default function SprintDetailPage() {
         </div>
 
         {/* Dialogs */}
-        <EditSprintDialog projectList={projectList} sprintId={sprintId} open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen} />
+        <EditSprintDialog projectList={projectList} sprint={sprint} open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen} />
 
         <DeleteSprintDialog
           sprintId={sprintId}
