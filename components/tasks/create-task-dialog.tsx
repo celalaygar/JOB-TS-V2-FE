@@ -291,11 +291,12 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
         method: httpMethods.POST,
         body: formData
       })
-      project = response; 
+      project = response;
       toast({
         title: `Project saved.`,
         description: `Project saved.`,
       })
+      onOpenChange(false)
     } catch (error: any) {
       if (error.status === 400 && error.message) {
         toast({
@@ -437,8 +438,9 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
                     </div>
                   </div>
                 </div>
+
                 <DialogFooter>
-                  <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                  <Button type="button" variant="outline" onClick={() => saveTask()}>
                     Cancel
                   </Button>
                   <Button type="submit">Create Task</Button>
