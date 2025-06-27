@@ -20,12 +20,9 @@ import { useDispatch, useSelector } from "react-redux"
 import { removeProject, setProjects } from "@/lib/redux/features/projects-slice"
 import type { RootState } from "@/lib/redux/store"
 import { EditProjectDialog } from "@/components/projects/edit-project-dialog"
-import BaseService from "@/lib/service/BaseService"
-import { toast } from "@/hooks/use-toast"
 import { Project } from "@/types/project"
-import { PROJECT_URL } from "@/lib/service/BasePath"
 import { CreateProjectDialog } from "./create-project-dialog"
-import { httpMethods } from "@/lib/service/HttpService"
+import { getAllProjectsHelper } from "@/lib/service/api-helpers" // Import the new helper
 
 export function ProjectsList() {
   const dispatch = useDispatch()
@@ -42,39 +39,19 @@ export function ProjectsList() {
   const [loading, setLoading] = useState(false);
   const [projectList, setProjectList] = useState<Project[] | []>([]);
 
-  const getAllProjects = useCallback(async () => {
-    setLoading(true)
-    try {
-      const response = await BaseService.request(PROJECT_URL, {
-        method: httpMethods.GET,
-      })
-      let projectList = response as Project[];
-      setProjectList(projectList)
-      dispatch(setProjects(projectList))
-    } catch (error: any) {
-      if (error.status === 400 && error.message) {
-        toast({
-          title: `Project find all failed. (400)`,
-          description: error.message,
-          variant: "destructive",
-        })
-      } else {
-        console.error('Project failed:', error)
-        toast({
-          title: `Project find all failed.`,
-          description: error.message,
-          variant: "destructive",
-        })
-      }
+  const fetchAllProjects = useCallback(async () => {
+    setProjectList([]);
+    const projectsData = await getAllProjectsHelper({ setLoading });
+    if (projectsData) {
+      setProjectList(projectsData);
+      dispatch(setProjects(projectsData));
     }
-    setLoading(false)
-  }, [])
+  }, [dispatch]);
 
   useEffect(() => {
-    getAllProjects()
-  }, [getAllProjects])
+    fetchAllProjects();
+  }, [fetchAllProjects]);
 
-  // Apply sorting
   const sortedProjects = useMemo(() => {
     if (!allProjects) return []
 
@@ -100,7 +77,7 @@ export function ProjectsList() {
 
     setLoading(false)
     return data;
-  }, [projectList, sortOption])
+  }, [allProjects, sortOption])
 
 
   const handleDeleteProject = () => {
@@ -175,12 +152,6 @@ export function ProjectsList() {
                   <span className="text-[var(--fixed-sidebar-muted)]">{project.issueCount} issues</span>
                 </div>
                 <div className="flex -space-x-2">
-                  {/* {project.team.map((member, i) => (
-                    <Avatar key={i} className="h-7 w-7 border-2 border-[var(--fixed-card-bg)]">
-                      <AvatarImage src={member.avatar || "/placeholder.svg"} alt={member.name} />
-                      <AvatarFallback>{member.initials}</AvatarFallback>
-                    </Avatar>
-                  ))} */}
                 </div>
               </div>
             </div>
@@ -207,7 +178,6 @@ export function ProjectsList() {
         }
       </div>
 
-      {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!projectToDelete} onOpenChange={(open) => !open && setProjectToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -227,7 +197,6 @@ export function ProjectsList() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Edit Project Dialog */}
       {projectToEdit && (
         <EditProjectDialog
           project={projectToEdit}

@@ -151,3 +151,16 @@ export const getAllSprintsGlobalHelper = async (options: FetchEntitiesOptions): 
     errorToastTitle: "Error Loading All Sprints",
   });
 };
+
+export const createProjectHelper = async (projectData: any, options: FetchEntitiesOptions): Promise<Project | null> => {
+  return apiCall<Project>({
+    url: PROJECT_URL,
+    method: httpMethods.POST,
+    body: projectData,
+    setLoading: options.setLoading,
+    successMessage: "Project has been successfully created.",
+    errorMessagePrefix: "Failed to create project",
+    successToastTitle: "Project Created",
+    errorToastTitle: "Error Creating Project",
+  });
+};

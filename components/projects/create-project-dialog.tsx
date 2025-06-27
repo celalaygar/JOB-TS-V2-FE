@@ -23,10 +23,11 @@ import { Check, ChevronsUpDown, Loader2, X } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { toast } from "@/hooks/use-toast"
-import { GET_PROJECT_USERS, PROJECT_URL } from "@/lib/service/BasePath"
+import { PROJECT_URL } from "@/lib/service/BasePath"
 import { Project, ProjectUser } from "@/types/project"
 import BaseService from "@/lib/service/BaseService"
 import { httpMethods } from "@/lib/service/HttpService"
+import { createProjectHelper } from "@/lib/service/api-helpers"
 
 interface CreateProjectDialogProps {
   open: boolean
@@ -51,12 +52,10 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
 
   const [errors, setErrors] = useState<Record<string, string>>({})
 
-  // Add a new state for the tag input
   const [tagInput, setTagInput] = useState("")
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
-    // Clear error when field is edited
     if (errors[field]) {
       setErrors((prev) => {
         const newErrors = { ...prev }
@@ -73,7 +72,6 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
     })
   }
 
-  // Add a function to handle adding tags
   const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && tagInput.trim()) {
       e.preventDefault()
@@ -87,7 +85,6 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
     }
   }
 
-  // Add a function to remove tags
   const handleRemoveTag = (tagToRemove: string) => {
     setFormData((prev) => ({
       ...prev,
@@ -106,10 +103,6 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
       newErrors.description = "Project description is required"
     }
 
-    // if (formData.team.length === 0) {
-    //   newErrors.team = "At least one team member is required"
-    // }
-
     if (formData.startDate && formData.endDate) {
       const start = new Date(formData.startDate)
       const end = new Date(formData.endDate)
@@ -127,16 +120,7 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
 
     if (!validateForm()) return
 
-    // Transform team members to the required format
-    const teamMembers = formData.team.map((userId) => {
-      const user = users.find((u) => u.id === userId)
-      return {
-        name: user?.name || "",
-        avatar: user?.avatar || "",
-        initials: user?.initials || "",
-      }
-    })
-    let responseProject: Project = await saveProject();
+    const responseProject: Project | null = await createProjectHelper(formData, { setLoading });
     if (!responseProject) {
       return;
     }
@@ -146,9 +130,8 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
         name: formData.name,
         description: formData.description,
         status: formData.status,
-        progress: 0, // New projects start at 0% progress
-        issueCount: 0, // New projects start with 0 issues
-        //team: teamMembers,
+        progress: 0,
+        issueCount: 0,
         tags: formData.tags,
         startDate: formData.startDate,
         endDate: formData.endDate,
@@ -167,41 +150,6 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
       repository: "",
     })
     onOpenChange(false)
-  }
-
-  const saveProject = async () => {
-    let project = null;
-    setLoading(true)
-    try {
-      const response = await BaseService.request(PROJECT_URL, {
-        method: httpMethods.POST,
-        body: formData
-      })
-      project = response;
-      console.log("Project saved")
-      console.log(response)
-      toast({
-        title: `Project saved.`,
-        description: `Project saved.`,
-      })
-    } catch (error: any) {
-      if (error.status === 400 && error.message) {
-        toast({
-          title: `Project find all failed. (400)`,
-          description: error.message,
-          variant: "destructive",
-        })
-      } else {
-        console.error('Project failed:', error)
-        toast({
-          title: `Project find all failed.`,
-          description: error.message,
-          variant: "destructive",
-        })
-      }
-    }
-    setLoading(false)
-    return project;
   }
 
   return (
@@ -264,77 +212,6 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
                         </SelectContent>
                       </Select>
                     </div>
-
-                    {/* <div className="grid gap-2">
-                <Label className={errors.team ? "text-[var(--fixed-danger)]" : ""}>Team Members</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      className={cn(
-                        "w-full justify-between border-[var(--fixed-card-border)]",
-                        errors.team ? "border-[var(--fixed-danger)]" : "",
-                      )}
-                    >
-                      {formData.team.length > 0 ? `${formData.team.length} members selected` : "Select team members"}
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-full p-0">
-                    <Command>
-                      <CommandInput placeholder="Search team members..." />
-                      <CommandList>
-                        <CommandEmpty>No team members found.</CommandEmpty>
-                        <CommandGroup>
-                          {users.map((user) => (
-                            <CommandItem key={user.id} value={user.id} onSelect={() => handleTeamChange(user.id)}>
-                              <Check
-                                className={cn(
-                                  "mr-2 h-4 w-4",
-                                  formData.team.includes(user.id) ? "opacity-100" : "opacity-0",
-                                )}
-                              />
-                              <div className="flex items-center">
-                                <span>{user.name}</span>
-                                <Badge className="ml-2 text-xs">{user.role}</Badge>
-                              </div>
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-
-                {formData.team.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {formData.team.map((userId) => {
-                      const user = users.find((u) => u.id === userId)
-                      return (
-                        <Badge
-                          key={userId}
-                          variant="secondary"
-                          className="flex items-center gap-1 bg-[var(--fixed-secondary)] text-[var(--fixed-secondary-fg)]"
-                        >
-                          {user?.name}
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-4 w-4 p-0 text-[var(--fixed-sidebar-muted)] hover:text-[var(--fixed-sidebar-fg)]"
-                            onClick={() => handleTeamChange(userId)}
-                          >
-                            <X className="h-3 w-3" />
-                            <span className="sr-only">Remove</span>
-                          </Button>
-                        </Badge>
-                      )
-                    })}
-                  </div>
-                )}
-
-                {errors.team && <p className="text-xs text-[var(--fixed-danger)]">{errors.team}</p>}
-              </div> */}
 
                     <div className="grid gap-2">
                       <Label htmlFor="startDate">Start Date</Label>
