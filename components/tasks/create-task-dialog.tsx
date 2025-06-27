@@ -21,16 +21,12 @@ import { Bug, Lightbulb, BookOpen, GitBranch, Loader2 } from "lucide-react"
 import type { Task } from "@/lib/redux/features/tasks-slice"
 import type { TaskType } from "@/types/task"
 import { toast } from "@/hooks/use-toast"
-import BaseService from "@/lib/service/BaseService"
-import { httpMethods } from "@/lib/service/HttpService"
-import { PROJECT_URL } from "@/lib/service/BasePath" // Sadece PROJECT_URL kaldı, diğerleri serviste
 import { Project, ProjectUser } from "@/types/project"
 import { Sprint } from "@/types/sprint"
 
-// Yeni veri çekme servisinden fonksiyonları import et
-import { fetchProjectUsers, fetchSprints } from "@/lib/service/data-fetch-service";
-
 import Select from "react-select"
+
+import { getProjectUsersHelper, getSprintsHelper } from "@/lib/service/api-helpers"
 
 interface CreateTaskDialogProps {
   open: boolean
@@ -42,6 +38,7 @@ interface CreateTaskDialogProps {
 interface SelectOption {
   value: string;
   label: string;
+  icon?: React.ReactNode;
 }
 
 export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList }: CreateTaskDialogProps) {
@@ -49,7 +46,7 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
   const users = useSelector((state: RootState) => state.users.users)
   const allTasks = useSelector((state: RootState) => state.tasks.tasks)
 
-  const [loading, setLoading] = useState(false);
+  const [loadingProjectUsers, setLoadingProjectUsers] = useState(false);
   const [projectUsers, setProjectUsers] = useState<ProjectUser[] | []>([]);
   const [loadingSprints, setLoadingSprints] = useState(false);
   const [sprintList, setSprintList] = useState<Sprint[] | []>([]);
@@ -100,50 +97,12 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
     [allTasks, formData.project]
   );
 
-  // Proje kullanıcılarını çekmek için useCallback'lenmiş fonksiyon
-  const handleFetchProjectUsers = useCallback(async (projectId: string) => {
-    setLoading(true);
-    try {
-      const users = await fetchProjectUsers(projectId); // Servis çağrısı
-      setProjectUsers(users);
-      toast({
-        title: `Proje Kullanıcıları Yüklendi`,
-        description: `Proje ${projectId} için kullanıcılar alındı.`,
-      });
-    } catch (error: any) {
-      console.error('Proje kullanıcıları yüklenemedi:', error);
-      toast({
-        title: `Proje Kullanıcıları Yüklenemedi`,
-        description: error.message || "Beklenmeyen bir hata oluştu.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, []); // Bağımlılık yok, çünkü projectId argüman olarak geçiliyor
-
-  // Sprintleri çekmek için useCallback'lenmiş fonksiyon
-  const handleFetchSprints = useCallback(async (projectId: string) => {
-    setLoadingSprints(true);
-    try {
-      const sprints = await fetchSprints(projectId); // Servis çağrısı
-      setSprintList(sprints);
-      toast({
-        title: "Sprintler Yüklendi",
-        description: `Proje ${projectId} için sprintler alındı.`,
-      });
-    } catch (error: any) {
-      console.error("Sprintler yüklenemedi:", error);
-      toast({
-        title: "Sprintler Yüklenemedi",
-        description: error.message || "Beklenmeyen bir hata oluştu.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoadingSprints(false);
-    }
-  }, []); // Bağımlılık yok, çünkü projectId argüman olarak geçiliyor
-
+  const formatTaskTypeLabel = ({ label, icon }: SelectOption) => (
+    <div style={{ display: 'flex', alignItems: 'center' }}>
+      {icon}
+      <span>{label}</span>
+    </div>
+  );
 
   useEffect(() => {
     if (parentTaskId) {
@@ -156,13 +115,12 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
           parentTask: parentTaskId,
         }))
         if (parentTask.project) {
-          handleFetchProjectUsers(parentTask.project);
-          handleFetchSprints(parentTask.project);
+          handleGetProjectUsers(parentTask.project);
+          handleGetSprints(parentTask.project);
         }
       }
     }
-  }, [parentTaskId, allTasks, handleFetchProjectUsers, handleFetchSprints])
-
+  }, [parentTaskId, allTasks])
 
   const handleChange = useCallback((field: keyof typeof formData, value: string | SelectOption | null) => {
     let actualValue: string | null;
@@ -178,12 +136,28 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
     setFormData((prev) => ({ ...prev, [field]: actualValue }));
 
     if (field === "project" && typeof actualValue === 'string' && actualValue !== "all") {
-      // Proje değiştiğinde ilgili kullanıcıları ve sprintleri çek
-      handleFetchProjectUsers(actualValue);
-      handleFetchSprints(actualValue);
+      handleGetProjectUsers(actualValue);
+      handleGetSprints(actualValue);
     }
-  }, [handleFetchProjectUsers, handleFetchSprints]);
+  }, []);
 
+  const handleGetProjectUsers = useCallback(async (projectId: string) => {
+    const usersData = await getProjectUsersHelper(projectId, { setLoading: setLoadingProjectUsers });
+    if (usersData) {
+      setProjectUsers(usersData);
+    } else {
+      setProjectUsers([]);
+    }
+  }, []);
+
+  const handleGetSprints = useCallback(async (projectId: string) => {
+    const sprintsData = await getSprintsHelper(projectId, { setLoading: setLoadingSprints });
+    if (sprintsData) {
+      setSprintList(sprintsData);
+    } else {
+      setSprintList([]);
+    }
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -191,8 +165,8 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
     if (!formData.title || !formData.project || !formData.assignee || !formData.taskType ||
       (formData.taskType === "subtask" && !formData.parentTask)) {
       toast({
-        title: "Eksik Bilgi",
-        description: "Lütfen gerekli tüm alanları doldurun.",
+        title: "Missing Information",
+        description: "Please fill in all required fields.",
         variant: "destructive",
       });
       return;
@@ -203,27 +177,9 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
 
     const { title, description, project, assignee, priority, taskType, sprint, parentTask } = formData
 
-    let prefix = ""
-    switch (taskType) {
-      case "bug":
-        prefix = "BUG"
-        break
-      case "feature":
-        prefix = "FTR"
-        break
-      case "story":
-        prefix = "STORY"
-        break
-      case "subtask":
-        prefix = "SUB"
-        break
-      default:
-        prefix = "PBI"
-    }
-
     const newTask: Task = {
-      id: null as any, // Backend'den geleceği varsayılır
-      taskNumber: null as any, // Backend'den geleceği varsayılır
+      id: null,
+      taskNumber: null,
       title,
       description,
       status: "to-do",
@@ -243,13 +199,15 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
       parentTaskId: parentTask || undefined,
     }
 
-    dispatch(addTask(newTask)) // Redux state'e ekle
+    dispatch(addTask(newTask))
+
     toast({
-      title: "Görev Oluşturuldu",
-      description: `Görev "${newTask.title}" başarıyla oluşturuldu.`,
+      title: "Task Created",
+      description: `Task "${newTask.title}" has been successfully created.`,
     });
+
     onOpenChange(false)
-    setFormData({ // Formu sıfırla
+    setFormData({
       title: "",
       description: "",
       project: null,
@@ -261,88 +219,55 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
     })
   }
 
-  const saveTask = async () => {
-    let project = null; // Bu değişken ismi, task kaydetme değil proje kaydetme çağrısına işaret ediyor
-    setLoading(true)
-    try {
-      const response = await BaseService.request(PROJECT_URL, { // PROJECT_URL kullanıldığı için dikkat!
-        method: httpMethods.POST,
-        body: formData // Tüm form verisini gönderiyor, bu da genellikle bir Task objesi değil Project objesidir.
-      })
-      project = response;
-      toast({
-        title: `Proje kaydedildi.`, // Mesajı da buna göre düzenledim
-        description: `Proje başarıyla kaydedildi.`,
-      })
-      onOpenChange(false)
-    } catch (error: any) {
-      if (error.status === 400 && error.message) {
-        toast({
-          title: `Proje kaydetme başarısız. (400)`,
-          description: error.message,
-          variant: "destructive",
-        })
-      } else {
-        console.error('Proje kaydetme başarısız:', error)
-        toast({
-          title: `Proje kaydetme başarısız.`,
-          description: error.message,
-          variant: "destructive",
-        })
-      }
-    }
-    setLoading(false)
-    return project;
-  }
+  const overallLoading = loadingProjectUsers || loadingSprints;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto ">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Yeni Görev Oluştur</DialogTitle>
-            <DialogDescription>Projenize yeni bir görev ekleyin. Aşağıdaki detayları doldurun.</DialogDescription>
+            <DialogTitle>Create New Task</DialogTitle>
+            <DialogDescription>Add a new task to your project. Fill out the details below.</DialogDescription>
           </DialogHeader>
           {
-            loading || loadingSprints ?
+            overallLoading ? (
               <div className="grid gap-4 py-4">
                 <div className="flex items-center justify-center">
                   <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
                 </div>
               </div>
-              :
+            ) : (
               <>
                 <div className="grid gap-4 py-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="title">Başlık</Label>
+                    <Label htmlFor="title">Title</Label>
                     <Input
                       id="title"
                       value={formData.title}
                       onChange={(e) => handleChange("title", e.target.value)}
-                      placeholder="Görevin başlığını girin"
+                      placeholder="Enter task title"
                       required
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="description">Açıklama</Label>
+                    <Label htmlFor="description">Description</Label>
                     <Textarea
                       id="description"
                       value={formData.description || ""}
                       onChange={(e) => handleChange("description", e.target.value)}
-                      placeholder="Görevi ayrıntılı olarak açıklayın"
+                      placeholder="Describe the task in detail"
                       rows={3}
                     />
                   </div>
 
-                  {/* Project Select */}
                   <div className="grid gap-2">
-                    <Label htmlFor="project">Proje</Label>
+                    <Label htmlFor="project">Project</Label>
                     <Select
                       id="project"
                       options={projectOptions}
                       value={projectOptions.find(option => option.value === formData.project)}
                       onChange={(option) => handleChange("project", option)}
-                      placeholder="Proje Seçin"
+                      placeholder="Select project"
                       required
                       isDisabled={!!parentTaskId}
                     />
@@ -350,13 +275,13 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
 
                   {formData.taskType === "subtask" && (
                     <div className="grid gap-2">
-                      <Label htmlFor="parentTask">Üst Görev</Label>
+                      <Label htmlFor="parentTask">Parent Task</Label>
                       <Select
                         id="parentTask"
                         options={parentTaskOptions}
                         value={parentTaskOptions.find(option => option.value === formData.parentTask)}
                         onChange={(option) => handleChange("parentTask", option)}
-                        placeholder="Üst görev seçin"
+                        placeholder="Select parent task"
                         isDisabled={!!parentTaskId}
                         isClearable
                       />
@@ -365,64 +290,54 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="grid gap-2">
-                      {/* Task Type Select */}
-                      <Label htmlFor="taskType">Görev Tipi</Label>
+                      <Label htmlFor="taskType">Task Type</Label>
                       <Select
                         id="taskType"
                         options={taskTypeOptions}
                         value={taskTypeOptions.find(option => option.value === formData.taskType)}
                         onChange={(option) => handleChange("taskType", option)}
-                        placeholder="Görev tipi seçin"
+                        placeholder="Select task type"
                         isDisabled={!!parentTaskId}
-                        // Özel render için formatOptionLabel kullanın
-                        formatOptionLabel={(option: SelectOption & { icon?: React.ReactNode }) => (
-                          <div className="flex items-center">
-                            {option.icon}
-                            {option.label}
-                          </div>
-                        )}
+                        formatOptionLabel={formatTaskTypeLabel}
                       />
                     </div>
                     <div className="grid gap-2">
-                      {/* Assignee Select */}
-                      <Label htmlFor="assignee">Atanan Kişi</Label>
+                      <Label htmlFor="assignee">Assignee</Label>
                       <Select
                         id="assignee"
                         options={assigneeOptions}
                         value={assigneeOptions.find(option => option.value === formData.assignee)}
                         onChange={(option) => handleChange("assignee", option)}
-                        placeholder="Atama Yap"
+                        placeholder="Assign to"
                         required
                         isClearable
                         isDisabled={!formData.project || assigneeOptions.length === 0}
-                        noOptionsMessage={() => "Atanan kişileri görmek için önce bir proje seçin."}
+                        noOptionsMessage={() => "Select a project first to see assignees."}
                       />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="grid gap-2">
-                      {/* Priority Select */}
-                      <Label htmlFor="priority">Öncelik</Label>
+                      <Label htmlFor="priority">Priority</Label>
                       <Select
                         id="priority"
                         options={priorityOptions}
                         value={priorityOptions.find(option => option.value === formData.priority)}
                         onChange={(option) => handleChange("priority", option)}
-                        placeholder="Öncelik seçin"
+                        placeholder="Select priority"
                       />
                     </div>
                     <div className="grid gap-2">
-                      {/* Sprint Select */}
                       <Label htmlFor="sprint">Sprint</Label>
                       <Select
                         id="sprint"
                         options={sprintOptions}
                         value={sprintOptions.find(option => option.value === formData.sprint)}
                         onChange={(option) => handleChange("sprint", option)}
-                        placeholder="Sprint seçin"
+                        placeholder="Select sprint"
                         isClearable
                         isDisabled={!formData.project || sprintOptions.length === 0}
-                        noOptionsMessage={() => "Sprintleri görmek için önce bir proje seçin."}
+                        noOptionsMessage={() => "Select a project first to see sprints."}
                       />
                     </div>
                   </div>
@@ -430,11 +345,12 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
 
                 <DialogFooter>
                   <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                    İptal
+                    Cancel
                   </Button>
-                  <Button type="submit">Görev Oluştur</Button>
+                  <Button type="submit">Create Task</Button>
                 </DialogFooter>
               </>
+            )
           }
         </form>
       </DialogContent>
