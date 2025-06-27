@@ -26,7 +26,7 @@ import { Sprint } from "@/types/sprint"
 
 import Select from "react-select"
 
-import { getProjectUsersHelper, getSprintsHelper } from "@/lib/service/api-helpers"
+import { getNonCompletedSprintsHelper, getProjectUsersHelper, getSprintsHelper } from "@/lib/service/api-helpers"
 
 interface CreateTaskDialogProps {
   open: boolean
@@ -151,7 +151,7 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
   }, []);
 
   const handleGetSprints = useCallback(async (projectId: string) => {
-    const sprintsData = await getSprintsHelper(projectId, { setLoading: setLoadingSprints });
+    const sprintsData = await getNonCompletedSprintsHelper(projectId, { setLoading: setLoadingSprints });
     if (sprintsData) {
       setSprintList(sprintsData);
     } else {

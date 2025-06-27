@@ -15,21 +15,20 @@ import { ProjectDetailsDialog } from "@/components/teams/team-detail/project-det
 import { AddMemberDialog } from "@/components/teams/team-detail/add-member-dialog"
 import { EditRoleDialog } from "@/components/teams/team-detail/edit-role-dialog"
 import { ConfirmationDialog } from "@/components/teams/team-detail/confirmation-dialog"
-import BaseService from "@/lib/service/BaseService"
-import { PROJECT_URL, TEAM_DETAIL_URL } from "@/lib/service/BasePath"
 import { Project, ProjectTeam } from "@/types/project"
 import { useDispatch } from "react-redux"
 import { selectProject } from "@/lib/redux/features/projects-slice"
 import { Loader2 } from "lucide-react"
-import { httpMethods } from "@/lib/service/HttpService"
+import { getProjectHelper, getProjectTeamDetailHelper } from "@/lib/service/api-helpers" // Import the new helpers
+
 
 export default function TeamDetailPage({ projectId, teamId }: { projectId: string; teamId: string }) {
   const router = useRouter()
   const { toast } = useToast()
 
   // Find the team and project
-  const [teamData, setTeamData] = useState<ProjectTeam>();
-  const [project, setProject] = useState<Project>();
+  const [teamData, setTeamData] = useState<ProjectTeam | undefined>();
+  const [project, setProject] = useState<Project | undefined>();
 
 
   // State for search and filters
@@ -58,72 +57,34 @@ export default function TeamDetailPage({ projectId, teamId }: { projectId: strin
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch()
 
-  const getProject = useCallback(async () => {
-    setLoading(true)
-    try {
-      const response = await BaseService.request(PROJECT_URL + "/" + projectId, {
-        method: httpMethods.GET,
-      })
-      let data = response as Project;
-      setProject(data)
-      console.log('Project find data ', data)
-      dispatch(selectProject(data))
-    } catch (error: any) {
-      if (error.status === 400 && error.message) {
-        toast({
-          title: `Project find all failed. (400)`,
-          description: error.message,
-          variant: "destructive",
-        })
-      } else {
-        console.error('Project failed:', error)
-        toast({
-          title: `Project find all failed.`,
-          description: error.message,
-          variant: "destructive",
-        })
-      }
+  const fetchProject = useCallback(async () => {
+    if (!projectId) {
+      setLoading(false);
+      return;
     }
-    setLoading(false)
-  }, [])
+    const projectData = await getProjectHelper(projectId, { setLoading });
+    if (projectData) {
+      setProject(projectData);
+      dispatch(selectProject(projectData));
+    }
+  }, [projectId, dispatch]);
 
-  const getProjectTeamDetail = useCallback(async () => {
-    setLoading(true)
-    try {
-      let body = {
-        id: teamId,
-        projectId
-      }
-      const response = await BaseService.request(TEAM_DETAIL_URL, {
-        method: httpMethods.POST,
-        body: body
-      })
-      let data = response as ProjectTeam;
-      setTeamData(data)
-      console.log('TEAM detail find data ', data)
-    } catch (error: any) {
-      if (error.status === 400 && error.message) {
-        toast({
-          title: `Project find all failed. (400)`,
-          description: error.message,
-          variant: "destructive",
-        })
-      } else {
-        console.error('Project failed:', error)
-        toast({
-          title: `Project find all failed.`,
-          description: error.message,
-          variant: "destructive",
-        })
-      }
+  const fetchProjectTeamDetail = useCallback(async () => {
+    if (!teamId || !projectId) {
+      setLoading(false);
+      return;
     }
-    setLoading(false)
-  }, [])
+    const teamDetails = await getProjectTeamDetailHelper(teamId, projectId, { setLoading });
+    if (teamDetails) {
+      setTeamData(teamDetails);
+    }
+  }, [teamId, projectId]);
+
 
   useEffect(() => {
-    getProject()
-    getProjectTeamDetail()
-  }, [getProject, getProjectTeamDetail])
+    fetchProject()
+    fetchProjectTeamDetail()
+  }, [fetchProject, fetchProjectTeamDetail])
 
   // If team or project not found, show error
   if (!teamData || !project) {
@@ -131,10 +92,16 @@ export default function TeamDetailPage({ projectId, teamId }: { projectId: strin
       <div className="container mx-auto py-6 space-y-6">
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-10">
-            <h3 className="text-lg font-medium">Team not found</h3>
-            <p className="text-muted-foreground text-center mt-2">
-              The team you are looking for does not exist or you don't have access to it.
-            </p>
+            {loading ? (
+              <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+            ) : (
+              <>
+                <h3 className="text-lg font-medium">Team not found</h3>
+                <p className="text-muted-foreground text-center mt-2">
+                  The team you are looking for does not exist or you don't have access to it.
+                </p>
+              </>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -272,7 +239,7 @@ export default function TeamDetailPage({ projectId, teamId }: { projectId: strin
         />}
 
         {/* Project Details Dialog */}
-        <ProjectDetailsDialog isOpen={isProjectDetailsOpen} onOpenChange={setIsProjectDetailsOpen} project={project} />
+        {project && <ProjectDetailsDialog isOpen={isProjectDetailsOpen} onOpenChange={setIsProjectDetailsOpen} project={project} />}
 
         {/* Add Member Dialog */}
         <AddMemberDialog isOpen={isAddMemberOpen} onOpenChange={setIsAddMemberOpen} availableUsers={availableUsers} />

@@ -20,11 +20,8 @@ import { ProjectStatusTab } from "@/components/projects/project-detail/project-s
 import type { Task } from "@/types/task"
 import { projects } from "@/data/projects" // Import projects directly from data
 import { Project } from "@/types/project"
-import BaseService from "@/lib/service/BaseService"
-import { toast } from "@/hooks/use-toast"
 import { Loader2 } from "lucide-react"
-import { PROJECT_URL } from "@/lib/service/BasePath"
-import { httpMethods } from "@/lib/service/HttpService"
+import { getProjectHelper, getAllProjectsHelper } from "@/lib/service/api-helpers" // Import the new helpers
 import { ProjectSentInvitationsTab } from "@/components/projects/project-detail/project-sent-invitations-tab"
 
 export default function ProjectDetails() {
@@ -36,7 +33,8 @@ export default function ProjectDetails() {
   // Get project from Redux store or fallback to direct data import
   const projectFromStore = useSelector((state: RootState) => state.projects.projects.find((p) => p.id === projectId))
 
-  // Fallback to direct data if not in Redux store
+  // Fallback to direct data if not in Redux store (though getProjectHelper will fetch it)
+  // This line might become redundant if getProjectHelper is the single source of truth for currentProject
   const project = projectFromStore || projects.find((p) => p.id === projectId)
 
   const allTasks = useSelector((state: RootState) => state.tasks?.tasks || [])
@@ -53,40 +51,24 @@ export default function ProjectDetails() {
 
 
   const [loading, setLoading] = useState(false);
-  const [currentProject, setCurrentProject] = useState<Project>();
+  const [currentProject, setCurrentProject] = useState<Project | undefined>(undefined); // Initialize as undefined to differentiate from null
 
-  const getProject = useCallback(async () => {
-    setLoading(true)
-    try {
-      const response = await BaseService.request(PROJECT_URL + "/" + projectId, {
-        method: httpMethods.GET,
-      })
-      let data = response as Project;
-      setCurrentProject(data)
-      console.log('Project find data ', data)
-      dispatch(selectProject(data))
-    } catch (error: any) {
-      if (error.status === 400 && error.message) {
-        toast({
-          title: `Project find all failed. (400)`,
-          description: error.message,
-          variant: "destructive",
-        })
-      } else {
-        console.error('Project failed:', error)
-        toast({
-          title: `Project find all failed.`,
-          description: error.message,
-          variant: "destructive",
-        })
-      }
+  const fetchProject = useCallback(async () => {
+    if (!projectId) {
+      setLoading(false);
+      return;
     }
-    setLoading(false)
-  }, [])
+    const projectData = await getProjectHelper(projectId, { setLoading });
+    if (projectData) {
+      setCurrentProject(projectData);
+      dispatch(selectProject(projectData)); // Dispatch the fetched project to Redux store
+    }
+  }, [projectId, dispatch]);
+
 
   useEffect(() => {
-    getProject()
-  }, [getProject])
+    fetchProject();
+  }, [fetchProject])
 
 
   // Handle project deletion
@@ -122,7 +104,7 @@ export default function ProjectDetails() {
         <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
       </div>
     </>
-  ) : ((!currentProject) ?
+  ) : ((!currentProject) ? // Check for currentProject being undefined/null after loading
     <>
       <div className="flex flex-col items-center justify-center h-full">
         <h1 className="text-2xl font-bold mb-4">Project not found</h1>

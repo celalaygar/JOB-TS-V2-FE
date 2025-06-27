@@ -8,7 +8,7 @@ import { CalendarDays, Edit, Eye, Trash2 } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 import Link from "next/link"
 import { format } from "date-fns"
-import type { Sprint } from "@/lib/redux/features/sprints-slice"
+import { Sprint } from "@/types/sprint"
 
 interface ProjectSprintsListProps {
   sprints: Sprint[]
@@ -51,7 +51,7 @@ export function ProjectSprintsList({ sprints, onEditSprint, onDeleteSprint }: Pr
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {sprints.map((sprint) => (
+      {sprints.map((sprint: Sprint) => (
         <Card key={sprint.id} className="fixed-card hover:shadow-lg">
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -63,6 +63,14 @@ export function ProjectSprintsList({ sprints, onEditSprint, onDeleteSprint }: Pr
             <CardDescription className="text-[var(--fixed-sidebar-muted)] flex items-center">
               <CalendarDays className="h-4 w-4 mr-1" />
               {format(new Date(sprint.startDate), "MMM d")} - {format(new Date(sprint.endDate), "MMM d, yyyy")}
+            </CardDescription>
+            <CardDescription className="text-[var(--fixed-sidebar-muted)] flex items-center">
+              <CalendarDays className="h-4 w-4 mr-1" />
+              {sprint.createdProject.name}
+            </CardDescription>
+            <CardDescription className="text-[var(--fixed-sidebar-muted)] flex items-center">
+              <CalendarDays className="h-4 w-4 mr-1" />
+              {sprint.sprintStatus}
             </CardDescription>
           </CardHeader>
 

@@ -8,11 +8,13 @@ import { useSelector } from "react-redux"
 import type { RootState } from "@/lib/redux/store"
 import { Plus, Search, Filter, Bug, Lightbulb, BookOpen, GitBranch, Loader2 } from "lucide-react"
 import { CreateTaskDialog } from "@/components/tasks/create-task-dialog"
-import { GET_PROJECT_USERS, PROJECT_TASK_STATUS_URL, PROJECT_URL } from "@/lib/service/BasePath"
-import BaseService from "@/lib/service/BaseService"
-import { httpMethods } from "@/lib/service/HttpService"
+import {
+  getAllProjectsHelper,
+  getAllProjectTaskStatusHelper,
+  getProjectUsersHelper
+} from "@/lib/service/api-helpers" // Import helpers
 import { Project, ProjectTaskStatus, ProjectUser } from "@/types/project"
-import { toast } from "@/hooks/use-toast"
+import { toast } from "@/hooks/use-toast" // Keep toast for specific, non-apiCall related messages if any
 
 interface TasksHeaderProps {
   filters: {
@@ -30,113 +32,64 @@ export function TasksHeader({ filters, setFilters }: TasksHeaderProps) {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
 
+  // This `users` from Redux state might still be used elsewhere, keeping it.
   const users = useSelector((state: RootState) => state.users.users)
-
 
   const [loading, setLoading] = useState(false);
   const [projectList, setProjectList] = useState<Project[] | []>([]);
   const [projectTaskStatus, setProjectTaskStatus] = useState<ProjectTaskStatus[]>([])
-  const [projectUsers, setprojectUsers] = useState<ProjectUser[]>()
+  const [projectUsers, setProjectUsers] = useState<ProjectUser[] | []>([]) // Initialize as empty array
 
-  const getAllProjects = useCallback(async () => {
-    setLoading(true)
-    try {
-      const response = await BaseService.request(PROJECT_URL, {
-        method: httpMethods.GET,
-      })
-      let projectList = response as Project[];
-      setProjectList(projectList)
-    } catch (error: any) {
-      if (error.status === 400 && error.message) {
-        toast({
-          title: `Project find all failed. (400)`,
-          description: error.message,
-          variant: "destructive",
-        })
-      } else {
-        console.error('Project failed:', error)
-        toast({
-          title: `Project find all failed.`,
-          description: error.message,
-          variant: "destructive",
-        })
-      }
+
+  // Using useCallback for functions passed to useEffect or as props
+  const fetchAllProjects = useCallback(async () => {
+    // setLoading is handled by apiCall now
+    const projectsData = await getAllProjectsHelper({ setLoading });
+    if (projectsData) {
+      setProjectList(projectsData);
+    } else {
+      setProjectList([]);
     }
-    setLoading(false)
-  }, [])
+  }, []); // No dependencies for fetching all projects
 
 
+  const fetchAllProjectTaskStatus = useCallback(async (projectId: string) => {
+    setProjectTaskStatus([]); // Clear previous statuses
+    const statusesData = await getAllProjectTaskStatusHelper(projectId, { setLoading });
+    if (statusesData) {
+      setProjectTaskStatus(statusesData);
+    } else {
+      setProjectTaskStatus([]);
+    }
+  }, []);
+
+
+  const fetchProjectUsers = useCallback(async (projectId: string) => {
+    setProjectUsers([]); // Clear previous users
+    const usersData = await getProjectUsersHelper(projectId, { setLoading });
+    if (usersData) {
+      setProjectUsers(usersData);
+    } else {
+      setProjectUsers([]);
+    }
+  }, []);
+
+  // Initial fetch for all projects when the component mounts
   useEffect(() => {
-    getAllProjects()
-  }, [getAllProjects])
+    fetchAllProjects();
+  }, [fetchAllProjects]);
 
 
-  const getAllProjectTaskStatus = async (projectId: string) => {
-    setProjectTaskStatus([])
-    setLoading(true)
-    try {
-      const response = await BaseService.request(PROJECT_TASK_STATUS_URL + "/project/" + projectId, {
-        method: httpMethods.GET
-      })
-      toast({
-        title: `Project Task Status get All.`,
-        description: `Project Task Status get All `,
-      })
-      setProjectTaskStatus(response as ProjectTaskStatus[])
-    } catch (error: any) {
-      if (error.status === 400 && error.message) {
-        toast({
-          title: `Project find all failed. (400)`,
-          description: error.message,
-          variant: "destructive",
-        })
-      } else {
-        console.error('Projects Task Status  failed:', error)
-        toast({
-          title: `Projects Task Status  find all failed.`,
-          description: error.message,
-          variant: "destructive",
-        })
-      }
-    }
-    setLoading(false)
-  }
-  const getProjectUsers = async (projectId: string) => {
-    setLoading(true)
-    setprojectUsers([])
-    try {
-      const response: ProjectUser[] = await BaseService.request(GET_PROJECT_USERS + "/" + projectId, {
-        method: httpMethods.GET,
-      })
-      toast({
-        title: `Get All Invitations.`,
-        description: `Get All Invitations `,
-      })
-      setprojectUsers(response)
-
-    } catch (error: any) {
-      if (error.status === 400 && error.message) {
-        toast({
-          title: `Get Project Users failed. (400)`,
-          description: error.message,
-          variant: "destructive",
-        })
-      } else {
-        console.error('Get Project Users failed:', error)
-        toast({
-          title: `Get Project Users failed.`,
-          description: error.message,
-          variant: "destructive",
-        })
-      }
-    }
-    setLoading(false)
-  }
   const handleFilterChange = (key: string, value: string) => {
     setFilters({ ...filters, [key]: value })
-    if (key === "project" && !!value && value !== "all") {
-      getAllProjectTaskStatus(value)
-      getProjectUsers(value)
+    if (key === "project") {
+      if (value && value !== "all") {
+        fetchAllProjectTaskStatus(value); // Fetch statuses for the selected project
+        fetchProjectUsers(value); // Fetch users for the selected project
+      } else {
+        setProjectTaskStatus([]); // Clear statuses if "All Projects" selected
+        setProjectUsers([]); // Clear users if "All Projects" selected
+      }
     }
   }
 
@@ -194,7 +147,7 @@ export function TasksHeader({ filters, setFilters }: TasksHeaderProps) {
                     <SelectContent>
                       <SelectItem value="all">All Projects</SelectItem>
                       {!!projectList && projectList.map((project: Project) => (
-                        <SelectItem key={project.id} value={project.id}>
+                        <SelectItem key={project.id} value={project.id || ""}>
                           {project.name}
                         </SelectItem>
                       ))}
@@ -209,15 +162,10 @@ export function TasksHeader({ filters, setFilters }: TasksHeaderProps) {
                     <SelectContent>
                       <SelectItem value="all">All Statuses</SelectItem>
                       {!!projectTaskStatus && projectTaskStatus.map((status: ProjectTaskStatus) => (
-                        <SelectItem key={status.id} value={status.id}>
+                        <SelectItem key={status.id} value={status.id || ""}>
                           {status.name}
                         </SelectItem>
                       ))}
-
-                      {/* <SelectItem value="to-do">To Do</SelectItem>
-                      <SelectItem value="in-progress">In Progress</SelectItem>
-                      <SelectItem value="review">In Review</SelectItem>
-                      <SelectItem value="done">Done</SelectItem> */}
                     </SelectContent>
                   </Select>
                 </div>
@@ -242,7 +190,7 @@ export function TasksHeader({ filters, setFilters }: TasksHeaderProps) {
                     <SelectContent>
                       <SelectItem value="all">All Assignees</SelectItem>
                       {!!projectUsers && projectUsers.map((user: ProjectUser) => (
-                        <SelectItem key={user.id} value={user.id}>
+                        <SelectItem key={user.id} value={user.id || ""}>
                           {user.email}
                         </SelectItem>
                       ))}
@@ -296,6 +244,8 @@ export function TasksHeader({ filters, setFilters }: TasksHeaderProps) {
                         assignee: "all",
                         taskType: "all",
                       })
+                      setProjectTaskStatus([]) // Clear statuses on reset
+                      setProjectUsers([]) // Clear users on reset
                     }}
                   >
                     Reset Filters

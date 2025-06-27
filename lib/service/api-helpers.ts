@@ -19,7 +19,8 @@ import {
   PROJECT_TASK_STATUS_URL,
   INVITATION_BY_PROJECTID,
   INVITE_TO_PROJECT,
-  SPRINT_URL // Import SPRINT_URL
+  SPRINT_URL, // Import SPRINT_URL
+  TEAM_DETAIL_URL
 } from "@/lib/service/BasePath";
 
 interface ApiOperationConfig<T> {
@@ -387,3 +388,77 @@ export const saveUpdateSprintHelper = async (sprintData: Sprint, options: FetchE
     errorToastTitle,
   });
 };
+
+export const getSprintHelper = async (sprintId: string, options: FetchEntitiesOptions): Promise<Sprint | null> => {
+  if (!sprintId) {
+    options.setLoading(false);
+    return null;
+  }
+
+  return apiCall<Sprint>({
+    url: `${SPRINT_URL}/${sprintId}`,
+    method: httpMethods.GET,
+    setLoading: options.setLoading,
+    successMessage: `Sprint ${sprintId} details retrieved.`,
+    errorMessagePrefix: "Failed to load sprint details",
+    successToastTitle: "Sprint Details Loaded",
+    errorToastTitle: "Error Loading Sprint Details",
+  });
+};
+
+export const getProjectHelper = async (projectId: string, options: FetchEntitiesOptions): Promise<Project | null> => {
+  if (!projectId) {
+    options.setLoading(false);
+    return null;
+  }
+
+  return apiCall<Project>({
+    url: `${PROJECT_URL}/${projectId}`,
+    method: httpMethods.GET,
+    setLoading: options.setLoading,
+    successMessage: `Project ${projectId} details retrieved.`,
+    errorMessagePrefix: "Failed to load project details",
+    successToastTitle: "Project Details Loaded",
+    errorToastTitle: "Error Loading Project Details",
+  });
+};
+
+export const getProjectTeamDetailHelper = async (teamId: string, projectId: string, options: FetchEntitiesOptions): Promise<ProjectTeam | null> => {
+  if (!teamId || !projectId) {
+    options.setLoading(false);
+    return null;
+  }
+
+  const payload = { id: teamId, projectId: projectId };
+
+  return apiCall<ProjectTeam>({
+    url: TEAM_DETAIL_URL,
+    method: httpMethods.POST, // Assuming TEAM_DETAIL_URL uses POST with a body
+    body: payload,
+    setLoading: options.setLoading,
+    successMessage: `Team ${teamId} details for project ${projectId} retrieved.`,
+    errorMessagePrefix: "Failed to load project team details",
+    successToastTitle: "Project Team Details Loaded",
+    errorToastTitle: "Error Loading Project Team Details",
+  });
+};
+
+
+export const getNonCompletedSprintsHelper = async (projectId: string, options: FetchEntitiesOptions): Promise<Sprint[] | null> => {
+  if (!projectId) {
+    options.setLoading(false);
+    return [];
+  }
+
+  return apiCall<Sprint[]>({
+    url: `${SPRINT_NON_COMPLETED_GET_ALL_URL}/${projectId}`,
+    method: httpMethods.GET,
+    setLoading: options.setLoading,
+    successMessage: `Non-completed sprints for project ${projectId} have been retrieved.`,
+    errorMessagePrefix: "Failed to load non-completed sprints",
+    successToastTitle: "Non-Completed Sprints Loaded",
+    errorToastTitle: "Error Loading Non-Completed Sprints",
+  });
+};
+
+

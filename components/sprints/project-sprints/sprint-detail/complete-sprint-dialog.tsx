@@ -28,10 +28,10 @@ import {
 import { Progress } from "@/components/ui/progress"
 import { CheckCircle, AlertCircle, Loader2 } from "lucide-react"
 import { Sprint, SprintStatus } from "@/types/sprint"
-import BaseService from "@/lib/service/BaseService"
-import { httpMethods } from "@/lib/service/HttpService"
 import { toast } from "@/hooks/use-toast"
-import { SPRINT_NON_COMPLETED_GET_ALL_URL, SPRINT_URL } from "@/lib/service/BasePath"
+import { getNonCompletedSprintsHelper } from "@/lib/service/api-helpers" // Import the new helper
+import { saveUpdateSprintHelper } from "@/lib/service/api-helpers" // Import saveUpdateSprintHelper for dispatching updates
+
 
 interface CompleteSprintDialogProps {
   sprint: Sprint // Using any for simplicity, but should be properly typed
@@ -54,72 +54,88 @@ export function CompleteSprintDialog({ sprint, open, onOpenChange, tasks }: Comp
   const completionPercentage = tasks.length > 0 ? Math.round((completedTasks / tasks.length) * 100) : 0
 
 
-  const handleCompleteSprint = () => {
-    // Update sprint status to completed
-    dispatch(
-      updateSprint({
-        id: sprintId,
-        changes: { status: "completed" },
-      }),
-    )
-
-    // Here you would also handle moving incomplete tasks
-    // This would typically involve dispatching actions to update tasks
-    // For example:
-    // if (destination === "backlog") {
-    //   incompleteTasks.forEach(task => {
-    //     dispatch(updateTask({
-    //       id: task.id,
-    //       changes: { sprint: null, backlog: true }
-    //     }))
-    //   })
-    // } else if (destination === "sprint" && targetSprintId) {
-    //   incompleteTasks.forEach(task => {
-    //     dispatch(updateTask({
-    //       id: task.id,
-    //       changes: { sprint: targetSprintId }
-    //     }))
-    //   })
-    // }
-
-    onOpenChange(false)
-  }
-
   const [loading, setLoading] = useState(false);
   const [sprintList, setSprintList] = useState<Sprint[] | []>([]);
 
 
-  const getSprint = useCallback(async () => {
-
-    if (!sprint.createdProject.id) {
+  const fetchNonCompletedSprints = useCallback(async () => {
+    if (!sprint.createdProject.id) { // Use sprint.projectId
+      setLoading(false);
       return;
     }
-    setLoading(true);
+    const sprintsData = await getNonCompletedSprintsHelper(sprint.createdProject.id, { setLoading }); // Use sprint.projectId and setLoading
+    if (sprintsData) {
+      // Filter out the current sprint from the list of target sprints
+      setSprintList(sprintsData.filter(s => s.id !== sprint.id));
+    } else {
+      setSprintList([]);
+    }
+  }, [sprint?.projectId, sprint?.id]);
+
+
+  useEffect(() => {
+    if (open) { // Only fetch when dialog is open
+      fetchNonCompletedSprints();
+    }
+  }, [open, fetchNonCompletedSprints])
+
+
+  const handleCompleteSprint = async () => {
+    setLoading(true); // Start loading for the completion process
+
     try {
-      const response: Sprint[] = await BaseService.request(`${SPRINT_NON_COMPLETED_GET_ALL_URL}/${sprint.createdProject.id}`, {
-        method: httpMethods.GET,
-      });
-      toast({
-        title: "Sprint Updated",
-        description: `Sprint "${response.name}" has been successfully updated.`,
-      });
-      setSprintList(response)
+      // Update sprint status to completed
+      const updatedSprintData = {
+        ...sprint,
+        status: "completed" as SprintStatus, // Explicitly cast to SprintStatus
+        updatedAt: new Date().toISOString(),
+      };
+
+      const response = await saveUpdateSprintHelper(updatedSprintData, { setLoading });
+
+      if (response) {
+        dispatch(updateSprint(response));
+        // Logic for moving incomplete tasks would go here
+        // This part currently uses dummy data/logic, would need actual API calls for tasks
+        // if (destination === "backlog") {
+        //   incompleteTasks.forEach(task => {
+        //     dispatch(updateTask({
+        //       id: task.id,
+        //       changes: { sprint: null, backlog: true }
+        //     }))
+        //   })
+        // } else if (destination === "sprint" && targetSprintId) {
+        //   incompleteTasks.forEach(task => {
+        //     dispatch(updateTask({
+        //       id: task.id,
+        //       changes: { sprint: targetSprintId }
+        //     }))
+        //   })
+        // }
+
+        toast({
+          title: "Sprint Completed",
+          description: `Sprint "${sprint.name}" has been successfully completed.`,
+        });
+        onOpenChange(false);
+      } else {
+        toast({
+          title: "Completion Failed",
+          description: "There was an error completing the sprint.",
+          variant: "destructive",
+        });
+      }
     } catch (error: any) {
-      console.error("Failed to update sprint:", error);
+      console.error("Failed to complete sprint:", error);
       toast({
-        title: "Update Failed",
-        description: error.message || "An error occurred while updating the sprint.",
+        title: "Completion Failed",
+        description: error.message || "An unexpected error occurred during sprint completion.",
         variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
-  }, [])
-
-
-  useEffect(() => {
-    getSprint()
-  }, [getSprint])
+  }
 
 
   return (
@@ -195,7 +211,7 @@ export function CompleteSprintDialog({ sprint, open, onOpenChange, tasks }: Comp
                               <SelectLabel>Available Sprints</SelectLabel>
                               {sprintList.length > 0 ? (
                                 sprintList.map((sprint: Sprint) => (
-                                  <SelectItem key={sprint.id} value={sprint.id}>
+                                  <SelectItem key={sprint.id} value={sprint.id || ""}> {/* Ensure value is string */}
                                     {sprint.name} - {sprint.sprintStatus}
                                   </SelectItem>
                                 ))
