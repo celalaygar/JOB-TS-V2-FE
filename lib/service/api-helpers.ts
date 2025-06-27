@@ -25,7 +25,7 @@ import {
 
 interface ApiOperationConfig<T> {
   url: string;
-  method: httpMethods;
+  method: keyof typeof httpMethods;
   body?: any;
   setLoading: (loading: boolean) => void;
   successMessage?: string;
