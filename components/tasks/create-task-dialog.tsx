@@ -184,12 +184,11 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
         prefix = "PBI"
     }
 
-    const randomNumber = Math.floor(Math.random() * 10000)
-    const taskNumber = `${prefix}-${randomNumber}`
+
 
     const newTask: Task = {
-      id: `task-${Date.now()}`,
-      taskNumber,
+      id: null,
+      taskNumber: null,
       title,
       description,
       status: "to-do", // Initial status
@@ -284,6 +283,38 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
   }, []); // No dependencies for useCallback, as projectId is passed as an argument.
 
 
+  const saveTask = async () => {
+    let project = null;
+    setLoading(true)
+    try {
+      const response = await BaseService.request(PROJECT_URL, {
+        method: httpMethods.POST,
+        body: formData
+      })
+      project = response; 
+      toast({
+        title: `Project saved.`,
+        description: `Project saved.`,
+      })
+    } catch (error: any) {
+      if (error.status === 400 && error.message) {
+        toast({
+          title: `Project find all failed. (400)`,
+          description: error.message,
+          variant: "destructive",
+        })
+      } else {
+        console.error('Project failed:', error)
+        toast({
+          title: `Project find all failed.`,
+          description: error.message,
+          variant: "destructive",
+        })
+      }
+    }
+    setLoading(false)
+    return project;
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
