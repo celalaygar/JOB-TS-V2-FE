@@ -16,9 +16,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Loader2 } from "lucide-react"
 import { toast } from "@/hooks/use-toast"
 import { ProjectTeam } from "@/types/project"
-import BaseService from "@/lib/service/BaseService"
-import { PROJECT_TEAM_URL } from "@/lib/service/BasePath"
-import { httpMethods } from "@/lib/service/HttpService"
+import { createUpdateProjectTeamHelper } from "@/lib/service/api-helpers" // Import the new helper
 
 interface CreateTeamDialogProps {
   projectId: string
@@ -56,7 +54,7 @@ export function CreateTeamDialog({
     }
   }, [team, open])
 
-  const handleSubmit = async () => {
+  const handleCreateOrUpdateProjectTeam = async () => {
     if (!teamName) return
 
     const payload: ProjectTeam = {
@@ -67,41 +65,19 @@ export function CreateTeamDialog({
       description: teamDescription,
     }
 
-    setLoading(true)
-    try {
-      const method = isEditMode ? httpMethods.PUT : httpMethods.POST
+    const response = await createUpdateProjectTeamHelper(payload, isEditMode, { setLoading });
 
-      const response: ProjectTeam = await BaseService.request<ProjectTeam>(PROJECT_TEAM_URL, {
-        method,
-        body: payload,
-      })
-
-      toast({
-        title: `Project Team ${isEditMode ? "updated" : "created"}.`,
-        description: `Team name: ${response.name}`,
-      })
-
-      // 🔁 Listeyi güncelle
+    if (response) {
       if (isEditMode) {
         setProjectTeams(projectTeams.map(t => (t.id === response.id ? response : t)))
       } else {
         setProjectTeams([...projectTeams, response])
       }
-
       onCreateTeam(response)
       resetForm()
-    } catch (error: any) {
-      console.error(`${isEditMode ? "Update" : "Create"} failed`, error)
-      toast({
-        title: `Team ${isEditMode ? "update" : "creation"} failed.`,
-        description: error.message || "An unexpected error occurred.",
-        variant: "destructive",
-      })
-    } finally {
-      setLoading(false)
-      setSelectedProjectTeam(undefined)
-      onOpenChange(false)
     }
+    setSelectedProjectTeam(undefined)
+    onOpenChange(false)
   }
 
 
@@ -153,7 +129,7 @@ export function CreateTeamDialog({
                 <Button variant="outline" onClick={() => onOpenChange(false)}>
                   Cancel
                 </Button>
-                <Button onClick={handleSubmit} disabled={!teamName}>
+                <Button onClick={handleCreateOrUpdateProjectTeam} disabled={!teamName}>
                   {isEditMode ? "Update Team" : "Create Team"}
                 </Button>
               </DialogFooter>

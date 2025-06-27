@@ -8,12 +8,9 @@ import { InvitationDetailsDialog } from "@/components/notifications/invitation-d
 import type { Invitation } from "@/lib/redux/features/invitations-slice"
 import type { Project } from "@/types/project"
 import { SentInvitationsList } from "./sent-invitations-list"
-import BaseService from "@/lib/service/BaseService"
-import { httpMethods } from "@/lib/service/HttpService"
-import { INVITATION_BY_PROJECTID } from "@/lib/service/BasePath"
-import { toast } from "@/hooks/use-toast"
 import { Loader2 } from "lucide-react"
 import { useAuthUser } from "@/lib/hooks/useAuthUser"
+import { getAllInvitationsHelper } from "@/lib/service/api-helpers" // Import the new helper
 
 interface ProjectSentInvitationsTabProps {
     project: Project
@@ -24,7 +21,6 @@ export function ProjectSentInvitationsTab({ project }: ProjectSentInvitationsTab
     const authUser = useAuthUser();
     const [loading, setLoading] = useState(false);
     const [invitations, setInvitations] = useState<Invitation[]>([]);
-
 
     const [selectedInvitation, setSelectedInvitation] = useState<Invitation | null>(null)
     const [detailDialogOpen, setDetailDialogOpen] = useState(false)
@@ -63,41 +59,17 @@ export function ProjectSentInvitationsTab({ project }: ProjectSentInvitationsTab
         }
     }
 
-    const getAllInvitations = useCallback(async () => {
-        setLoading(true)
-        try {
-            const response: Invitation[] = await BaseService.request(INVITATION_BY_PROJECTID, {
-                method: httpMethods.POST,
-                body: { projectId: project.id }
-            })
-            toast({
-                title: `Get All Invitations.`,
-                description: `Get All Invitations `,
-            })
-            setInvitations(response)
-
-        } catch (error: any) {
-            if (error.status === 400 && error.message) {
-                toast({
-                    title: `Get All Invitations failed. (400)`,
-                    description: error.message,
-                    variant: "destructive",
-                })
-            } else {
-                console.error('Get All Invitations failed:', error)
-                toast({
-                    title: `Get All Invitations failed.`,
-                    description: error.message,
-                    variant: "destructive",
-                })
-            }
+    const fetchAllInvitations = useCallback(async () => {
+        setInvitations([]); // Clear existing invitations
+        const invitationsData = await getAllInvitationsHelper(project.id, { setLoading });
+        if (invitationsData) {
+            setInvitations(invitationsData);
         }
-        setLoading(false)
-    }, [])
+    }, [project.id]);
 
     useEffect(() => {
-        getAllInvitations()
-    }, [getAllInvitations])
+        fetchAllInvitations();
+    }, [fetchAllInvitations])
 
     return loading ? (
         <>

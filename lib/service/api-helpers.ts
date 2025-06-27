@@ -5,9 +5,10 @@ import { httpMethods } from "@/lib/service/HttpService";
 import { toast } from "@/hooks/use-toast";
 import type { ProjectUser } from "@/types/project";
 import type { Sprint } from "@/types/sprint";
-import type { ProjectTeam, Project, ProjectTaskStatus } from "@/types/project"; // Import ProjectTaskStatus
+import type { ProjectTeam, Project, ProjectTaskStatus } from "@/types/project";
 import type { ProjectRole, ProjectRolePermission, ProjectRoleRequest } from "@/types/project-role";
-import { GET_PROJECT_USERS, SPRINT_NON_COMPLETED_GET_ALL_URL, PROJECT_TEAM_URL, PROJECT_URL, SPRINT_GET_ALL_URL, PROJECT_USER_ROLES_URL, PERMISSIONS, PROJECT_TASK_STATUS_URL } from "@/lib/service/BasePath";
+import type { Invitation } from "@/lib/redux/features/invitations-slice"; // Import Invitation type
+import { GET_PROJECT_USERS, SPRINT_NON_COMPLETED_GET_ALL_URL, PROJECT_TEAM_URL, PROJECT_URL, SPRINT_GET_ALL_URL, PROJECT_USER_ROLES_URL, PERMISSIONS, PROJECT_TASK_STATUS_URL, INVITATION_BY_PROJECTID } from "@/lib/service/BasePath";
 
 interface ApiOperationConfig<T> {
   url: string;
@@ -33,10 +34,7 @@ export async function apiCall<T>(config: ApiOperationConfig<T>): Promise<T | nul
   } = config;
 
   setLoading(true);
-  console.log("url -------------------------------------------------------")
-  console.log(url)
-  console.log(method)
-  console.log(body)
+
   try {
     const response: T = await BaseService.request(url, { method, body });
 
@@ -59,7 +57,7 @@ export async function apiCall<T>(config: ApiOperationConfig<T>): Promise<T | nul
 
     if (error.status === 400) {
       displayErrorTitle = "Bad Request (400)";
-      displayErrorDescription = errorMessage;
+      displayErrorDescription = error.message || "Bad Request";
     } else if (error.status === 500) {
       displayErrorTitle = "Server Error (500)";
       displayErrorDescription = "There was a server error. Please try again later.";
@@ -243,7 +241,7 @@ export const getAllProjectTaskStatusHelper = async (projectId: string, options: 
 
 export const saveTaskStatusHelper = async (statusData: ProjectTaskStatus, options: FetchEntitiesOptions): Promise<ProjectTaskStatus | null> => {
   const method = statusData.id ? httpMethods.PUT : httpMethods.POST;
-  const url = PROJECT_TASK_STATUS_URL;
+  const url = statusData.id ? `${PROJECT_TASK_STATUS_URL}/${statusData.id}` : PROJECT_TASK_STATUS_URL;
   const successMsg = statusData.id ? `Project task status "${statusData.name}" updated.` : `Project task status "${statusData.name}" created.`;
   const errorPrefix = statusData.id ? "Failed to update project task status" : "Failed to create project task status";
   const successToast = statusData.id ? "Project Task Status Updated" : "Project Task Status Created";
@@ -258,5 +256,55 @@ export const saveTaskStatusHelper = async (statusData: ProjectTaskStatus, option
     errorMessagePrefix: errorPrefix,
     successToastTitle: successToast,
     errorToastTitle: errorToast,
+  });
+};
+
+export const getAllInvitationsHelper = async (projectId: string, options: FetchEntitiesOptions): Promise<Invitation[] | null> => {
+  if (!projectId) {
+    options.setLoading(false);
+    return [];
+  }
+
+  return apiCall<Invitation[]>({
+    url: INVITATION_BY_PROJECTID,
+    method: httpMethods.POST, // Assuming it's a POST request with projectId in the body
+    body: { projectId },
+    setLoading: options.setLoading,
+    successMessage: `Invitations for project ${projectId} have been retrieved.`,
+    errorMessagePrefix: "Failed to load invitations",
+    successToastTitle: "Invitations Loaded",
+    errorToastTitle: "Error Loading Invitations",
+  });
+};
+
+export const createUpdateProjectTeamHelper = async (teamData: ProjectTeam, isEditMode: boolean, options: FetchEntitiesOptions): Promise<ProjectTeam | null> => {
+  const method = isEditMode ? httpMethods.PUT : httpMethods.POST;
+  const url = PROJECT_TEAM_URL; // The URL for both POST and PUT for teams
+
+  const successMessage = isEditMode
+    ? `Project Team "${teamData.name}" updated.`
+    : `Project Team "${teamData.name}" created.`;
+
+  const errorMessagePrefix = isEditMode
+    ? "Failed to update project team"
+    : "Failed to create project team";
+
+  const successToastTitle = isEditMode
+    ? "Project Team Updated"
+    : "Project Team Created";
+
+  const errorToastTitle = isEditMode
+    ? "Error Updating Project Team"
+    : "Error Creating Project Team";
+
+  return apiCall<ProjectTeam>({
+    url,
+    method,
+    body: teamData,
+    setLoading: options.setLoading,
+    successMessage,
+    errorMessagePrefix,
+    successToastTitle,
+    errorToastTitle,
   });
 };
