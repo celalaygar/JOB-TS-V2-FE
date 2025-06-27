@@ -7,8 +7,20 @@ import type { ProjectUser } from "@/types/project";
 import type { Sprint } from "@/types/sprint";
 import type { ProjectTeam, Project, ProjectTaskStatus } from "@/types/project";
 import type { ProjectRole, ProjectRolePermission, ProjectRoleRequest } from "@/types/project-role";
-import type { Invitation } from "@/lib/redux/features/invitations-slice"; // Import Invitation type
-import { GET_PROJECT_USERS, SPRINT_NON_COMPLETED_GET_ALL_URL, PROJECT_TEAM_URL, PROJECT_URL, SPRINT_GET_ALL_URL, PROJECT_USER_ROLES_URL, PERMISSIONS, PROJECT_TASK_STATUS_URL, INVITATION_BY_PROJECTID } from "@/lib/service/BasePath";
+import type { Invitation } from "@/lib/redux/features/invitations-slice";
+import {
+  GET_PROJECT_USERS,
+  SPRINT_NON_COMPLETED_GET_ALL_URL,
+  PROJECT_TEAM_URL,
+  PROJECT_URL,
+  SPRINT_GET_ALL_URL,
+  PROJECT_USER_ROLES_URL,
+  PERMISSIONS,
+  PROJECT_TASK_STATUS_URL,
+  INVITATION_BY_PROJECTID,
+  INVITE_TO_PROJECT,
+  SPRINT_URL // Import SPRINT_URL
+} from "@/lib/service/BasePath";
 
 interface ApiOperationConfig<T> {
   url: string;
@@ -78,6 +90,14 @@ export async function apiCall<T>(config: ApiOperationConfig<T>): Promise<T | nul
 interface FetchEntitiesOptions {
   setLoading: (loading: boolean) => void;
 }
+
+// Interface for inviting users, copied from the component
+interface InviteUserRequest {
+  projectId: string;
+  email: string;
+  userProjectRole: string;
+}
+
 
 export const getProjectUsersHelper = async (projectId: string, options: FetchEntitiesOptions): Promise<ProjectUser[] | null> => {
   if (!projectId) {
@@ -301,6 +321,65 @@ export const createUpdateProjectTeamHelper = async (teamData: ProjectTeam, isEdi
     url,
     method,
     body: teamData,
+    setLoading: options.setLoading,
+    successMessage,
+    errorMessagePrefix,
+    successToastTitle,
+    errorToastTitle,
+  });
+};
+
+export const inviteUserToProjectHelper = async (inviteData: InviteUserRequest, options: FetchEntitiesOptions): Promise<InviteUserRequest | null> => {
+  return apiCall<InviteUserRequest>({
+    url: INVITE_TO_PROJECT,
+    method: httpMethods.POST,
+    body: inviteData,
+    setLoading: options.setLoading,
+    successMessage: `${inviteData.email} has been invited to the project.`,
+    errorMessagePrefix: "Failed to invite user",
+    successToastTitle: "User Invited",
+    errorToastTitle: "Error Inviting User",
+  });
+};
+
+export const saveSprintHelper = async (sprintData: Sprint, options: FetchEntitiesOptions): Promise<Sprint | null> => {
+  return apiCall<Sprint>({
+    url: SPRINT_URL,
+    method: httpMethods.POST, // Assuming it's always POST for creating new sprints
+    body: sprintData,
+    setLoading: options.setLoading,
+    successMessage: `Sprint "${sprintData.name}" has been successfully saved.`,
+    errorMessagePrefix: "Failed to save sprint",
+    successToastTitle: "Sprint Saved",
+    errorToastTitle: "Error Saving Sprint",
+  });
+};
+
+
+export const saveUpdateSprintHelper = async (sprintData: Sprint, options: FetchEntitiesOptions): Promise<Sprint | null> => {
+  const method = sprintData.id ? httpMethods.PUT : httpMethods.POST;
+  const url = sprintData.id ? `${SPRINT_URL}/${sprintData.id}` : SPRINT_URL; // Adjust URL for PUT if ID is in path
+
+  const successMessage = sprintData.id
+    ? `Sprint "${sprintData.name}" has been successfully updated.`
+    : `Sprint "${sprintData.name}" has been successfully created.`;
+
+  const errorMessagePrefix = sprintData.id
+    ? "Failed to update sprint"
+    : "Failed to create sprint";
+
+  const successToastTitle = sprintData.id
+    ? "Sprint Updated"
+    : "Sprint Created";
+
+  const errorToastTitle = sprintData.id
+    ? "Error Updating Sprint"
+    : "Error Creating Sprint";
+
+  return apiCall<Sprint>({
+    url,
+    method,
+    body: sprintData,
     setLoading: options.setLoading,
     successMessage,
     errorMessagePrefix,

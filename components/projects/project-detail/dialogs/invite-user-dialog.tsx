@@ -14,17 +14,15 @@ import { Label } from "@/components/ui/label"
 import { useState } from "react"
 import { toast } from "@/hooks/use-toast"
 import { Loader2 } from "lucide-react"
-import BaseService from "@/lib/service/BaseService"
-import { INVITE_TO_PROJECT } from "@/lib/service/BasePath"
-import { httpMethods } from "@/lib/service/HttpService"
 import { Project } from "@/types/project"
+import { inviteUserToProjectHelper } from "@/lib/service/api-helpers" // Import the new helper
 
 interface InviteUserDialogProps {
   project: Project
   open: boolean
   onOpenChange: (open: boolean) => void
 }
-interface InvıteUserRequest {
+interface InviteUserRequest { // Renamed to avoid conflict if already defined elsewhere
   projectId: string
   email: string
   userProjectRole: string
@@ -32,7 +30,7 @@ interface InvıteUserRequest {
 
 export function InviteUserDialog({ project, open, onOpenChange }: InviteUserDialogProps) {
 
-  const [formData, setFormData] = useState<InvıteUserRequest>({ projectId: project.id, email: "", userProjectRole: "" })
+  const [formData, setFormData] = useState<InviteUserRequest>({ projectId: project.id, email: "", userProjectRole: "" })
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({})
 
@@ -51,54 +49,26 @@ export function InviteUserDialog({ project, open, onOpenChange }: InviteUserDial
     setFormData((prev) => ({ ...prev, ["userProjectRole"]: role }))
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleInviteUser = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true);
 
-    try {
-      const response: InvıteUserRequest = await BaseService.request(INVITE_TO_PROJECT, {
-        method: httpMethods.POST,
-        body: { ...formData, projectId: project.id }
-      })
-      let data = response as InvıteUserRequest;
-      // Show success toast
-      toast({
-        title: response.email + " User Invited ",
-        description: response.email + " User Invited at " + new Date().toLocaleString(),
-      })
-    } catch (error: any) {
-      if (error.status === 400 && error.message) {
-        toast({
-          title: `User Invited failed. (400)`,
-          description: error.message,
-          variant: "destructive",
-        })
-      } else {
-        console.error('User Invited failed:', error)
-        toast({
-          title: `User Invited failed.`,
-          description: error.message,
-          variant: "destructive",
-        })
-      }
-    } finally {
-      // Close dialog
-      setLoading(false);
+    const response = await inviteUserToProjectHelper({ ...formData, projectId: project.id }, { setLoading });
+
+    if (response) {
       resetForm();
-      onOpenChange(false)
+      onOpenChange(false);
     }
-
-
   }
 
   const resetForm = () => {
     setFormData({ projectId: project.id, email: "", userProjectRole: "" })
+    setErrors({}); // Also clear errors on form reset
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
-        <form onSubmit={handleSubmit} >
+        <form onSubmit={handleInviteUser} >
           <DialogHeader>
             <DialogTitle>Invite User</DialogTitle>
             <DialogDescription>Invite a user to join this project.</DialogDescription>
@@ -131,6 +101,7 @@ export function InviteUserDialog({ project, open, onOpenChange }: InviteUserDial
                       id="userProjectRole"
                       className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     >
+                      <option value="">Select a role</option> {/* Added a default empty option */}
                       <option value="developer">Developer</option>
                       <option value="designer">Designer</option>
                       <option value="product-manager">Product Manager</option>

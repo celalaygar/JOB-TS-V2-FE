@@ -14,18 +14,11 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-// Removed Calendar component imports from shadcn/ui
-// import { Calendar as CalendarComponent } from "@/components/ui/calendar"
-// Removed Popover component imports from shadcn/ui
-// import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { CalendarIcon, Loader2 } from "lucide-react" // Still need CalendarIcon 
+import { CalendarIcon, Loader2 } from "lucide-react"
 import { addSprint } from "@/lib/redux/features/sprints-slice"
 import { teams } from "@/data/teams"
 import { Project, ProjectTaskStatus } from "@/types/project"
 import { toast } from "@/hooks/use-toast"
-import { PROJECT_TASK_STATUS_URL, SPRINT_URL } from "@/lib/service/BasePath"
-import BaseService from "@/lib/service/BaseService"
-import { httpMethods } from "@/lib/service/HttpService"
 import { Sprint } from "@/types/sprint"
 import Select from "react-select"
 
@@ -33,6 +26,7 @@ import Select from "react-select"
 import DatePicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css" // Don't forget to import the CSS!
 import { Label } from "@/components/ui/label"
+import { getAllProjectTaskStatusHelper, saveSprintHelper } from "@/lib/service/api-helpers"
 
 
 interface CreateSprintDialogProps {
@@ -67,8 +61,6 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
   const [taskStatuses, setTaskStatuses] = useState<ProjectTaskStatus[] | []>([])
   const [loadingTaskStatuses, setLoadingTaskStatuses] = useState(false);
 
-  // No longer need separate state for popover open/close with react-datepicker
-
   const projectTeams = useMemo(() => teams.filter((team) => team.projectId === selectedProjectId), [selectedProjectId])
 
   const projectOptions = useMemo(() => projectList.map(project => ({ value: project.id, label: project.name })), [projectList]);
@@ -81,14 +73,29 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
     }
   }, [projectId]);
 
+  const fetchProjectTaskStatuses = useCallback(async (currentProjectId: string) => {
+    setTaskStatuses([]); // Clear existing statuses
+    const statusesData = await getAllProjectTaskStatusHelper(currentProjectId, { setLoading: setLoadingTaskStatuses });
+    if (statusesData) {
+      setTaskStatuses(statusesData);
+      // Automatically select the first status if available and none is selected
+      if (statusesData.length > 0 && !projectTaskStatusId) {
+        setProjectTaskStatusId(statusesData[0].id);
+      }
+    } else {
+      setProjectTaskStatusId(null);
+    }
+  }, [projectTaskStatusId]);
+
+
   useEffect(() => {
     if (selectedProjectId && selectedProjectId !== "all") {
-      getAllProjectTaskStatus(selectedProjectId);
+      fetchProjectTaskStatuses(selectedProjectId);
     } else {
       setTaskStatuses([]);
       setProjectTaskStatusId(null);
     }
-  }, [selectedProjectId]);
+  }, [selectedProjectId, fetchProjectTaskStatuses]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -126,9 +133,12 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }
-    await saveSprint(newSprint)
-    resetForm()
-    onOpenChange(false)
+    const response = await saveSprintHelper(newSprint, { setLoading });
+    if (response) {
+      dispatch(addSprint(response))
+      resetForm()
+      onOpenChange(false)
+    }
   }
 
   const resetForm = useCallback(() => {
@@ -142,50 +152,6 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
     setSelectedTeamId(null)
   }, [projectId])
 
-  const saveSprint = async (newSprint: Sprint) => {
-    setLoading(true)
-    try {
-      const response: Sprint = await BaseService.request(SPRINT_URL, {
-        method: httpMethods.POST,
-        body: { ...newSprint }
-      })
-      toast({
-        title: `Sprint saved.`,
-        description: `Sprint "${response.name}" has been successfully saved.`,
-      })
-      dispatch(addSprint(response))
-    } catch (error: any) {
-      console.error('Failed to save sprint:', error);
-      toast({
-        title: `Failed to save Sprint.`,
-        description: error.message || "An unexpected error occurred.",
-        variant: "destructive",
-      })
-    }
-    setLoading(false)
-  }
-
-  const getAllProjectTaskStatus = async (projectId: string) => {
-    setLoadingTaskStatuses(true)
-    try {
-      const response = await BaseService.request(PROJECT_TASK_STATUS_URL + "/project/" + projectId, {
-        method: httpMethods.GET
-      })
-      toast({
-        title: `Project Task Statuses loaded.`,
-        description: `Task statuses for project ${projectId} have been retrieved.`,
-      })
-      setTaskStatuses(response as ProjectTaskStatus[])
-    } catch (error: any) {
-      console.error('Failed to fetch project task statuses:', error)
-      toast({
-        title: `Failed to load Project Task Statuses.`,
-        description: error.message || "An unexpected error occurred.",
-        variant: "destructive",
-      })
-    }
-    setLoadingTaskStatuses(false)
-  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

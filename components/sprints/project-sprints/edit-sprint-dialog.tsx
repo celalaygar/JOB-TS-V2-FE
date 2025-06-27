@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useCallback } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import {
   Dialog,
@@ -30,6 +30,7 @@ import BaseService from "@/lib/service/BaseService"
 import { httpMethods } from "@/lib/service/HttpService"
 import { toast } from "@/hooks/use-toast"
 import { Sprint } from "@/types/sprint"
+import { getAllProjectTaskStatusHelper, saveUpdateSprintHelper } from "@/lib/service/api-helpers"
 
 
 interface EditSprintDialogProps {
@@ -95,14 +96,32 @@ export function EditSprintDialog({ open, onOpenChange, sprint, projectList }: Ed
     }
   }, [sprint])
 
+  const fetchProjectTaskStatuses = useCallback(async (currentProjectId: string) => {
+    setTaskStatuses([]);
+    const statusesData = await getAllProjectTaskStatusHelper(currentProjectId, { setLoading: setLoadingTaskStatuses });
+    if (statusesData) {
+      setTaskStatuses(statusesData);
+      // If a task status is already set from sprint data, ensure it's still valid, otherwise clear
+      if (sprint?.projectTaskStatusId && !statusesData.some(s => s.id === sprint.projectTaskStatusId)) {
+        setProjectTaskStatusId(null);
+      } else if (!projectTaskStatusId && statusesData.length > 0) {
+        // If no status is set and there are options, default to the first one
+        setProjectTaskStatusId(statusesData[0].id);
+      }
+    } else {
+      setProjectTaskStatusId(null);
+    }
+  }, [sprint?.projectTaskStatusId, projectTaskStatusId]);
+
+
   useEffect(() => {
     if (selectedProjectId) {
-      getAllProjectTaskStatus(selectedProjectId);
+      fetchProjectTaskStatuses(selectedProjectId);
     } else {
       setTaskStatuses([]);
       setProjectTaskStatusId(null);
     }
-  }, [selectedProjectId]);
+  }, [selectedProjectId, fetchProjectTaskStatuses]);
 
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -137,58 +156,10 @@ export function EditSprintDialog({ open, onOpenChange, sprint, projectList }: Ed
       teamId: sprintType === "project-team" ? selectedTeamId : undefined,
       updatedAt: new Date().toISOString(),
     }
-    await updateExistingSprint(updatedSprint);
+    const response = await saveUpdateSprintHelper(updatedSprint, { setLoading }); // Use saveUpdateSprintHelper for update
+    dispatch(updateSprint(response));
     onOpenChange(false)
   }
-
-  const updateExistingSprint = async (updatedSprint: any) => {
-    setLoading(true);
-    
-    try {
-      const response: Sprint = await BaseService.request(`${SPRINT_URL}/${updatedSprint.id}`, {
-        method: httpMethods.PUT,
-        body: updatedSprint
-      });
-      toast({
-        title: "Sprint Updated",
-        description: `Sprint "${response.name}" has been successfully updated.`,
-      });
-      dispatch(updateSprint(response));
-    } catch (error: any) {
-      console.error("Failed to update sprint:", error);
-      toast({
-        title: "Update Failed",
-        description: error.message || "An error occurred while updating the sprint.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getAllProjectTaskStatus = async (projectId: string) => {
-    setLoadingTaskStatuses(true);
-    try {
-      const response = await BaseService.request(`${PROJECT_TASK_STATUS_URL}/project/${projectId}`, {
-        method: httpMethods.GET
-      });
-      setTaskStatuses(response as ProjectTaskStatus[]);
-      if (projectTaskStatusId && !(response as ProjectTaskStatus[]).some(s => s.id === projectTaskStatusId)) {
-        setProjectTaskStatusId(null);
-      }
-    } catch (error: any) {
-      console.error('Failed to fetch project task statuses:', error)
-      toast({
-        title: `Failed to load Project Task Statuses.`,
-        description: error.message || "An unexpected error occurred.",
-        variant: "destructive",
-      })
-    } finally {
-      setLoadingTaskStatuses(false);
-    }
-  };
-
-
 
 
   useEffect(() => {

@@ -10,11 +10,7 @@ import { CalendarIcon, FilterX, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import type { DateRange } from "react-day-picker"
-import { PROJECT_TEAM_URL, PROJECT_URL } from "@/lib/service/BasePath"
-import { httpMethods } from "@/lib/service/HttpService"
 import { Project, ProjectTeam } from "@/types/project"
-import BaseService from "@/lib/service/BaseService"
-import { toast } from "@/hooks/use-toast"
 import { getAllProjectTeamsHelper } from "@/lib/service/api-helpers" // Import the new helper
 
 interface ProjectSprintsFiltersProps {
