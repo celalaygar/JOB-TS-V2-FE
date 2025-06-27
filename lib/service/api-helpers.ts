@@ -6,7 +6,7 @@ import { toast } from "@/hooks/use-toast";
 import type { ProjectUser } from "@/types/project";
 import type { Sprint } from "@/types/sprint";
 import type { ProjectTeam, Project } from "@/types/project";
-import type { ProjectRole, ProjectRolePermission, ProjectRoleRequest } from "@/types/project-role"; // Import ProjectRoleRequest
+import type { ProjectRole, ProjectRolePermission, ProjectRoleRequest } from "@/types/project-role";
 import { GET_PROJECT_USERS, SPRINT_NON_COMPLETED_GET_ALL_URL, PROJECT_TEAM_URL, PROJECT_URL, SPRINT_GET_ALL_URL, PROJECT_USER_ROLES_URL, PERMISSIONS } from "@/lib/service/BasePath";
 
 interface ApiOperationConfig<T> {
@@ -148,7 +148,7 @@ export const getAllSprintsGlobalHelper = async (options: FetchEntitiesOptions): 
     setLoading: options.setLoading,
     successMessage: "All sprints have been retrieved.",
     errorMessagePrefix: "Failed to load all sprints",
-    successToastTitle: "All Sprints Loaded",
+    words: "All Sprints Loaded",
     errorToastTitle: "Error Loading All Sprints",
   });
 };
@@ -205,5 +205,18 @@ export const updateProjectUserRoleHelper = async (roleId: string, roleData: Proj
     errorMessagePrefix: "Failed to update project user role",
     successToastTitle: "Project Role Updated",
     errorToastTitle: "Error Updating Project Role",
+  });
+};
+
+export const createProjectUserRoleHelper = async (newRoleData: ProjectRoleRequest, options: FetchEntitiesOptions): Promise<ProjectRole | null> => {
+  return apiCall<ProjectRole>({
+    url: PROJECT_USER_ROLES_URL,
+    method: httpMethods.POST,
+    body: newRoleData,
+    setLoading: options.setLoading,
+    successMessage: `Project user role "${newRoleData.name}" has been created.`,
+    errorMessagePrefix: "Failed to create project user role",
+    successToastTitle: "Project Role Created",
+    errorToastTitle: "Error Creating Project Role",
   });
 };

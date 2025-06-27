@@ -19,11 +19,10 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import BaseService from "@/lib/service/BaseService"
-import { PROJECT_USER_ROLES_URL } from "@/lib/service/BasePath"
 import { toast } from "@/hooks/use-toast"
 import { ProjectRole, ProjectRolePermission, ProjectRoleRequest } from "@/types/project-role"
 import { Loader2 } from "lucide-react"
+import { createProjectUserRoleHelper } from "@/lib/service/api-helpers" // Import the new helper
 
 interface AddRoleDialogProps {
   open: boolean
@@ -49,20 +48,7 @@ export function AddRoleDialog({ open, onOpenChange, projectId, permissionList }:
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [loading, setLoading] = useState(false);
 
-  // const availablePermissions = [
-  //   { id: "manage_members", label: "Manage Members", category: "Team" },
-  //   { id: "manage_roles", label: "Manage Roles", category: "Team" },
-  //   { id: "view_project", label: "View Project", category: "Project" },
-  //   { id: "edit_project", label: "Edit Project", category: "Project" },
-  //   { id: "delete_project", label: "Delete Project", category: "Project" },
-  //   { id: "create_task", label: "Create Tasks", category: "Tasks" },
-  //   { id: "edit_task", label: "Edit Tasks", category: "Tasks" },
-  //   { id: "delete_task", label: "Delete Tasks", category: "Tasks" },
-  //   { id: "assign_task", label: "Assign Tasks", category: "Tasks" },
-  // ]
-
-  // Group permissions by category
-  let permissionsByCategory = {}
+  let permissionsByCategory: Record<string, ProjectRolePermission[]> = {}
   if (permissionList != null) {
     permissionsByCategory = permissionList.reduce(
       (acc, permission) => {
@@ -72,14 +58,13 @@ export function AddRoleDialog({ open, onOpenChange, projectId, permissionList }:
         acc[permission.category].push(permission)
         return acc
       },
-      {} as Record<string, typeof permissionList>,
+      {} as Record<string, ProjectRolePermission[]>,
     )
   }
 
   const validateForm = (): ValidationErrors => {
     const newErrors: ValidationErrors = {}
 
-    // Role name validation
     if (!roleName.trim()) {
       newErrors.roleName = "Role name is required"
     } else if (roleName.trim().length < 2) {
@@ -88,12 +73,10 @@ export function AddRoleDialog({ open, onOpenChange, projectId, permissionList }:
       newErrors.roleName = "Role name must not exceed 50 characters"
     }
 
-    // Description validation
     if (roleDescription.trim().length > 255) {
       newErrors.description = "Description must not exceed 255 characters"
     }
 
-    // Permissions validation
     if (selectedPermissions.length === 0) {
       newErrors.permissions = "At least one permission must be selected"
     }
@@ -119,50 +102,14 @@ export function AddRoleDialog({ open, onOpenChange, projectId, permissionList }:
       permissions: selectedPermissions,
       isDefaultRole
     }
-    let response: ProjectRole | null = await saveProjectUserRole(newRole);
-    if (!response) {
-      return;
+
+    const response: ProjectRole | null = await createProjectUserRoleHelper(newRole, { setLoading });
+    if (response) {
+      dispatch(addRole(response))
+      resetForm()
+      onOpenChange(false)
     }
-    dispatch(addRole(response))
-    resetForm()
-    onOpenChange(false)
   }
-
-
-  const saveProjectUserRole = async (newRole: ProjectRoleRequest) => {
-    let projectRole: ProjectRole | null = null;
-    setLoading(true)
-    try {
-      const response: ProjectRole = await BaseService.request(PROJECT_USER_ROLES_URL, {
-        method: 'POST',
-        body: newRole
-      })
-      projectRole = response;
-      toast({
-        title: `Project user role saved.`,
-        description: `Project User Role saved as ` + newRole.name,
-      })
-    } catch (error: any) {
-      if (error.status === 400 && error.message) {
-        toast({
-          title: `Project find all failed. (400)`,
-          description: error.message,
-          variant: "destructive",
-        })
-
-      } else {
-        console.error('Project User Role  failed:', error)
-        toast({
-          title: `Project User Role  find all failed.`,
-          description: error.message,
-          variant: "destructive",
-        })
-      }
-    }
-    setLoading(false)
-    return projectRole;
-  }
-
 
   const resetForm = () => {
     setRoleName("")
@@ -180,7 +127,6 @@ export function AddRoleDialog({ open, onOpenChange, projectId, permissionList }:
       setSelectedPermissions(selectedPermissions.filter((id) => id !== permissionId))
     }
 
-    // Clear permissions error when user selects at least one permission
     if (isSubmitted && errors.permissions && checked) {
       setErrors((prev) => ({ ...prev, permissions: undefined }))
     }
@@ -188,7 +134,6 @@ export function AddRoleDialog({ open, onOpenChange, projectId, permissionList }:
 
   const handleRoleNameChange = (value: string) => {
     setRoleName(value)
-    // Clear error when user starts typing
     if (isSubmitted && errors.roleName) {
       setErrors((prev) => ({ ...prev, roleName: undefined }))
     }
@@ -196,13 +141,10 @@ export function AddRoleDialog({ open, onOpenChange, projectId, permissionList }:
 
   const handleDescriptionChange = (value: string) => {
     setRoleDescription(value)
-    // Clear error when user starts typing
     if (isSubmitted && errors.description) {
       setErrors((prev) => ({ ...prev, description: undefined }))
     }
   }
-
-
 
   return (
     <>
