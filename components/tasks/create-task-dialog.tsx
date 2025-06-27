@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect, useCallback, useMemo } from "react" // Added useMemo
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import type { RootState } from "@/lib/redux/store"
 import { addTask } from "@/lib/redux/features/tasks-slice"
@@ -14,8 +14,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-// Removed Shadcn UI Select imports
-// import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -25,21 +23,22 @@ import type { TaskType } from "@/types/task"
 import { toast } from "@/hooks/use-toast"
 import BaseService from "@/lib/service/BaseService"
 import { httpMethods } from "@/lib/service/HttpService"
-import { GET_PROJECT_USERS, PROJECT_URL, SPRINT_NON_COMPLETED_GET_ALL_URL } from "@/lib/service/BasePath"
+import { PROJECT_URL } from "@/lib/service/BasePath" // Sadece PROJECT_URL kaldı, diğerleri serviste
 import { Project, ProjectUser } from "@/types/project"
 import { Sprint } from "@/types/sprint"
 
-// Import react-select
+// Yeni veri çekme servisinden fonksiyonları import et
+import { fetchProjectUsers, fetchSprints } from "@/lib/service/data-fetch-service";
+
 import Select from "react-select"
 
 interface CreateTaskDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   parentTaskId?: string
-  projectList?: Project[] | [] // Now used directly for project dropdown
+  projectList?: Project[] | []
 }
 
-// Define a common interface for react-select options
 interface SelectOption {
   value: string;
   label: string;
@@ -47,28 +46,25 @@ interface SelectOption {
 
 export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList }: CreateTaskDialogProps) {
   const dispatch = useDispatch()
-  // projects is no longer needed from Redux if projectList is passed as a prop
-  // const projects = useSelector((state: RootState) => state.projects.projects)
-  const users = useSelector((state: RootState) => state.users.users) // Still use users from Redux for assignee data
+  const users = useSelector((state: RootState) => state.users.users)
   const allTasks = useSelector((state: RootState) => state.tasks.tasks)
 
   const [loading, setLoading] = useState(false);
-  const [projectUsers, setProjectUsers] = useState<ProjectUser[] | []>([]); // Changed to setProjectUsers
+  const [projectUsers, setProjectUsers] = useState<ProjectUser[] | []>([]);
   const [loadingSprints, setLoadingSprints] = useState(false);
   const [sprintList, setSprintList] = useState<Sprint[] | []>([]);
 
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    project: "" as string | null, // Allow null for react-select
-    assignee: "" as string | null, // Allow null for react-select
-    priority: "Medium" as string, // Allow string for react-select
-    taskType: "feature" as TaskType | null, // Allow null for react-select
-    sprint: "" as string | null, // Allow null for react-select
-    parentTask: (parentTaskId || "") as string | null, // Allow null for react-select
+    project: "" as string | null,
+    assignee: "" as string | null,
+    priority: "Medium" as string,
+    taskType: "feature" as TaskType | null,
+    sprint: "" as string | null,
+    parentTask: (parentTaskId || "") as string | null,
   })
 
-  // Options for react-select components
   const projectOptions: SelectOption[] = useMemo(() =>
     (projectList || []).map(p => ({ value: p.id, label: p.name })),
     [projectList]
@@ -104,8 +100,51 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
     [allTasks, formData.project]
   );
 
+  // Proje kullanıcılarını çekmek için useCallback'lenmiş fonksiyon
+  const handleFetchProjectUsers = useCallback(async (projectId: string) => {
+    setLoading(true);
+    try {
+      const users = await fetchProjectUsers(projectId); // Servis çağrısı
+      setProjectUsers(users);
+      toast({
+        title: `Proje Kullanıcıları Yüklendi`,
+        description: `Proje ${projectId} için kullanıcılar alındı.`,
+      });
+    } catch (error: any) {
+      console.error('Proje kullanıcıları yüklenemedi:', error);
+      toast({
+        title: `Proje Kullanıcıları Yüklenemedi`,
+        description: error.message || "Beklenmeyen bir hata oluştu.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, []); // Bağımlılık yok, çünkü projectId argüman olarak geçiliyor
 
-  // If parentTaskId is provided, pre-fill project from parent task
+  // Sprintleri çekmek için useCallback'lenmiş fonksiyon
+  const handleFetchSprints = useCallback(async (projectId: string) => {
+    setLoadingSprints(true);
+    try {
+      const sprints = await fetchSprints(projectId); // Servis çağrısı
+      setSprintList(sprints);
+      toast({
+        title: "Sprintler Yüklendi",
+        description: `Proje ${projectId} için sprintler alındı.`,
+      });
+    } catch (error: any) {
+      console.error("Sprintler yüklenemedi:", error);
+      toast({
+        title: "Sprintler Yüklenemedi",
+        description: error.message || "Beklenmeyen bir hata oluştu.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingSprints(false);
+    }
+  }, []); // Bağımlılık yok, çünkü projectId argüman olarak geçiliyor
+
+
   useEffect(() => {
     if (parentTaskId) {
       const parentTask = allTasks.find((task) => task.id === parentTaskId)
@@ -113,17 +152,16 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
         setFormData((prev) => ({
           ...prev,
           project: parentTask.project,
-          taskType: "subtask", // Subtask by default when parentTaskId is present
+          taskType: "subtask",
           parentTask: parentTaskId,
         }))
-        // Ensure users and sprints for the parent task's project are loaded
         if (parentTask.project) {
-          getProjectUsers(parentTask.project);
-          getSprint(parentTask.project);
+          handleFetchProjectUsers(parentTask.project);
+          handleFetchSprints(parentTask.project);
         }
       }
     }
-  }, [parentTaskId, allTasks])
+  }, [parentTaskId, allTasks, handleFetchProjectUsers, handleFetchSprints])
 
 
   const handleChange = useCallback((field: keyof typeof formData, value: string | SelectOption | null) => {
@@ -134,38 +172,37 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
     } else if (typeof value === 'string' || value === null) {
       actualValue = value;
     } else {
-      actualValue = null; // Should not happen with current usage, but for type safety
+      actualValue = null;
     }
 
     setFormData((prev) => ({ ...prev, [field]: actualValue }));
 
     if (field === "project" && typeof actualValue === 'string' && actualValue !== "all") {
-      getProjectUsers(actualValue);
-      getSprint(actualValue);
+      // Proje değiştiğinde ilgili kullanıcıları ve sprintleri çek
+      handleFetchProjectUsers(actualValue);
+      handleFetchSprints(actualValue);
     }
-  }, []); // No dependencies for useCallback, as it takes all required params.
+  }, [handleFetchProjectUsers, handleFetchSprints]);
 
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
-    // Validate required fields
     if (!formData.title || !formData.project || !formData.assignee || !formData.taskType ||
       (formData.taskType === "subtask" && !formData.parentTask)) {
       toast({
-        title: "Missing Information",
-        description: "Please fill in all required fields.",
+        title: "Eksik Bilgi",
+        description: "Lütfen gerekli tüm alanları doldurun.",
         variant: "destructive",
       });
       return;
     }
 
-    const selectedProjectData = projectList?.find((p) => p.id === formData.project) || { name: "" }; // Get project name
+    const selectedProjectData = projectList?.find((p) => p.id === formData.project) || { name: "" };
     const selectedAssigneeData = users.find((user) => user.id === formData.assignee);
 
     const { title, description, project, assignee, priority, taskType, sprint, parentTask } = formData
 
-    // Generate a prefix based on task type
     let prefix = ""
     switch (taskType) {
       case "bug":
@@ -184,20 +221,18 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
         prefix = "PBI"
     }
 
-
-
     const newTask: Task = {
-      id: null,
-      taskNumber: null,
+      id: null as any, // Backend'den geleceği varsayılır
+      taskNumber: null as any, // Backend'den geleceği varsayılır
       title,
       description,
-      status: "to-do", // Initial status
+      status: "to-do",
       priority: priority as "High" | "Medium" | "Low",
       taskType: taskType as TaskType,
-      project: project!, // Assert non-null as validated above
+      project: project!,
       projectName: selectedProjectData.name,
       assignee: {
-        id: assignee!, // Assert non-null as validated above
+        id: assignee!,
         name: selectedAssigneeData?.name || "",
         avatar: selectedAssigneeData?.avatar || "",
         initials: selectedAssigneeData?.initials || "",
@@ -208,13 +243,13 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
       parentTaskId: parentTask || undefined,
     }
 
-    dispatch(addTask(newTask))
+    dispatch(addTask(newTask)) // Redux state'e ekle
     toast({
-      title: "Task Created",
-      description: `Task "${newTask.taskNumber} - ${newTask.title}" has been successfully created.`,
+      title: "Görev Oluşturuldu",
+      description: `Görev "${newTask.title}" başarıyla oluşturuldu.`,
     });
     onOpenChange(false)
-    setFormData({
+    setFormData({ // Formu sıfırla
       title: "",
       description: "",
       project: null,
@@ -226,88 +261,31 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
     })
   }
 
-  // getProjectUsers is now useCallback'ed
-  const getProjectUsers = useCallback(async (projectId: string) => {
-    if (!projectId) {
-      setProjectUsers([]);
-      return;
-    }
-    setLoading(true);
-    try {
-      const response: ProjectUser[] = await BaseService.request(`${GET_PROJECT_USERS}/${projectId}`, {
-        method: httpMethods.GET,
-      });
-      setProjectUsers(response);
-      toast({
-        title: `Project Users Loaded`,
-        description: `Users for project ${projectId} have been retrieved.`,
-      });
-    } catch (error: any) {
-      console.error('Failed to get project users:', error);
-      toast({
-        title: `Failed to Load Project Users`,
-        description: error.message || "An unexpected error occurred.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, []); // No dependencies for useCallback, as projectId is passed as an argument.
-
-  // getSprint is now useCallback'ed
-  const getSprint = useCallback(async (projectId: string) => {
-    if (!projectId) {
-      setSprintList([]);
-      return;
-    }
-    setLoadingSprints(true);
-    try {
-      const response: Sprint[] = await BaseService.request(`${SPRINT_NON_COMPLETED_GET_ALL_URL}/${projectId}`, {
-        method: httpMethods.GET,
-      });
-      setSprintList(response);
-      toast({
-        title: "Sprints Loaded",
-        description: `Sprints for project ${projectId} have been retrieved.`,
-      });
-    } catch (error: any) {
-      console.error("Failed to load sprints:", error);
-      toast({
-        title: "Failed to Load Sprints",
-        description: error.message || "An error occurred while loading sprints.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoadingSprints(false);
-    }
-  }, []); // No dependencies for useCallback, as projectId is passed as an argument.
-
-
   const saveTask = async () => {
-    let project = null;
+    let project = null; // Bu değişken ismi, task kaydetme değil proje kaydetme çağrısına işaret ediyor
     setLoading(true)
     try {
-      const response = await BaseService.request(PROJECT_URL, {
+      const response = await BaseService.request(PROJECT_URL, { // PROJECT_URL kullanıldığı için dikkat!
         method: httpMethods.POST,
-        body: formData
+        body: formData // Tüm form verisini gönderiyor, bu da genellikle bir Task objesi değil Project objesidir.
       })
       project = response;
       toast({
-        title: `Project saved.`,
-        description: `Project saved.`,
+        title: `Proje kaydedildi.`, // Mesajı da buna göre düzenledim
+        description: `Proje başarıyla kaydedildi.`,
       })
       onOpenChange(false)
     } catch (error: any) {
       if (error.status === 400 && error.message) {
         toast({
-          title: `Project find all failed. (400)`,
+          title: `Proje kaydetme başarısız. (400)`,
           description: error.message,
           variant: "destructive",
         })
       } else {
-        console.error('Project failed:', error)
+        console.error('Proje kaydetme başarısız:', error)
         toast({
-          title: `Project find all failed.`,
+          title: `Proje kaydetme başarısız.`,
           description: error.message,
           variant: "destructive",
         })
@@ -322,11 +300,11 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
       <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto ">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Create New Task</DialogTitle>
-            <DialogDescription>Add a new task to your project. Fill out the details below.</DialogDescription>
+            <DialogTitle>Yeni Görev Oluştur</DialogTitle>
+            <DialogDescription>Projenize yeni bir görev ekleyin. Aşağıdaki detayları doldurun.</DialogDescription>
           </DialogHeader>
           {
-            loading || loadingSprints ? // Combined loading states for overall form loading
+            loading || loadingSprints ?
               <div className="grid gap-4 py-4">
                 <div className="flex items-center justify-center">
                   <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
@@ -336,48 +314,49 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
               <>
                 <div className="grid gap-4 py-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="title">Title</Label>
+                    <Label htmlFor="title">Başlık</Label>
                     <Input
                       id="title"
                       value={formData.title}
                       onChange={(e) => handleChange("title", e.target.value)}
-                      placeholder="Enter task title"
+                      placeholder="Görevin başlığını girin"
                       required
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="description">Description</Label>
+                    <Label htmlFor="description">Açıklama</Label>
                     <Textarea
                       id="description"
-                      value={formData.description || ""} // Handle null
+                      value={formData.description || ""}
                       onChange={(e) => handleChange("description", e.target.value)}
-                      placeholder="Describe the task in detail"
+                      placeholder="Görevi ayrıntılı olarak açıklayın"
                       rows={3}
                     />
                   </div>
 
+                  {/* Project Select */}
                   <div className="grid gap-2">
-                    <Label htmlFor="project">Project</Label>
+                    <Label htmlFor="project">Proje</Label>
                     <Select
                       id="project"
                       options={projectOptions}
                       value={projectOptions.find(option => option.value === formData.project)}
                       onChange={(option) => handleChange("project", option)}
-                      placeholder="Select project"
+                      placeholder="Proje Seçin"
                       required
-                      isDisabled={!!parentTaskId} // Disable if parent task is provided
+                      isDisabled={!!parentTaskId}
                     />
                   </div>
 
                   {formData.taskType === "subtask" && (
                     <div className="grid gap-2">
-                      <Label htmlFor="parentTask">Parent Task</Label>
+                      <Label htmlFor="parentTask">Üst Görev</Label>
                       <Select
                         id="parentTask"
                         options={parentTaskOptions}
                         value={parentTaskOptions.find(option => option.value === formData.parentTask)}
                         onChange={(option) => handleChange("parentTask", option)}
-                        placeholder="Select parent task"
+                        placeholder="Üst görev seçin"
                         isDisabled={!!parentTaskId}
                         isClearable
                       />
@@ -386,64 +365,74 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="grid gap-2">
-
-                      <Label htmlFor="taskType">Task Type</Label>
+                      {/* Task Type Select */}
+                      <Label htmlFor="taskType">Görev Tipi</Label>
                       <Select
                         id="taskType"
                         options={taskTypeOptions}
                         value={taskTypeOptions.find(option => option.value === formData.taskType)}
                         onChange={(option) => handleChange("taskType", option)}
-                        placeholder="Select task type"
-                        isDisabled={!!parentTaskId} // Disable if parent task is provided
+                        placeholder="Görev tipi seçin"
+                        isDisabled={!!parentTaskId}
+                        // Özel render için formatOptionLabel kullanın
+                        formatOptionLabel={(option: SelectOption & { icon?: React.ReactNode }) => (
+                          <div className="flex items-center">
+                            {option.icon}
+                            {option.label}
+                          </div>
+                        )}
                       />
                     </div>
                     <div className="grid gap-2">
-                      <Label htmlFor="assignee">Assignee</Label>
+                      {/* Assignee Select */}
+                      <Label htmlFor="assignee">Atanan Kişi</Label>
                       <Select
                         id="assignee"
                         options={assigneeOptions}
                         value={assigneeOptions.find(option => option.value === formData.assignee)}
                         onChange={(option) => handleChange("assignee", option)}
-                        placeholder="Assign to"
+                        placeholder="Atama Yap"
                         required
                         isClearable
-                        isDisabled={!formData.project || assigneeOptions.length === 0} // Disable if no project selected
-                        noOptionsMessage={() => "Select a project first to see assignees."}
+                        isDisabled={!formData.project || assigneeOptions.length === 0}
+                        noOptionsMessage={() => "Atanan kişileri görmek için önce bir proje seçin."}
                       />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="grid gap-2">
-                      <Label htmlFor="priority">Priority</Label>
+                      {/* Priority Select */}
+                      <Label htmlFor="priority">Öncelik</Label>
                       <Select
                         id="priority"
                         options={priorityOptions}
                         value={priorityOptions.find(option => option.value === formData.priority)}
                         onChange={(option) => handleChange("priority", option)}
-                        placeholder="Select priority"
+                        placeholder="Öncelik seçin"
                       />
                     </div>
                     <div className="grid gap-2">
+                      {/* Sprint Select */}
                       <Label htmlFor="sprint">Sprint</Label>
                       <Select
                         id="sprint"
                         options={sprintOptions}
                         value={sprintOptions.find(option => option.value === formData.sprint)}
                         onChange={(option) => handleChange("sprint", option)}
-                        placeholder="Select sprint"
+                        placeholder="Sprint seçin"
                         isClearable
-                        isDisabled={!formData.project || sprintOptions.length === 0} // Disable if no project selected
-                        noOptionsMessage={() => "Select a project first to see sprints."}
+                        isDisabled={!formData.project || sprintOptions.length === 0}
+                        noOptionsMessage={() => "Sprintleri görmek için önce bir proje seçin."}
                       />
                     </div>
                   </div>
                 </div>
 
                 <DialogFooter>
-                  <Button type="button" variant="outline" onClick={() => saveTask()}>
-                    Cancel
+                  <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                    İptal
                   </Button>
-                  <Button type="submit">Create Task</Button>
+                  <Button type="submit">Görev Oluştur</Button>
                 </DialogFooter>
               </>
           }
