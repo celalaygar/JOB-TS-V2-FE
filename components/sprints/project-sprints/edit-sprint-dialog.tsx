@@ -143,6 +143,7 @@ export function EditSprintDialog({ open, onOpenChange, sprint, projectList }: Ed
 
   const updateExistingSprint = async (updatedSprint: any) => {
     setLoading(true);
+    
     try {
       const response: Sprint = await BaseService.request(`${SPRINT_URL}/${updatedSprint.id}`, {
         method: httpMethods.PUT,

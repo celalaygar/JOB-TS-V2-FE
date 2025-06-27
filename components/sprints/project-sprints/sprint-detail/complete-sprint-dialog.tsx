@@ -91,8 +91,7 @@ export function CompleteSprintDialog({ sprint, open, onOpenChange, tasks }: Comp
 
   const getSprint = useCallback(async () => {
 
-    console.log("response getSprint " + sprint.id)
-    if (!sprint.id) {
+    if (!sprint.createdProject.id) {
       return;
     }
     setLoading(true);
@@ -105,8 +104,6 @@ export function CompleteSprintDialog({ sprint, open, onOpenChange, tasks }: Comp
         description: `Sprint "${response.name}" has been successfully updated.`,
       });
       setSprintList(response)
-      console.log("response sprint")
-      console.log(response)
     } catch (error: any) {
       console.error("Failed to update sprint:", error);
       toast({
