@@ -10,7 +10,7 @@ import { GET_PROJECT_USERS, SPRINT_NON_COMPLETED_GET_ALL_URL, PROJECT_TEAM_URL, 
 
 interface ApiOperationConfig<T> {
   url: string;
-  method: httpMethods;
+  method: keyof typeof httpMethods;
   body?: any;
   setLoading: (loading: boolean) => void;
   successMessage?: string;
