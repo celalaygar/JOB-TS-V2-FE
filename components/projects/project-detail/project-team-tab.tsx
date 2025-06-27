@@ -8,20 +8,10 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Search, Users, Plus, LayoutGrid, MoreHorizontal, Pencil, Trash2, List, Calendar, Clock, CheckCircle2, AlertCircle, Eye, Loader2 } from "lucide-react"
 import type { Project, ProjectTeam } from "@/types/project"
-import { teams } from "@/data/teams"
-import { users } from "@/data/users"
 import { CreateTeamDialog } from "./create-team-dialog"
-import { PROJECT_TEAM_URL } from "@/lib/service/BasePath"
-import { httpMethods } from "@/lib/service/HttpService"
-import BaseService from "@/lib/service/BaseService"
-import { toast } from "@/hooks/use-toast"
+import { getAllProjectTeamsHelper } from "@/lib/service/api-helpers"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import Link from "next/link"
-
-// Helper function to get teams for a specific project
-const getTeamsByProjectId = (projectId: string) => {
-  return teams.filter((team) => team.projectId === projectId)
-}
 
 // Helper function to get initials from name
 const getInitials = (name: string) => {
@@ -30,43 +20,6 @@ const getInitials = (name: string) => {
     .map((part) => part[0])
     .join("")
     .toUpperCase()
-}
-
-// Helper function to get random team focus areas
-const getRandomFocusAreas = () => {
-  const areas = ["Frontend", "Backend", "Design", "QA", "DevOps", "Mobile", "Analytics", "Security", "Documentation"]
-  const count = Math.floor(Math.random() * 3) + 1 // 1-3 areas
-  const result = []
-
-  for (let i = 0; i < count; i++) {
-    const randomIndex = Math.floor(Math.random() * areas.length)
-    result.push(areas[randomIndex])
-    areas.splice(randomIndex, 1) // Remove to avoid duplicates
-  }
-
-  return result
-}
-
-// Helper function to get random meeting schedule
-const getRandomMeetingSchedule = () => {
-  const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
-  const times = ["9:00 AM", "10:00 AM", "11:00 AM", "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM"]
-
-  const dayIndex = Math.floor(Math.random() * days.length)
-  const timeIndex = Math.floor(Math.random() * times.length)
-
-  return `${days[dayIndex]} at ${times[timeIndex]}`
-}
-
-// Helper function to get random team metrics
-const getRandomTeamMetrics = () => {
-  return {
-    completionRate: Math.floor(Math.random() * 101), // 0-100%
-    tasksCompleted: Math.floor(Math.random() * 50) + 5, // 5-54
-    tasksInProgress: Math.floor(Math.random() * 20) + 1, // 1-20
-    meetingEfficiency: Math.floor(Math.random() * 41) + 60, // 60-100%
-    velocity: Math.floor(Math.random() * 21) + 10, // 10-30 points
-  }
 }
 
 interface ProjectTeamTabProps {
@@ -92,41 +45,18 @@ export function ProjectTeamTab({ project, onInviteClick, onCreateTeamClick, crea
       team.description.toLowerCase().includes(searchQuery.toLowerCase()),
   )
 
-  const getAllProjectTeams = useCallback(async () => {
-    setLoading(true)
-    try {
-      const response: ProjectTeam[] = await BaseService.request(PROJECT_TEAM_URL + "/project/" + project.id, {
-        method: httpMethods.GET,
-      })
-      toast({
-        title: `Project Team get all.`,
-        description: `Project Team get all `,
-      })
-      setProjectTeams(response)
-
-    } catch (error: any) {
-      if (error.status === 400 && error.message) {
-        toast({
-          title: `Project Team failed. (400)`,
-          description: error.message,
-          variant: "destructive",
-        })
-      } else {
-        console.error('Project Team failed:', error)
-        toast({
-          title: `Project Team failed.`,
-          description: error.message,
-          variant: "destructive",
-        })
-      }
+  const fetchAllProjectTeams = useCallback(async () => {
+    setProjectTeams([]);
+    const teamsData = await getAllProjectTeamsHelper(project.id, { setLoading });
+    if (teamsData) {
+      setProjectTeams(teamsData);
     }
-    setLoading(false)
-  }, [])
+  }, [project.id]);
 
   useEffect(() => {
-    getAllProjectTeams()
-  }, [getAllProjectTeams])
-  
+    fetchAllProjectTeams();
+  }, [fetchAllProjectTeams]);
+
   const handleOpenDialog = (selectedTeam: ProjectTeam) => {
     if (selectedTeam) {
       setCreateTeamDialogOpen && setCreateTeamDialogOpen(true)

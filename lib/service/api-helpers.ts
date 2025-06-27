@@ -5,9 +5,9 @@ import { httpMethods } from "@/lib/service/HttpService";
 import { toast } from "@/hooks/use-toast";
 import type { ProjectUser } from "@/types/project";
 import type { Sprint } from "@/types/sprint";
-import type { ProjectTeam, Project } from "@/types/project";
+import type { ProjectTeam, Project, ProjectTaskStatus } from "@/types/project"; // Import ProjectTaskStatus
 import type { ProjectRole, ProjectRolePermission, ProjectRoleRequest } from "@/types/project-role";
-import { GET_PROJECT_USERS, SPRINT_NON_COMPLETED_GET_ALL_URL, PROJECT_TEAM_URL, PROJECT_URL, SPRINT_GET_ALL_URL, PROJECT_USER_ROLES_URL, PERMISSIONS } from "@/lib/service/BasePath";
+import { GET_PROJECT_USERS, SPRINT_NON_COMPLETED_GET_ALL_URL, PROJECT_TEAM_URL, PROJECT_URL, SPRINT_GET_ALL_URL, PROJECT_USER_ROLES_URL, PERMISSIONS, PROJECT_TASK_STATUS_URL } from "@/lib/service/BasePath";
 
 interface ApiOperationConfig<T> {
   url: string;
@@ -33,7 +33,10 @@ export async function apiCall<T>(config: ApiOperationConfig<T>): Promise<T | nul
   } = config;
 
   setLoading(true);
-
+  console.log("url -------------------------------------------------------")
+  console.log(url)
+  console.log(method)
+  console.log(body)
   try {
     const response: T = await BaseService.request(url, { method, body });
 
@@ -148,7 +151,7 @@ export const getAllSprintsGlobalHelper = async (options: FetchEntitiesOptions): 
     setLoading: options.setLoading,
     successMessage: "All sprints have been retrieved.",
     errorMessagePrefix: "Failed to load all sprints",
-    words: "All Sprints Loaded",
+    successToastTitle: "All Sprints Loaded",
     errorToastTitle: "Error Loading All Sprints",
   });
 };
@@ -218,5 +221,42 @@ export const createProjectUserRoleHelper = async (newRoleData: ProjectRoleReques
     errorMessagePrefix: "Failed to create project user role",
     successToastTitle: "Project Role Created",
     errorToastTitle: "Error Creating Project Role",
+  });
+};
+
+export const getAllProjectTaskStatusHelper = async (projectId: string, options: FetchEntitiesOptions): Promise<ProjectTaskStatus[] | null> => {
+  if (!projectId) {
+    options.setLoading(false);
+    return [];
+  }
+
+  return apiCall<ProjectTaskStatus[]>({
+    url: `${PROJECT_TASK_STATUS_URL}/project/${projectId}`,
+    method: httpMethods.GET,
+    setLoading: options.setLoading,
+    successMessage: `Task statuses for project ${projectId} have been retrieved.`,
+    errorMessagePrefix: "Failed to load project task statuses",
+    successToastTitle: "Project Task Statuses Loaded",
+    errorToastTitle: "Error Loading Project Task Statuses",
+  });
+};
+
+export const saveTaskStatusHelper = async (statusData: ProjectTaskStatus, options: FetchEntitiesOptions): Promise<ProjectTaskStatus | null> => {
+  const method = statusData.id ? httpMethods.PUT : httpMethods.POST;
+  const url = PROJECT_TASK_STATUS_URL;
+  const successMsg = statusData.id ? `Project task status "${statusData.name}" updated.` : `Project task status "${statusData.name}" created.`;
+  const errorPrefix = statusData.id ? "Failed to update project task status" : "Failed to create project task status";
+  const successToast = statusData.id ? "Project Task Status Updated" : "Project Task Status Created";
+  const errorToast = statusData.id ? "Error Updating Project Task Status" : "Error Creating Project Task Status";
+
+  return apiCall<ProjectTaskStatus>({
+    url,
+    method,
+    body: statusData,
+    setLoading: options.setLoading,
+    successMessage: successMsg,
+    errorMessagePrefix: errorPrefix,
+    successToastTitle: successToast,
+    errorToastTitle: errorToast,
   });
 };

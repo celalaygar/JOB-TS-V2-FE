@@ -25,12 +25,8 @@ import {
   Loader2,
 } from "lucide-react"
 import type { Project, ProjectUser } from "@/types/project"
-import type { User } from "@/types/user"
 import { InviteUserDialog } from "./dialogs/invite-user-dialog"
-import BaseService from "@/lib/service/BaseService"
-import { GET_PROJECT_USERS } from "@/lib/service/BasePath"
-import { httpMethods } from "@/lib/service/HttpService"
-import { toast } from "@/hooks/use-toast"
+import { getProjectUsersHelper } from "@/lib/service/api-helpers"
 
 interface ProjectUsersTabProps {
   project: Project
@@ -47,8 +43,6 @@ export function ProjectUsersTab({
 }: ProjectUsersTabProps) {
   const [projectUsers, setprojectUsers] = useState<ProjectUser[]>()
 
-
-  // State for search and filters
   const [searchQuery, setSearchQuery] = useState("")
   const [roleFilter, setRoleFilter] = useState("all")
   const [statusFilter, setStatusFilter] = useState("all")
@@ -56,52 +50,22 @@ export function ProjectUsersTab({
 
   const [loading, setLoading] = useState(false);
 
-
-  const getProjectUsers = async () => {
-    setLoading(true)
-    try {
-      const response: ProjectUser[] = await BaseService.request(GET_PROJECT_USERS + "/" + project.id, {
-        method: httpMethods.GET,
-      })
-      toast({
-        title: `Get All Invitations.`,
-        description: `Get All Invitations `,
-      })
-      setprojectUsers(response)
-
-    } catch (error: any) {
-      if (error.status === 400 && error.message) {
-        toast({
-          title: `Get Project Users failed. (400)`,
-          description: error.message,
-          variant: "destructive",
-        })
-      } else {
-        console.error('Get Project Users failed:', error)
-        toast({
-          title: `Get Project Users failed.`,
-          description: error.message,
-          variant: "destructive",
-        })
-      }
+  const fetchProjectUsers = useCallback(async () => {
+    const usersData = await getProjectUsersHelper(project.id, { setLoading });
+    if (usersData) {
+      setprojectUsers(usersData);
+    } else {
+      setprojectUsers([]);
     }
-    setLoading(false)
-  }
-
-  const getAll = useCallback(async () => {
-    await getProjectUsers()
-  }, [])
+  }, [project.id]);
 
   useEffect(() => {
-    getAll()
-  }, [getAll])
+    fetchProjectUsers();
+  }, [fetchProjectUsers]);
 
-
-  // Get unique values for filter dropdowns
   const uniqueRoles = projectUsers && Array.from(new Set(projectUsers.map((user) => user.role)))
   const uniqueDepartments = projectUsers && Array.from(new Set(projectUsers.map((user) => user.department).filter(Boolean)))
 
-  // View mode state (grid or list)
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
 
   return loading ? (

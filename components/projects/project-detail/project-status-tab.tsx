@@ -22,10 +22,8 @@ import {
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Project, ProjectTaskStatus } from "@/types/project"
-import BaseService from "@/lib/service/BaseService"
-import { httpMethods } from "@/lib/service/HttpService"
-import { toast } from "@/hooks/use-toast"
-import { PROJECT_TASK_STATUS_URL, PROJECT_USER_ROLES_URL } from "@/lib/service/BasePath"
+import { getAllProjectTaskStatusHelper, saveTaskStatusHelper } from "@/lib/service/api-helpers"
+
 
 // Define the status type
 interface Status {
@@ -47,7 +45,6 @@ export function ProjectStatusTab({ project, projectId }: ProjectStatusTabProps) 
   const [loading, setLoading] = useState(false);
   const [loadingDialog, setLoadingDialog] = useState(false);
 
-  // Mock statuses data - in a real app, this would come from your backend or state management
   const [statuses, setStatuses] = useState<ProjectTaskStatus[]>([])
 
   const [searchQuery, setSearchQuery] = useState("")
@@ -66,115 +63,37 @@ export function ProjectStatusTab({ project, projectId }: ProjectStatusTabProps) 
     )
   }
 
-  const getAllProjectTaskStatus = useCallback(async () => {
-    setLoading(true)
-    try {
-      const response = await BaseService.request(PROJECT_TASK_STATUS_URL + "/project/" + project.id, {
-        method: httpMethods.GET
-      })
-      toast({
-        title: `Project Task Status get All.`,
-        description: `Project Task Status get All `,
-      })
-      setStatuses(response as ProjectTaskStatus[])
-    } catch (error: any) {
-      if (error.status === 400 && error.message) {
-        toast({
-          title: `Project find all failed. (400)`,
-          description: error.message,
-          variant: "destructive",
-        })
-      } else {
-        console.error('Projects Task Status  failed:', error)
-        toast({
-          title: `Projects Task Status  find all failed.`,
-          description: error.message,
-          variant: "destructive",
-        })
-      }
+  const fetchAllProjectTaskStatus = useCallback(async () => {
+    setStatuses([]); // Clear existing statuses
+    const statusesData = await getAllProjectTaskStatusHelper(project.id, { setLoading });
+    if (statusesData) {
+      setStatuses(statusesData);
     }
-    setLoading(false)
-  }, [])
+  }, [project.id]);
 
   useEffect(() => {
-    getAllProjectTaskStatus()
-  }, [getAllProjectTaskStatus])
+    fetchAllProjectTaskStatus();
+  }, [fetchAllProjectTaskStatus]);
 
 
-
-
-  // Handle creating a new status
   const handleCreateStatus = async (status: ProjectTaskStatus) => {
-    const newStatus: ProjectTaskStatus = {
-      ...status,
+    const newStatusData = { ...status, projectId: project.id };
+    const response = await saveTaskStatusHelper(newStatusData, { setLoading: setLoadingDialog });
+    if (response) {
+      setStatuses((prevStatuses) => [...prevStatuses, response]);
     }
-    let response: ProjectTaskStatus | null = await saveStatus(newStatus);
-    if (!response) {
-      return;
-    }
-    setStatuses([...statuses, response])
-  }
+  };
 
-  // Handle updating a status
   const handleUpdateStatus = async (updatedStatus: ProjectTaskStatus) => {
-    let response: ProjectTaskStatus | null = await saveStatus(updatedStatus);
-    if (!response) {
-      return;
+    const newStatusData = { ...updatedStatus, projectId: project.id };
+    const response = await saveTaskStatusHelper(newStatusData, { setLoading: setLoadingDialog });
+    if (response) {
+      setStatuses((prevStatuses) =>
+        prevStatuses.map((status) => (status.id === response.id ? response : status))
+      );
     }
-    setStatuses(statuses.map((status) => (status.id === response.id ? response : status)))
-  }
+  };
 
-
-  const saveStatus = async (status: ProjectTaskStatus) => {
-    let response: ProjectTaskStatus | null = null;
-    setLoadingDialog(true)
-    try {
-      status["projectId"] = project?.id;
-      console.log("status")
-      console.log(status)
-      if (status.id) {
-        response = await BaseService.request(PROJECT_TASK_STATUS_URL, {
-          method: httpMethods.PUT,
-          body: status
-        })
-        toast({
-          title: `Project Task Status updated.`,
-          description: `Project Task Status updated as ` + status.name,
-        })
-      } else {
-        response = await BaseService.request(PROJECT_TASK_STATUS_URL, {
-          method: httpMethods.POST,
-          body: status
-        })
-        toast({
-          title: `Project Task Status saved.`,
-          description: `Project Task Status saved as` + status.name,
-        })
-      }
-
-    } catch (error: any) {
-      if (error.status === 400 && error.message) {
-        toast({
-          title: `Project Task Status failed. (400)`,
-          description: error.message,
-          variant: "destructive",
-        })
-      } else {
-        console.error('Project Task Status failed:', error)
-        toast({
-          title: `Project Task Status failed.`,
-          description: error.message,
-          variant: "destructive",
-        })
-      }
-    }
-    setLoadingDialog(false)
-    return response;
-  }
-
-
-
-  // Handle deleting a status
   const handleDeleteStatus = () => {
     if (selectedStatus) {
       setStatuses(statuses.filter((status) => status.id !== selectedStatus.id))
@@ -183,7 +102,6 @@ export function ProjectStatusTab({ project, projectId }: ProjectStatusTabProps) 
     }
   }
 
-  // Handle moving a status up or down
   const handleMoveStatus = (statusId: string, direction: "up" | "down") => {
     const statusIndex = statuses.findIndex((s) => s.id === statusId)
     if (statusIndex === -1) return
@@ -191,21 +109,17 @@ export function ProjectStatusTab({ project, projectId }: ProjectStatusTabProps) 
     const newStatuses = [...statuses]
 
     if (direction === "up" && statusIndex > 0) {
-      // Swap with the previous item
       const temp = newStatuses[statusIndex]
       newStatuses[statusIndex] = newStatuses[statusIndex - 1]
       newStatuses[statusIndex - 1] = temp
 
-      // Update order values
       newStatuses[statusIndex].order = statusIndex + 1
       newStatuses[statusIndex - 1].order = statusIndex
     } else if (direction === "down" && statusIndex < newStatuses.length - 1) {
-      // Swap with the next item
       const temp = newStatuses[statusIndex]
       newStatuses[statusIndex] = newStatuses[statusIndex + 1]
       newStatuses[statusIndex + 1] = temp
 
-      // Update order values
       newStatuses[statusIndex].order = statusIndex + 1
       newStatuses[statusIndex + 1].order = statusIndex + 2
     }
@@ -213,7 +127,6 @@ export function ProjectStatusTab({ project, projectId }: ProjectStatusTabProps) 
     setStatuses(newStatuses)
   }
 
-  // Handle sorting
   const handleSort = (field: keyof Status) => {
     if (sortField === field) {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc")
@@ -223,7 +136,6 @@ export function ProjectStatusTab({ project, projectId }: ProjectStatusTabProps) 
     }
   }
 
-  // Filter and sort statuses
   const filteredAndSortedStatuses = statuses
     .filter((status) => {
       const matchesSearch =
