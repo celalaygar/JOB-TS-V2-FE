@@ -15,6 +15,7 @@ import { httpMethods } from "@/lib/service/HttpService"
 import { Project, ProjectTeam } from "@/types/project"
 import BaseService from "@/lib/service/BaseService"
 import { toast } from "@/hooks/use-toast"
+import { getAllProjectTeamsHelper } from "@/lib/service/api-helpers" // Import the new helper
 
 interface ProjectSprintsFiltersProps {
   filters: {
@@ -34,18 +35,17 @@ export function ProjectSprintsFilters({ projectList, filters, onFilterChange, te
 
   const [loading, setLoading] = useState(false);
 
-
-
-
-
-  const handleProjectChange = (value: string) => {
-    onFilterChange({ ...filters, project: value })
-    console.log("handleProjectChange")
-    setProjectTeams([])
+  const handleProjectChange = useCallback(async (value: string) => {
+    onFilterChange({ ...filters, project: value });
+    setProjectTeams([]); // Clear teams when project changes
     if (!!value && value !== "all") {
-      getAllProjectTeams(value)
+      const teamsData = await getAllProjectTeamsHelper(value, { setLoading });
+      if (teamsData) {
+        setProjectTeams(teamsData);
+      }
     }
-  }
+  }, [filters, onFilterChange, setLoading]);
+
 
   const handleTeamChange = (value: string) => {
     onFilterChange({ ...filters, team: value })
@@ -68,37 +68,6 @@ export function ProjectSprintsFilters({ projectList, filters, onFilterChange, te
       status: "",
       dateRange: undefined,
     })
-  }
-
-  const getAllProjectTeams = async (projectId: String) => {
-    setLoading(true)
-    try {
-      const response: ProjectTeam[] = await BaseService.request(PROJECT_TEAM_URL + "/project/" + projectId, {
-        method: httpMethods.GET,
-      })
-      toast({
-        title: `Project Team get all.`,
-        description: `Project Team get all `,
-      })
-      setProjectTeams(response)
-
-    } catch (error: any) {
-      if (error.status === 400 && error.message) {
-        toast({
-          title: `Project Team failed. (400)`,
-          description: error.message,
-          variant: "destructive",
-        })
-      } else {
-        console.error('Project Team failed:', error)
-        toast({
-          title: `Project Team failed.`,
-          description: error.message,
-          variant: "destructive",
-        })
-      }
-    }
-    setLoading(false)
   }
 
   return (

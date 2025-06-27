@@ -5,7 +5,8 @@ import { httpMethods } from "@/lib/service/HttpService";
 import { toast } from "@/hooks/use-toast";
 import type { ProjectUser } from "@/types/project";
 import type { Sprint } from "@/types/sprint";
-import { GET_PROJECT_USERS, SPRINT_NON_COMPLETED_GET_ALL_URL } from "@/lib/service/BasePath";
+import type { ProjectTeam, Project } from "@/types/project";
+import { GET_PROJECT_USERS, SPRINT_NON_COMPLETED_GET_ALL_URL, PROJECT_TEAM_URL, PROJECT_URL, SPRINT_GET_ALL_URL } from "@/lib/service/BasePath";
 
 interface ApiOperationConfig<T> {
   url: string;
@@ -107,5 +108,46 @@ export const getSprintsHelper = async (projectId: string, options: FetchEntities
     errorMessagePrefix: "Failed to load sprints",
     successToastTitle: "Sprints Loaded",
     errorToastTitle: "Error Loading Sprints",
+  });
+};
+
+export const getAllProjectTeamsHelper = async (projectId: string, options: FetchEntitiesOptions): Promise<ProjectTeam[] | null> => {
+  if (!projectId) {
+    options.setLoading(false);
+    return [];
+  }
+
+  return apiCall<ProjectTeam[]>({
+    url: `${PROJECT_TEAM_URL}/project/${projectId}`,
+    method: httpMethods.GET,
+    setLoading: options.setLoading,
+    successMessage: `Teams for project ${projectId} have been retrieved.`,
+    errorMessagePrefix: "Failed to load project teams",
+    successToastTitle: "Project Teams Loaded",
+    errorToastTitle: "Error Loading Project Teams",
+  });
+};
+
+export const getAllProjectsHelper = async (options: FetchEntitiesOptions): Promise<Project[] | null> => {
+  return apiCall<Project[]>({
+    url: PROJECT_URL,
+    method: httpMethods.GET,
+    setLoading: options.setLoading,
+    successMessage: "All projects have been retrieved.",
+    errorMessagePrefix: "Failed to load projects",
+    successToastTitle: "Projects Loaded",
+    errorToastTitle: "Error Loading Projects",
+  });
+};
+
+export const getAllSprintsGlobalHelper = async (options: FetchEntitiesOptions): Promise<Sprint[] | null> => {
+  return apiCall<Sprint[]>({
+    url: SPRINT_GET_ALL_URL,
+    method: httpMethods.GET,
+    setLoading: options.setLoading,
+    successMessage: "All sprints have been retrieved.",
+    errorMessagePrefix: "Failed to load all sprints",
+    successToastTitle: "All Sprints Loaded",
+    errorToastTitle: "Error Loading All Sprints",
   });
 };

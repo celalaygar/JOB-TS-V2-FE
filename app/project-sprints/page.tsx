@@ -10,26 +10,21 @@ import { CreateSprintDialog } from "@/components/sprints/project-sprints/create-
 import { EditSprintDialog } from "@/components/sprints/project-sprints/edit-sprint-dialog"
 import { DeleteSprintDialog } from "@/components/sprints/project-sprints/delete-sprint-dialog"
 import { Pagination } from "@/components/ui/pagination"
-import { PROJECT_URL, SPRINT_GET_ALL_URL } from "@/lib/service/BasePath"
-import BaseService from "@/lib/service/BaseService"
 import { Project } from "@/types/project"
-import { httpMethods } from "@/lib/service/HttpService"
 import { toast } from "@/hooks/use-toast"
 import { Loader2 } from "lucide-react"
 import { Sprint } from "@/types/sprint"
 import { setSprints } from "@/lib/redux/features/sprints-slice"
+import { getAllProjectsHelper, getAllSprintsGlobalHelper } from "@/lib/service/api-helpers"
 
 export default function ProjectSprints() {
-  // State for dialogs
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [sprintToEdit, setSprintToEdit] = useState<Sprint | null>(null)
   const [sprintToDelete, setSprintToDelete] = useState<string | null>(null)
   const [projectList, setProjectList] = useState<Project[] | []>([]);
   const [loading, setLoading] = useState(false);
-  const [sprintList, setSprintList] = useState<Sprint[]>([]);
   const dispatch = useDispatch()
 
-  // State for filters
   const [filters, setFilters] = useState({
     team: "",
     status: "",
@@ -39,35 +34,25 @@ export default function ProjectSprints() {
     },
   })
 
-  // State for pagination
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 9
 
-  // Get sprints from Redux store
   const sprints = useSelector((state: RootState) => state.sprints.sprints)
   const teams = useSelector((state: RootState) => state.teams?.teams || [])
 
-  // Apply filters
   const filteredSprints = sprints.filter((sprint) => {
-    // Filter by team
-    // if (filters.team && !sprint.team.some((member) => member.name.includes(filters.team))) {
-    //   return false
-    // }
-
-    // Filter by status
     if (filters.status && sprint.status !== filters.status) {
       return false
     }
 
-    // Filter by date range
-    if (filters.dateRange.from) {
+    if (!!filters.dateRange && filters.dateRange.from) {
       const sprintStart = new Date(sprint.startDate)
       if (sprintStart < filters.dateRange.from) {
         return false
       }
     }
 
-    if (filters.dateRange.to) {
+    if (!!filters.dateRange && filters.dateRange.to) {
       const sprintEnd = new Date(sprint.endDate)
       if (sprintEnd > filters.dateRange.to) {
         return false
@@ -77,80 +62,33 @@ export default function ProjectSprints() {
     return true
   })
 
-  // Calculate pagination
   const totalPages = Math.ceil(filteredSprints.length / itemsPerPage)
   const paginatedSprints = filteredSprints.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
 
-  // Handle filter changes
   const handleFilterChange = (newFilters: typeof filters) => {
     setFilters(newFilters)
-    setCurrentPage(1) // Reset to first page when filters change
+    setCurrentPage(1)
   }
 
-  const getAllProjects = useCallback(async () => {
-    setProjectList([])
-    setLoading(true)
-    try {
-      const response = await BaseService.request(PROJECT_URL, {
-        method: httpMethods.GET,
-      })
-      let projectList = response as Project[];
-      setProjectList(projectList)
-    } catch (error: any) {
-      if (error.status === 400 && error.message) {
-        toast({
-          title: `Project find all failed. (400)`,
-          description: error.message,
-          variant: "destructive",
-        })
-      } else {
-        console.error('Project failed:', error)
-        toast({
-          title: `Project find all failed.`,
-          description: error.message,
-          variant: "destructive",
-        })
-      }
+  const fetchAllProjects = useCallback(async () => {
+    setProjectList([]);
+    const projectsData = await getAllProjectsHelper({ setLoading });
+    if (projectsData) {
+      setProjectList(projectsData);
     }
-    setLoading(false)
-  }, [])
+  }, []);
 
-  const getAllSprints = useCallback(async () => {
-    setProjectList([])
-    setLoading(true)
-    try {
-      const response = await BaseService.request(SPRINT_GET_ALL_URL, {
-        method: httpMethods.GET,
-      })
-      let list = response as Sprint[];
-      setSprintList(list)
-      dispatch(setSprints(list))
-    } catch (error: any) {
-      if (error.status === 400 && error.message) {
-        toast({
-          title: `Sprint find all failed. (400)`,
-          description: error.message,
-          variant: "destructive",
-        })
-      } else {
-        console.error('Sprint failed:', error)
-        toast({
-          title: `Sprint find all failed.`,
-          description: error.message,
-          variant: "destructive",
-        })
-      }
+  const fetchAllSprints = useCallback(async () => {
+    const sprintsData = await getAllSprintsGlobalHelper({ setLoading });
+    if (sprintsData) {
+      dispatch(setSprints(sprintsData));
     }
-    setLoading(false)
-  }, [])
-
+  }, [dispatch]);
 
   useEffect(() => {
-    getAllProjects()
-    getAllSprints()
-  }, [getAllProjects, getAllSprints])
-
-
+    fetchAllProjects();
+    fetchAllSprints();
+  }, [fetchAllProjects, fetchAllSprints]);
 
   return (
     <div className="space-y-6">
@@ -177,7 +115,6 @@ export default function ProjectSprints() {
                 <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
               </div>
             )}
-
 
             {!!projectList && (
               <CreateSprintDialog projectList={projectList} open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen} />
