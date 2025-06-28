@@ -22,6 +22,11 @@ export default function KanbanCard({ task }: KanbanCardProps) {
 
   const handleDragEnd = (e: React.DragEvent) => {
     setIsDragging(false)
+    // Sürükleme bittiğinde oluşturduğumuz kopya elementi temizle
+    const dragImage = document.getElementById("drag-image-copy");
+    if (dragImage) {
+      document.body.removeChild(dragImage);
+    }
   }
 
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
@@ -29,33 +34,31 @@ export default function KanbanCard({ task }: KanbanCardProps) {
     e.dataTransfer.effectAllowed = "move"
     setIsDragging(true)
 
-    // Create a fully visible drag image
+    // Kartın bir kopyasını oluştur ve stil ver
     const dragImage = e.currentTarget.cloneNode(true) as HTMLElement
+    dragImage.id = "drag-image-copy"; // Kolayca erişmek için bir ID verelim
     dragImage.style.position = "absolute"
-    dragImage.style.top = "-1000px"
-    dragImage.style.left = "-1000px"
-    dragImage.style.background = "white"
-    dragImage.style.border = "2px solid #3b82f6"
+    dragImage.style.top = "-1000px" // Ekran dışında konumlandır
+    dragImage.style.left = "-1000px" // Ekran dışında konumlandır
+    dragImage.style.background = "white" // Arka planı belirgin yap
+    dragImage.style.border = "5px solid #111111" // Çerçeve ekle
     dragImage.style.borderRadius = "8px"
     dragImage.style.padding = "12px"
     dragImage.style.boxShadow = "0 10px 25px -3px rgba(0, 0, 0, 0.3)"
-    dragImage.style.opacity = "1"
-    //dragImage.style.transform = "rotate(3deg) scale(1.05)"
-    dragImage.style.pointerEvents = "none"
-    dragImage.style.zIndex = "9999"
-    dragImage.style.width = e.currentTarget.offsetWidth + "px"
-    dragImage.style.fontFamily = "inherit"
+    dragImage.style.opacity = "1" // Tamamen görünür olmasını sağla
+    dragImage.style.transform = "rotate(3deg) scale(1.05)" // Hafif döndürme ve büyütme
+    dragImage.style.pointerEvents = "none" // Fare olaylarını engelle
+    dragImage.style.zIndex = "9999" // Diğer elementlerin üzerinde olmasını sağla
+    dragImage.style.width = e.currentTarget.offsetWidth + "px" // Genişliğini orijinal kart ile aynı yap
+    dragImage.style.fontFamily = "inherit" // Fontu miras al
     document.body.appendChild(dragImage)
 
-    // Set this copy as the drag image with better positioning
-    e.dataTransfer.setDragImage(dragImage, e.currentTarget.offsetWidth / 2, 30)
+    // Bu kopyayı sürükleme görüntüsü olarak ayarla
+    // Konumlandırmayı fare imlecinin ucunda ortalayacak şekilde ayarla
+    e.dataTransfer.setDragImage(dragImage, dragImage.offsetWidth / 2, dragImage.offsetHeight / 2)
 
-    // Clean up the copy after drag starts
-    setTimeout(() => {
-      if (document.body.contains(dragImage)) {
-        document.body.removeChild(dragImage)
-      }
-    }, 100)
+    // Sürükleme bittikten sonra bu elementi handleDragEnd içinde kaldıracağız.
+    // Buradaki setTimeout'u kaldırıyoruz çünkü handleDragEnd içinde temizliği yapacağız.
   }
 
   const getTypeIcon = () => {
