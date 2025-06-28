@@ -22,8 +22,6 @@ export default function KanbanCard({ task }: KanbanCardProps) {
 
   const handleDragEnd = (e: React.DragEvent) => {
     setIsDragging(false)
-    const target = e.currentTarget as HTMLElement
-    target.classList.remove("opacity-100")
   }
 
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
@@ -31,25 +29,33 @@ export default function KanbanCard({ task }: KanbanCardProps) {
     e.dataTransfer.effectAllowed = "move"
     setIsDragging(true)
 
-    const target = e.currentTarget as HTMLElement
-    // Create a visible copy of the card
+    // Create a fully visible drag image
     const dragImage = e.currentTarget.cloneNode(true) as HTMLElement
     dragImage.style.position = "absolute"
     dragImage.style.top = "-1000px"
     dragImage.style.left = "-1000px"
-    dragImage.style.background = "ffffff"
-    dragImage.style.pointerEvents = "none" // Prevent mouse interaction
-    dragImage.style.zIndex = "1000"
+    dragImage.style.background = "white"
+    dragImage.style.border = "2px solid #3b82f6"
+    dragImage.style.borderRadius = "8px"
+    dragImage.style.padding = "12px"
+    dragImage.style.boxShadow = "0 10px 25px -3px rgba(0, 0, 0, 0.3)"
+    dragImage.style.opacity = "1"
+    //dragImage.style.transform = "rotate(3deg) scale(1.05)"
+    dragImage.style.pointerEvents = "none"
+    dragImage.style.zIndex = "9999"
+    dragImage.style.width = e.currentTarget.offsetWidth + "px"
+    dragImage.style.fontFamily = "inherit"
     document.body.appendChild(dragImage)
 
-    // Set this copy as the drag image
-    e.dataTransfer.setDragImage(dragImage, 0, 0)
+    // Set this copy as the drag image with better positioning
+    e.dataTransfer.setDragImage(dragImage, e.currentTarget.offsetWidth / 2, 30)
 
-    // Clean up the copy shortly after drag starts
+    // Clean up the copy after drag starts
     setTimeout(() => {
-      target.classList.add("opacity-100")
-      document.body.removeChild(dragImage)
-    }, 0)
+      if (document.body.contains(dragImage)) {
+        document.body.removeChild(dragImage)
+      }
+    }, 100)
   }
 
   const getTypeIcon = () => {
@@ -98,7 +104,9 @@ export default function KanbanCard({ task }: KanbanCardProps) {
   return (
     <>
       <div
-        className={`bg-card p-3 rounded-lg border shadow-sm cursor-grab hover:border-primary transition-colors relative ${isDragging ? "opacity-50" : ""
+        className={`bg-white p-3 rounded-lg border shadow-sm cursor-grab hover:border-primary transition-all duration-200 relative ${isDragging
+          ? "opacity-90 scale-105 rotate-2 shadow-xl border-primary ring-2 ring-primary/20"
+          : "hover:shadow-md"
           }`}
         draggable
         onDragStart={handleDragStart}
