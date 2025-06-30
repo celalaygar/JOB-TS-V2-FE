@@ -154,8 +154,6 @@ export default function ProjectDetails() {
 
         <ProjectDialogs
           project={currentProject}
-          editDialogOpen={editDialogOpen}
-          setEditDialogOpen={setEditDialogOpen}
           deleteDialogOpen={deleteDialogOpen}
           setDeleteDialogOpen={setDeleteDialogOpen}
           deleteTaskDialogOpen={deleteTaskDialogOpen}

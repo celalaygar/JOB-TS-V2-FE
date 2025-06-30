@@ -10,8 +10,6 @@ import { InviteUserDialog } from "./dialogs/invite-user-dialog"
 
 interface ProjectDialogsProps {
   project?: Project
-  editDialogOpen?: boolean
-  setEditDialogOpen?: (open: boolean) => void
   deleteDialogOpen?: boolean
   setDeleteDialogOpen?: (open: boolean) => void
   deleteTaskDialogOpen?: boolean
@@ -22,8 +20,6 @@ interface ProjectDialogsProps {
 
 export function ProjectDialogs({
   project,
-  editDialogOpen = false,
-  setEditDialogOpen = () => { },
   deleteDialogOpen = false,
   setDeleteDialogOpen = () => { },
   deleteTaskDialogOpen = false,
