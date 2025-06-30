@@ -1,8 +1,6 @@
 "use client"
 
-import type React from "react"
-
-import { useState } from "react"
+import React, { useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { addProject } from "@/lib/redux/features/projects-slice"
 import type { RootState } from "@/lib/redux/store"
@@ -17,7 +15,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+// import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select" // Removed shadcn/ui Select
 import { Button } from "@/components/ui/button"
 import { Check, ChevronsUpDown, Loader2, X } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
@@ -28,6 +26,7 @@ import { Project, ProjectUser } from "@/types/project"
 import BaseService from "@/lib/service/BaseService"
 import { httpMethods } from "@/lib/service/HttpService"
 import { createProjectHelper } from "@/lib/service/api-helpers"
+import Select from 'react-select'; // Import react-select
 
 interface CreateProjectDialogProps {
   open: boolean
@@ -65,12 +64,12 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
     }
   }
 
-  const handleTeamChange = (userId: string) => {
-    setFormData((prev) => {
-      const newTeam = prev.team.includes(userId) ? prev.team.filter((id) => id !== userId) : [...prev.team, userId]
-      return { ...prev, team: newTeam }
-    })
-  }
+  // Handle team change for react-select (multi-select)
+  const handleTeamChange = (selectedOptions: any) => {
+    const selectedUserIds = selectedOptions ? selectedOptions.map((option: any) => option.value) : [];
+    setFormData((prev) => ({ ...prev, team: selectedUserIds }));
+  };
+
 
   const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && tagInput.trim()) {
@@ -152,6 +151,23 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
     onOpenChange(false)
   }
 
+  // Dedicated handler for the status select component using react-select
+  const handleStatusChange = (selectedOption: any) => {
+    setFormData((prev) => ({ ...prev, status: selectedOption ? selectedOption.value : "" }));
+  };
+
+  const statusOptions = [
+    { value: "Planning", label: "Planning" },
+    { value: "In Progress", label: "In Progress" },
+    { value: "On Hold", label: "On Hold" },
+    { value: "Completed", label: "Completed" },
+  ];
+
+  const userOptions = users.map(user => ({
+    value: user.id, // Assuming user.id is the unique identifier
+    label: user.username // Assuming user.username is the display name
+  }));
+
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -198,19 +214,75 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
                       {errors.description && <p className="text-xs text-[var(--fixed-danger)]">{errors.description}</p>}
                     </div>
 
+                    {/* Status Select with react-select */}
                     <div className="grid gap-2">
                       <Label htmlFor="status">Status</Label>
-                      <Select value={formData.status} onValueChange={(value) => handleChange("status", value)}>
-                        <SelectTrigger id="status" className="border-[var(--fixed-card-border)]">
-                          <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Planning">Planning</SelectItem>
-                          <SelectItem value="In Progress">In Progress</SelectItem>
-                          <SelectItem value="On Hold">On Hold</SelectItem>
-                          <SelectItem value="Completed">Completed</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <Select
+                        id="status"
+                        options={statusOptions}
+                        value={statusOptions.find(option => option.value === formData.status)}
+                        onChange={handleStatusChange}
+                        classNamePrefix="react-select" // For custom styling if needed
+                      />
+                    </div>
+
+                    {/* Team Multi-select with react-select */}
+                    <div className="grid gap-2">
+                      <Label htmlFor="team">Team Members</Label>
+                      <Select
+                        id="team"
+                        isMulti
+                        options={userOptions}
+                        value={userOptions.filter(option => formData.team.includes(option.value))}
+                        onChange={handleTeamChange}
+                        classNamePrefix="react-select"
+                        styles={{
+                          control: (baseStyles, state) => ({
+                            ...baseStyles,
+                            borderColor: 'var(--fixed-card-border)',
+                            '&:hover': {
+                              borderColor: 'var(--fixed-card-border)',
+                            },
+                            boxShadow: state.isFocused ? '0 0 0 1px var(--fixed-primary)' : 'none',
+                          }),
+                          multiValue: (baseStyles) => ({
+                            ...baseStyles,
+                            backgroundColor: 'var(--fixed-secondary)', // Background for selected tags
+                          }),
+                          multiValueLabel: (baseStyles) => ({
+                            ...baseStyles,
+                            color: 'var(--fixed-secondary-fg)', // Text color for selected tags
+                          }),
+                          multiValueRemove: (baseStyles) => ({
+                            ...baseStyles,
+                            color: 'var(--fixed-secondary-fg)', // Close icon color
+                            '&:hover': {
+                              backgroundColor: 'var(--fixed-destructive)', // Hover background for close icon
+                              color: 'white', // Hover color for close icon
+                            },
+                          }),
+                          option: (baseStyles, state) => ({
+                            ...baseStyles,
+                            backgroundColor: state.isSelected ? 'var(--fixed-primary)' : 'white',
+                            color: state.isSelected ? 'white' : 'black',
+                            '&:active': {
+                              backgroundColor: 'var(--fixed-primary-active)',
+                            },
+                            '&:hover': {
+                              backgroundColor: state.isSelected ? 'var(--fixed-primary)' : 'var(--fixed-muted)',
+                              color: state.isSelected ? 'white' : 'black',
+                            },
+                          }),
+                          placeholder: (baseStyles) => ({
+                            ...baseStyles,
+                            color: 'var(--fixed-muted-foreground)', // Placeholder color
+                          }),
+                          input: (baseStyles) => ({
+                            ...baseStyles,
+                            color: 'var(--fixed-foreground)', // Text color for input
+                          }),
+                        }}
+                      />
                     </div>
 
                     <div className="grid gap-2">
