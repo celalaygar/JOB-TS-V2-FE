@@ -23,6 +23,7 @@ import { Project } from "@/types/project"
 import { Loader2 } from "lucide-react"
 import { getProjectHelper, getAllProjectsHelper } from "@/lib/service/api-helpers" // Import the new helpers
 import { ProjectSentInvitationsTab } from "@/components/projects/project-detail/project-sent-invitations-tab"
+import { EditProjectDialog } from "@/components/projects/edit-project-dialog"
 
 export default function ProjectDetails() {
   const params = useParams()
@@ -34,8 +35,7 @@ export default function ProjectDetails() {
   const projectFromStore = useSelector((state: RootState) => state.projects.projects.find((p) => p.id === projectId))
 
   // Fallback to direct data if not in Redux store (though getProjectHelper will fetch it)
-  // This line might become redundant if getProjectHelper is the single source of truth for currentProject
-  const project = projectFromStore || projects.find((p) => p.id === projectId)
+  // This line might become redundant if getProjectHelper is the single source of truth for currentProject 
 
   const allTasks = useSelector((state: RootState) => state.tasks?.tasks || [])
   const tasks = allTasks.filter((task) => task.project === projectId)
@@ -163,6 +163,8 @@ export default function ProjectDetails() {
           onDeleteProject={handleDeleteProject}
           onDeleteTask={handleDeleteTask}
         />
+
+        {currentProject && <EditProjectDialog project={currentProject} open={editDialogOpen} onOpenChange={setEditDialogOpen} />}
       </div>
     </>
   )

@@ -17,11 +17,11 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { Check, ChevronsUpDown, X } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Project } from "@/types/project"
+import Select from 'react-select'; // Import react-select
 
 interface EditProjectDialogProps {
   project: Project
@@ -38,13 +38,18 @@ export function EditProjectDialog({ project, open, onOpenChange }: EditProjectDi
     name: "",
     description: "",
     status: "",
-    progress: 0,
     team: [] as string[],
     tags: [] as string[],
     startDate: "",
     endDate: "",
     repository: "",
   })
+  const statusOptions = [
+    { value: "Planning", label: "Planning" },
+    { value: "In Progress", label: "In Progress" },
+    { value: "On Hold", label: "On Hold" },
+    { value: "Completed", label: "Completed" },
+  ];
 
   // Add a new state for the tag input
   const [tagInput, setTagInput] = useState("")
@@ -66,7 +71,6 @@ export function EditProjectDialog({ project, open, onOpenChange }: EditProjectDi
         name: project.name,
         description: project.description,
         status: project.status,
-        progress: project.progress,
         team: teamIds || [],
         tags: project.tags || [],
         startDate: project.startDate || "",
@@ -168,7 +172,6 @@ export function EditProjectDialog({ project, open, onOpenChange }: EditProjectDi
           name: formData.name,
           description: formData.description,
           status: formData.status,
-          progress: formData.progress,
           team: teamMembers,
           tags: formData.tags,
           startDate: formData.startDate,
@@ -181,6 +184,11 @@ export function EditProjectDialog({ project, open, onOpenChange }: EditProjectDi
     onOpenChange(false)
     setErrors({})
   }
+  // Dedicated handler for the status select component using react-select
+  const handleStatusChange = (selectedOption: any) => {
+    setFormData((prev) => ({ ...prev, status: selectedOption ? selectedOption.value : "" }));
+  };
+
 
   if (!project) return null
 
@@ -221,31 +229,15 @@ export function EditProjectDialog({ project, open, onOpenChange }: EditProjectDi
               {errors.description && <p className="text-xs text-[var(--fixed-danger)]">{errors.description}</p>}
             </div>
 
+            {/* Status Select with react-select */}
             <div className="grid gap-2">
               <Label htmlFor="status">Status</Label>
-              <Select value={formData.status} onValueChange={(value) => handleChange("status", value)}>
-                <SelectTrigger id="status" className="border-[var(--fixed-card-border)]">
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Planning">Planning</SelectItem>
-                  <SelectItem value="In Progress">In Progress</SelectItem>
-                  <SelectItem value="On Hold">On Hold</SelectItem>
-                  <SelectItem value="Completed">Completed</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="progress">Progress (%)</Label>
-              <Input
-                id="progress"
-                type="number"
-                min="0"
-                max="100"
-                value={formData.progress}
-                onChange={(e) => handleChange("progress", Number.parseInt(e.target.value) || 0)}
-                className="border-[var(--fixed-card-border)]"
+              <Select
+                id="status"
+                options={statusOptions}
+                value={statusOptions.find(option => option.value === formData.status)}
+                onChange={handleStatusChange}
+                classNamePrefix="react-select" // For custom styling if needed
               />
             </div>
 
@@ -319,77 +311,6 @@ export function EditProjectDialog({ project, open, onOpenChange }: EditProjectDi
               />
               <p className="text-xs text-[var(--fixed-sidebar-muted)]">Press Enter to add a tag</p>
             </div>
-
-            {/* <div className="grid gap-2">
-              <Label className={errors.team ? "text-[var(--fixed-danger)]" : ""}>Team Members</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    className={cn(
-                      "w-full justify-between border-[var(--fixed-card-border)]",
-                      errors.team ? "border-[var(--fixed-danger)]" : "",
-                    )}
-                  >
-                    {formData.team.length > 0 ? `${formData.team.length} members selected` : "Select team members"}
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-full p-0">
-                  <Command>
-                    <CommandInput placeholder="Search team members..." />
-                    <CommandList>
-                      <CommandEmpty>No team members found.</CommandEmpty>
-                      <CommandGroup>
-                        {users.map((user) => (
-                          <CommandItem key={user.id} value={user.id} onSelect={() => handleTeamChange(user.id)}>
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                formData.team.includes(user.id) ? "opacity-100" : "opacity-0",
-                              )}
-                            />
-                            <div className="flex items-center">
-                              <span>{user.name}</span>
-                              <Badge className="ml-2 text-xs">{user.role}</Badge>
-                            </div>
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-
-              {formData.team.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {formData.team.map((userId) => {
-                    const user = users.find((u) => u.id === userId)
-                    return (
-                      <Badge
-                        key={userId}
-                        variant="secondary"
-                        className="flex items-center gap-1 bg-[var(--fixed-secondary)] text-[var(--fixed-secondary-fg)]"
-                      >
-                        {user?.name}
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-4 w-4 p-0 text-[var(--fixed-sidebar-muted)] hover:text-[var(--fixed-sidebar-fg)]"
-                          onClick={() => handleTeamChange(userId)}
-                        >
-                          <X className="h-3 w-3" />
-                          <span className="sr-only">Remove</span>
-                        </Button>
-                      </Badge>
-                    )
-                  })}
-                </div>
-              )}
-
-              {errors.team && <p className="text-xs text-[var(--fixed-danger)]">{errors.team}</p>}
-            </div> */}
           </div>
 
           <DialogFooter>

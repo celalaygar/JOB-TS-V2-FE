@@ -33,7 +33,6 @@ export function ProjectDialogs({
 }: ProjectDialogsProps) {
   return (
     <>
-      {project && <EditProjectDialog projectId={project.id} open={editDialogOpen} onOpenChange={setEditDialogOpen} />}
 
       <DeleteProjectDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen} onDelete={onDeleteProject} />
 
