@@ -52,10 +52,11 @@ export interface TaskCreateRequest {
   taskType: TaskType
   projectId: string
   projectTaskStatusId: string
+  assigneeId: string
   assignee: {
     id: string
     email: string
-  }
+  } | null
   sprintId?: string
   parentTaskId?: string
 }

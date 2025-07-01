@@ -86,7 +86,7 @@ export function TasksTable({ filters }: TasksTableProps) {
     const matchesPriority = filters.priority === "all" || task.priority === filters.priority
 
     // Assignee filter
-    const matchesAssignee = filters.assignee === "all" || task.assignee.id === filters.assignee
+    const matchesAssignee = filters.assignee === "all" || task.assignee?.id === filters.assignee
 
     // Task Type filter
     const matchesTaskType = filters.taskType === "all" || task.taskType === filters.taskType
@@ -305,10 +305,10 @@ export function TasksTable({ filters }: TasksTableProps) {
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <Avatar className="h-6 w-6">
-                        <AvatarImage src={task.assignee.avatar || "/placeholder.svg"} alt={task.assignee.name} />
-                        <AvatarFallback>{task.assignee.initials}</AvatarFallback>
+                        <AvatarImage src={task.assignee?.avatar || "/placeholder.svg"} alt={task.assignee?.name} />
+                        <AvatarFallback>{task.assignee?.initials}</AvatarFallback>
                       </Avatar>
-                      <span>{task.assignee.name}</span>
+                      <span>{task.assignee?.name}</span>
                     </div>
                   </TableCell>
                   <TableCell>

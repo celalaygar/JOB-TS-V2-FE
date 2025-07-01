@@ -26,7 +26,7 @@ import { Sprint } from "@/types/sprint"
 
 import Select from "react-select"
 
-import { getAllProjectTaskStatusHelper, getNonCompletedSprintsHelper, getProjectUsersHelper, getSprintsHelper } from "@/lib/service/api-helpers"
+import { createProjectTaskHelper, getAllProjectTaskStatusHelper, getNonCompletedSprintsHelper, getProjectUsersHelper, getSprintsHelper } from "@/lib/service/api-helpers"
 
 interface CreateTaskDialogProps {
   open: boolean
@@ -52,6 +52,7 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
   const [sprintList, setSprintList] = useState<Sprint[] | []>([]);
   const [projectTaskStatuses, setProjectTaskStatuses] = useState<ProjectTaskStatus[]>([])
   const [loadingTaskStatus, setLoadingTaskStatus] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -81,16 +82,16 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
   );
 
   const priorityOptions: SelectOption[] = useMemo(() => [
-    { value: "High", label: "High" },
-    { value: "Medium", label: "Medium" },
-    { value: "Low", label: "Low" },
+    { value: "HIGH", label: "High" },
+    { value: "MEDIUM", label: "Medium" },
+    { value: "LOW", label: "Low" },
   ], []);
 
   const taskTypeOptions: SelectOption[] = useMemo(() => [
-    { value: "bug", label: "Bug", icon: <Bug className="mr-2 h-4 w-4 text-red-500" /> },
-    { value: "feature", label: "Feature", icon: <Lightbulb className="mr-2 h-4 w-4 text-blue-500" /> },
-    { value: "story", label: "Story", icon: <BookOpen className="mr-2 h-4 w-4 text-purple-500" /> },
-    { value: "subtask", label: "Subtask", icon: <GitBranch className="mr-2 h-4 w-4 text-gray-500" /> },
+    { value: "BUG", label: "Bug", icon: <Bug className="mr-2 h-4 w-4 text-red-500" /> },
+    { value: "FEATURE", label: "Feature", icon: <Lightbulb className="mr-2 h-4 w-4 text-blue-500" /> },
+    { value: "STORY", label: "Story", icon: <BookOpen className="mr-2 h-4 w-4 text-purple-500" /> },
+    { value: "SUBTASK", label: "Subtask", icon: <GitBranch className="mr-2 h-4 w-4 text-gray-500" /> },
   ], []);
 
   const sprintOptions: SelectOption[] = useMemo(() =>
@@ -168,7 +169,7 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
     }
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (!formData.title || !formData.project || !formData.assignee || !formData.taskType ||
@@ -194,10 +195,8 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
       priority: priority as "High" | "Medium" | "Low",
       taskType: taskType as TaskType,
       projectId: project,
-      assignee: {
-        id: assignee!,
-        email: selectedAssigneeData?.email || "",
-      },
+      assigneeId: assignee!,
+      assignee: null,
       sprintId: sprint || undefined,
       parentTaskId: parentTask || undefined,
     }
@@ -205,24 +204,29 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
     console.log("task newTask")
     console.log(newTask)
 
-    dispatch(addTask(newTask))
+    const response = await createProjectTaskHelper(newTask, { setLoading });
+    if (response) {
+      dispatch(addTask(newTask))
 
-    toast({
-      title: "Task Created",
-      description: `Task "${newTask.title}" has been successfully created.`,
-    });
+      toast({
+        title: "Task Created",
+        description: `Task "${newTask.title}" has been successfully created.`,
+      });
 
-    onOpenChange(false)
-    setFormData({
-      title: "",
-      description: "",
-      project: null,
-      assignee: null,
-      priority: "Medium",
-      taskType: "feature",
-      sprint: null,
-      parentTask: null,
-    })
+      onOpenChange(false)
+      setFormData({
+        title: "",
+        description: "",
+        projectTaskStatus: "",
+        project: null,
+        assignee: null,
+        priority: "Medium",
+        taskType: "feature",
+        sprint: null,
+        parentTask: null,
+      })
+    }
+
   }
 
 
@@ -239,7 +243,7 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
 
 
 
-  const overallLoading = loadingProjectUsers || loadingSprints || loadingTaskStatus;
+  const overallLoading = loading || loadingProjectUsers || loadingSprints || loadingTaskStatus;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

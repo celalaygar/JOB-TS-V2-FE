@@ -51,6 +51,10 @@ export async function apiCall<T>(config: ApiOperationConfig<T>): Promise<T | nul
   setLoading(true);
 
   try {
+    console.log("url : " + url)
+    console.log("method : " + method)
+    console.log("body : ")
+    console.log(body)
     const response: T = await BaseService.request(url, { method, body });
 
     if (successMessage) {
@@ -464,11 +468,11 @@ export const getNonCompletedSprintsHelper = async (projectId: string, options: F
 };
 
 
-export const createProjectTaskHelper = async (projectData: any, options: FetchEntitiesOptions): Promise<ProjectTask | null> => {
+export const createProjectTaskHelper = async (projectTaskData: any, options: FetchEntitiesOptions): Promise<ProjectTask | null> => {
   return apiCall<ProjectTask>({
     url: PROJECT_TASK,
     method: httpMethods.POST,
-    body: projectData,
+    body: projectTaskData,
     setLoading: options.setLoading,
     successMessage: "Project Task has been successfully created.",
     errorMessagePrefix: "Failed to create Project Task",
@@ -477,11 +481,11 @@ export const createProjectTaskHelper = async (projectData: any, options: FetchEn
   });
 };
 
-export const updateProjectTaskHelper = async (projectData: any, options: FetchEntitiesOptions): Promise<ProjectTask | null> => {
+export const updateProjectTaskHelper = async (projectTaskData: any, options: FetchEntitiesOptions): Promise<ProjectTask | null> => {
   return apiCall<ProjectTask>({
     url: PROJECT_TASK,
     method: httpMethods.PUT,
-    body: projectData,
+    body: projectTaskData,
     setLoading: options.setLoading,
     successMessage: "Project Task has been successfully created.",
     errorMessagePrefix: "Failed to create Project Task",

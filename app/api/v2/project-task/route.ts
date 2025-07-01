@@ -22,3 +22,12 @@ export async function POST(req: NextRequest) {
         // withAuth default: true
     });
 }
+
+export async function PUT(req: NextRequest) {
+    const body = await req.json();
+    return RouteBaseService.request(URL + PROJECTS_TASK, {
+        method: 'PUT',
+        body: body
+        // withAuth default: true
+    });
+}
