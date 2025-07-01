@@ -59,3 +59,64 @@ export interface Task {
     }
   }[]
 }
+
+
+
+export interface ProjectTask {
+  id: string;
+  taskNumber: string;
+  title: string;
+  description: string;
+  systemStatus: ProjectTaskSystemStatus;
+  priority: ProjectTaskPriority;
+  taskType: ProjectTaskType;
+  sprint: AssaignSprint;
+  createdAt: string;
+  projectTaskStatus: ProjectTaskStatusModel;
+  // comments?: ProjectTaskComment[]; // Yorumlar eğer eklenirse
+  parentTaskId: string;
+  createdBy: CreatedBy;
+  assignee: CreatedBy;
+  createdProject: CreatedProject;
+}
+
+export enum ProjectTaskSystemStatus {
+  ACTIVE = "ACTIVE",
+  PASSIVE = "PASSIVE",
+  DELETED = "DELETED",
+}
+
+export enum ProjectTaskPriority {
+  HIGH = "HIGH",
+  MEDIUM = "MEDIUM",
+  LOW = "LOW",
+}
+
+export enum ProjectTaskType {
+  BUG = "BUG",
+  FEATURE = "FEATURE",
+  STORY = "STORY",
+}
+
+export interface AssaignSprint {
+  id: string;
+  name: string;
+}
+
+export interface ProjectTaskStatusModel {
+  id: string;
+  name: string;
+}
+
+export interface CreatedBy {
+  id: string;
+  email: string;
+  firstname: string;
+  lastname: string;
+  username: string;
+}
+
+export interface CreatedProject {
+  id: string;
+  name: string;
+}

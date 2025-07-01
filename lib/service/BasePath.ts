@@ -23,8 +23,6 @@ export const INVITATION_BY_PROJECTID = INVITATION_PROJECT + "/all-by-projectId";
 
 
 export const SPRINT_URL = BASE_PATH_V2 + "sprint";
-
-
 export const SPRINT_GET_ALL_URL = SPRINT_URL + "/getAll";
 export const SPRINT_NON_COMPLETED_GET_ALL_URL = SPRINT_URL + "/non-completed/project";
 
@@ -32,5 +30,9 @@ export const SPRINT_NON_COMPLETED_GET_ALL_URL = SPRINT_URL + "/non-completed/pro
 
 export const PROJECT_USERS = BASE_PATH_V2 + "project-users";
 export const GET_PROJECT_USERS = PROJECT_USERS + "/get-users/project";
+
+
+
+export const PROJECT_TASK = BASE_PATH_V2 + "project-task"
 
 

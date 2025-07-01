@@ -20,8 +20,10 @@ import {
   INVITATION_BY_PROJECTID,
   INVITE_TO_PROJECT,
   SPRINT_URL, // Import SPRINT_URL
-  TEAM_DETAIL_URL
+  TEAM_DETAIL_URL,
+  PROJECT_TASK
 } from "@/lib/service/BasePath";
+import { ProjectTask } from "@/types/task";
 
 interface ApiOperationConfig<T> {
   url: string;
@@ -462,3 +464,28 @@ export const getNonCompletedSprintsHelper = async (projectId: string, options: F
 };
 
 
+export const createProjectTaskHelper = async (projectData: any, options: FetchEntitiesOptions): Promise<ProjectTask | null> => {
+  return apiCall<ProjectTask>({
+    url: PROJECT_TASK,
+    method: httpMethods.POST,
+    body: projectData,
+    setLoading: options.setLoading,
+    successMessage: "Project Task has been successfully created.",
+    errorMessagePrefix: "Failed to create Project Task",
+    successToastTitle: "Project Task Created",
+    errorToastTitle: "Error Creating Project Task",
+  });
+};
+
+export const updateProjectTaskHelper = async (projectData: any, options: FetchEntitiesOptions): Promise<ProjectTask | null> => {
+  return apiCall<ProjectTask>({
+    url: PROJECT_TASK,
+    method: httpMethods.PUT,
+    body: projectData,
+    setLoading: options.setLoading,
+    successMessage: "Project Task has been successfully created.",
+    errorMessagePrefix: "Failed to create Project Task",
+    successToastTitle: "Project Task Created",
+    errorToastTitle: "Error Creating Project Task",
+  });
+};

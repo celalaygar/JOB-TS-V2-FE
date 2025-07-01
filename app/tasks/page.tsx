@@ -8,7 +8,7 @@ export default function TasksPage() {
   const [filters, setFilters] = useState({
     search: "",
     project: "all",
-    status: "all",
+    taskStatus: "all",
     priority: "all",
     assignee: "all",
     taskType: "all",

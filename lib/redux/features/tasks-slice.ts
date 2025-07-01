@@ -1,6 +1,7 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit"
 import { tasks } from "@/data/tasks"
 import type { TaskType } from "@/types/task"
+import { ProjectTaskStatus } from "@/types/project"
 
 export interface Comment {
   id: string
@@ -18,15 +19,18 @@ export interface Comment {
 }
 
 export interface Task {
-  id: string
-  taskNumber: string
+  id: string | null
+  taskNumber: string | null
   title: string
   description: string
   status: string
   priority: string
   taskType: TaskType
+  projectId: string
   project: string
   projectName: string
+  projectTaskStatusId: string
+  projectTaskStatus: ProjectTaskStatus | undefined
   assignee: {
     id: string
     name: string
@@ -39,6 +43,22 @@ export interface Task {
   parentTaskId?: string
 }
 
+export interface TaskCreateRequest {
+  id: string | null
+  taskNumber: string | null
+  title: string
+  description: string
+  priority: string
+  taskType: TaskType
+  projectId: string
+  projectTaskStatusId: string
+  assignee: {
+    id: string
+    email: string
+  }
+  sprintId?: string
+  parentTaskId?: string
+}
 interface TasksState {
   tasks: Task[]
   selectedTask: Task | null

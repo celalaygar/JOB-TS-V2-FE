@@ -20,7 +20,7 @@ interface TasksHeaderProps {
   filters: {
     search: string
     project: string
-    status: string
+    taskStatus: string
     priority: string
     assignee: string
     taskType: string
@@ -155,12 +155,12 @@ export function TasksHeader({ filters, setFilters }: TasksHeaderProps) {
                   </Select>
                 </div>
                 <div>
-                  <Select value={filters.status} onValueChange={(value) => handleFilterChange("status", value)}>
+                  <Select value={filters.taskStatus} onValueChange={(value) => handleFilterChange("taskStatus", value)}>
                     <SelectTrigger className="border-[var(--fixed-card-border)]">
-                      <SelectValue placeholder="All Statuses" />
+                      <SelectValue placeholder="Task Statuses" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Statuses</SelectItem>
+                      <SelectItem value="all">Task Statuses</SelectItem>
                       {!!projectTaskStatus && projectTaskStatus.map((status: ProjectTaskStatus) => (
                         <SelectItem key={status.id} value={status.id || ""}>
                           {status.name}

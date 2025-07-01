@@ -18,15 +18,15 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Bug, Lightbulb, BookOpen, GitBranch, Loader2 } from "lucide-react"
-import type { Task } from "@/lib/redux/features/tasks-slice"
+import type { Task, TaskCreateRequest } from "@/lib/redux/features/tasks-slice"
 import type { TaskType } from "@/types/task"
 import { toast } from "@/hooks/use-toast"
-import { Project, ProjectUser } from "@/types/project"
+import { Project, ProjectTaskStatus, ProjectUser } from "@/types/project"
 import { Sprint } from "@/types/sprint"
 
 import Select from "react-select"
 
-import { getNonCompletedSprintsHelper, getProjectUsersHelper, getSprintsHelper } from "@/lib/service/api-helpers"
+import { getAllProjectTaskStatusHelper, getNonCompletedSprintsHelper, getProjectUsersHelper, getSprintsHelper } from "@/lib/service/api-helpers"
 
 interface CreateTaskDialogProps {
   open: boolean
@@ -50,10 +50,13 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
   const [projectUsers, setProjectUsers] = useState<ProjectUser[] | []>([]);
   const [loadingSprints, setLoadingSprints] = useState(false);
   const [sprintList, setSprintList] = useState<Sprint[] | []>([]);
+  const [projectTaskStatuses, setProjectTaskStatuses] = useState<ProjectTaskStatus[]>([])
+  const [loadingTaskStatus, setLoadingTaskStatus] = useState(false);
 
   const [formData, setFormData] = useState({
     title: "",
     description: "",
+    projectTaskStatus: "" as string,
     project: "" as string | null,
     assignee: "" as string | null,
     priority: "Medium" as string,
@@ -70,6 +73,11 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
   const assigneeOptions: SelectOption[] = useMemo(() =>
     (projectUsers || []).map(user => ({ value: user.id, label: user.email })),
     [projectUsers]
+  );
+
+  const projectTaskStatusList: SelectOption[] = useMemo(() =>
+    (projectTaskStatuses || []).map(status => ({ value: status.id, label: status.label })),
+    [projectTaskStatuses]
   );
 
   const priorityOptions: SelectOption[] = useMemo(() => [
@@ -138,6 +146,7 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
     if (field === "project" && typeof actualValue === 'string' && actualValue !== "all") {
       handleGetProjectUsers(actualValue);
       handleGetSprints(actualValue);
+      fetchAllProjectTaskStatus(actualValue);
     }
   }, []);
 
@@ -172,32 +181,29 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
       return;
     }
 
-    const selectedProjectData = projectList?.find((p) => p.id === formData.project) || { name: "" };
     const selectedAssigneeData = users.find((user) => user.id === formData.assignee);
 
-    const { title, description, project, assignee, priority, taskType, sprint, parentTask } = formData
+    const { title, description, project, projectTaskStatus, assignee, priority, taskType, sprint, parentTask } = formData
 
-    const newTask: Task = {
+    const newTask: TaskCreateRequest = {
       id: null,
       taskNumber: null,
       title,
       description,
-      status: "to-do",
+      projectTaskStatusId: projectTaskStatus,
       priority: priority as "High" | "Medium" | "Low",
       taskType: taskType as TaskType,
-      project: project!,
-      projectName: selectedProjectData.name,
+      projectId: project,
       assignee: {
         id: assignee!,
-        name: selectedAssigneeData?.name || "",
-        avatar: selectedAssigneeData?.avatar || "",
-        initials: selectedAssigneeData?.initials || "",
+        email: selectedAssigneeData?.email || "",
       },
-      sprint: sprint || undefined,
-      createdAt: new Date().toISOString(),
-      comments: [],
+      sprintId: sprint || undefined,
       parentTaskId: parentTask || undefined,
     }
+
+    console.log("task newTask")
+    console.log(newTask)
 
     dispatch(addTask(newTask))
 
@@ -219,7 +225,21 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
     })
   }
 
-  const overallLoading = loadingProjectUsers || loadingSprints;
+
+  const fetchAllProjectTaskStatus = useCallback(async (projectId: string) => {
+    setProjectTaskStatuses([]); // Clear previous statuses
+    const statusesData = await getAllProjectTaskStatusHelper(projectId, { setLoading: setLoadingTaskStatus });
+    if (statusesData) {
+      setProjectTaskStatuses(statusesData);
+    } else {
+      setProjectTaskStatuses([]);
+    }
+  }, []);
+
+
+
+
+  const overallLoading = loadingProjectUsers || loadingSprints || loadingTaskStatus;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -272,6 +292,20 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
                       isDisabled={!!parentTaskId}
                     />
                   </div>
+
+                  <div className="grid gap-2">
+                    <Label htmlFor="projectTaskStatus">Project Task Status</Label>
+                    <Select
+                      id="projectTaskStatus"
+                      options={projectTaskStatusList}
+                      value={projectTaskStatusList.find(option => option.value === formData.projectTaskStatus)}
+                      onChange={(option) => handleChange("projectTaskStatus", option)}
+                      placeholder="Select project"
+                      required
+                      isDisabled={!!parentTaskId}
+                    />
+                  </div>
+
 
                   {formData.taskType === "subtask" && (
                     <div className="grid gap-2">
