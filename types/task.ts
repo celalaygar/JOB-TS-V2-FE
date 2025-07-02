@@ -61,6 +61,17 @@ export interface Task {
 }
 
 
+export interface ProjectTaskFilterRequest {
+  taskNumber: string;
+  title: string;
+  description: string;
+  projectTaskSystemStatusId: string;
+  projectId: string;
+  assigneeId: string;
+  priority: ProjectTaskPriority;
+  taskType: ProjectTaskType;
+}
+
 
 export interface ProjectTask {
   id: string;

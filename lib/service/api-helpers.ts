@@ -23,7 +23,7 @@ import {
   TEAM_DETAIL_URL,
   PROJECT_TASK
 } from "@/lib/service/BasePath";
-import { ProjectTask } from "@/types/task";
+import { ProjectTask, ProjectTaskFilterRequest } from "@/types/task";
 
 interface ApiOperationConfig<T> {
   url: string;
@@ -486,6 +486,19 @@ export const updateProjectTaskHelper = async (projectTaskData: any, options: Fet
     url: PROJECT_TASK,
     method: httpMethods.PUT,
     body: projectTaskData,
+    setLoading: options.setLoading,
+    successMessage: "Project Task has been successfully created.",
+    errorMessagePrefix: "Failed to create Project Task",
+    successToastTitle: "Project Task Created",
+    errorToastTitle: "Error Creating Project Task",
+  });
+};
+
+export const getAllProjectTaskHelper = async (filter: ProjectTaskFilterRequest, options: FetchEntitiesOptions): Promise<ProjectTask[] | null> => {
+  return apiCall<ProjectTask[]>({
+    url: PROJECT_TASK,
+    method: httpMethods.POST,
+    body: filter,
     setLoading: options.setLoading,
     successMessage: "Project Task has been successfully created.",
     errorMessagePrefix: "Failed to create Project Task",
