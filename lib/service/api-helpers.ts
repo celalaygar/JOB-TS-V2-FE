@@ -494,9 +494,9 @@ export const updateProjectTaskHelper = async (projectTaskData: any, options: Fet
   });
 };
 
-export const getAllProjectTaskHelper = async (filter: ProjectTaskFilterRequest, options: FetchEntitiesOptions): Promise<ProjectTask[] | null> => {
+export const getAllProjectTaskHelper = async (page: number, size: number, filter: ProjectTaskFilterRequest, options: FetchEntitiesOptions): Promise<ProjectTask[] | null> => {
   return apiCall<ProjectTask[]>({
-    url: PROJECT_TASK,
+    url: PROJECT_TASK + "/filter/" + page + "/" + size,
     method: httpMethods.POST,
     body: filter,
     setLoading: options.setLoading,

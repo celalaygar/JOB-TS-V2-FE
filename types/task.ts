@@ -107,6 +107,7 @@ export enum ProjectTaskType {
   BUG = "BUG",
   FEATURE = "FEATURE",
   STORY = "STORY",
+  SUBTASK = "STORY",
 }
 
 export interface AssaignSprint {
