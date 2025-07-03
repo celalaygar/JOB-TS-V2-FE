@@ -76,7 +76,7 @@ function AppSidebar() {
         { href: "/tasks", icon: FileText, label: translations.sidebar.tasks },
         { href: "/backlog", icon: ListTodo, label: translations.sidebar.backlog },
         { href: "/kanban", icon: Trello, label: translations.sidebar.kanbanBoard },
-        { href: "/sprints", icon: CalendarDays, label: translations.sidebar.sprints },
+        // { href: "/sprints", icon: CalendarDays, label: translations.sidebar.sprints },
         { href: "/project-sprints", icon: CalendarDays, label: translations.sidebar.projectSprints },
       ],
     },

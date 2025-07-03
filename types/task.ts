@@ -1,3 +1,4 @@
+import { ProjectTaskStatus } from "./project"
 
 export type TaskType = "bug" | "feature" | "story" | "subtask" | string
 
@@ -72,6 +73,12 @@ export interface ProjectTaskFilterRequest {
   taskType: ProjectTaskType;
 }
 
+export interface TaskResponse {
+  content: ProjectTask[];
+  totalElements: number;
+  page: number;
+  size: number;
+}
 
 export interface ProjectTask {
   id: string;
@@ -79,11 +86,11 @@ export interface ProjectTask {
   title: string;
   description: string;
   systemStatus: ProjectTaskSystemStatus;
+  projectTaskStatus: ProjectTaskStatusModel;
   priority: ProjectTaskPriority;
   taskType: ProjectTaskType;
   sprint: AssaignSprint;
   createdAt: string;
-  projectTaskStatus: ProjectTaskStatusModel;
   // comments?: ProjectTaskComment[]; // Yorumlar eğer eklenirse
   parentTaskId: string;
   createdBy: CreatedBy;
@@ -118,6 +125,10 @@ export interface AssaignSprint {
 export interface ProjectTaskStatusModel {
   id: string;
   name: string;
+  label: string;
+  turkish: string;
+  english: string;
+  color: string;
 }
 
 export interface CreatedBy {
@@ -131,4 +142,71 @@ export interface CreatedBy {
 export interface CreatedProject {
   id: string;
   name: string;
+}
+
+
+
+
+export interface Comment {
+  id: string
+  text: string
+  author: {
+    id: string
+    name: string
+    avatar: string
+    initials: string
+  }
+  createdAt: string
+  editedAt?: string
+  parentId?: string
+  isActivity?: boolean
+}
+
+export interface Task {
+  id: string | null
+  taskNumber: string | null
+  title: string
+  description: string
+  status: string
+  priority: string
+  taskType: TaskType
+  projectId: string
+  project: string
+  projectName: string
+  projectTaskStatusId: string
+  projectTaskStatus: ProjectTaskStatus | undefined
+  assignee: {
+    id: string
+    name: string
+    avatar: string
+    initials: string
+  }
+  sprint?: string
+  createdAt: string
+  comments?: Comment[]
+  parentTaskId?: string
+}
+
+
+
+export interface TaskCreateRequest {
+  id: string | null
+  taskNumber: string | null
+  title: string
+  description: string
+  priority: string
+  taskType: TaskType
+  projectId: string
+  projectTaskStatusId: string
+  assigneeId: string
+  assignee: {
+    id: string
+    email: string
+  } | null
+  sprintId?: string
+  parentTaskId?: string
+}
+interface TasksState {
+  tasks: Task[]
+  selectedTask: Task | null
 }

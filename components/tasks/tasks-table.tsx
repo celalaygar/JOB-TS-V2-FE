@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useSelector, useDispatch } from "react-redux"
 import type { RootState } from "@/lib/redux/store"
-import { updateTask, type Task } from "@/lib/redux/features/tasks-slice"
+import { updateTask } from "@/lib/redux/features/tasks-slice"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -33,27 +33,23 @@ import {
   GitBranch,
   ChevronLeft,
   ChevronRight,
+  Loader2,
 } from "lucide-react"
-import type { TaskType } from "@/types/task"
+import { ProjectTaskPriority, type ProjectTask, type ProjectTaskFilterRequest, type Task, type TaskResponse, type TaskType } from "@/types/task"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface TasksTableProps {
-  filters: {
-    search: string
-    project: string
-    status: string
-    priority: string
-    assignee: string
-    taskType: string
-  }
+  filters: ProjectTaskFilterRequest
+  taskResponse: TaskResponse | null
+  loading: boolean
 }
 
 type SortField = "title" | "status" | "priority" | "project" | "assignee" | "taskType"
 type SortDirection = "asc" | "desc"
 
-export function TasksTable({ filters }: TasksTableProps) {
+export function TasksTable({ filters, taskResponse, loading }: TasksTableProps) {
   const dispatch = useDispatch()
   const allTasks = useSelector((state: RootState) => state.tasks.tasks)
   const projects = useSelector((state: RootState) => state.projects.projects)
@@ -68,70 +64,12 @@ export function TasksTable({ filters }: TasksTableProps) {
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(10)
 
-  // Apply filters
-  const filteredTasks = allTasks.filter((task) => {
-    // Search filter
-    const matchesSearch =
-      filters.search === "" ||
-      task.title.toLowerCase().includes(filters.search.toLowerCase()) ||
-      task.description.toLowerCase().includes(filters.search.toLowerCase())
-
-    // Project filter
-    const matchesProject = filters.project === "all" || task.project === filters.project
-
-    // Status filter
-    const matchesStatus = filters.status === "all" || task.status === filters.status
-
-    // Priority filter
-    const matchesPriority = filters.priority === "all" || task.priority === filters.priority
-
-    // Assignee filter
-    const matchesAssignee = filters.assignee === "all" || task.assignee?.id === filters.assignee
-
-    // Task Type filter
-    const matchesTaskType = filters.taskType === "all" || task.taskType === filters.taskType
-
-    return matchesSearch && matchesProject && matchesStatus && matchesPriority && matchesAssignee && matchesTaskType
-  })
-
-  // Apply sorting
-  const sortedTasks = [...filteredTasks].sort((a, b) => {
-    let comparison = 0
-
-    switch (sortField) {
-      case "title":
-        comparison = a.title.localeCompare(b.title)
-        break
-      case "status":
-        comparison = a.status.localeCompare(b.status)
-        break
-      case "priority":
-        // Sort by priority (High > Medium > Low)
-        const priorityOrder = { High: 3, Medium: 2, Low: 1 }
-        comparison =
-          (priorityOrder[a.priority as keyof typeof priorityOrder] || 0) -
-          (priorityOrder[b.priority as keyof typeof priorityOrder] || 0)
-        break
-      case "project":
-        comparison = a.projectName.localeCompare(b.projectName)
-        break
-      case "assignee":
-        comparison = a.assignee.name.localeCompare(b.assignee.name)
-        break
-      case "taskType":
-        comparison = a.taskType.localeCompare(b.taskType)
-        break
-    }
-
-    return sortDirection === "asc" ? comparison : -comparison
-  })
 
   // Calculate pagination
-  const totalItems = sortedTasks.length
-  const totalPages = Math.ceil(totalItems / itemsPerPage)
+  const totalItems = taskResponse?.totalElements
+  const totalPages = Math.ceil(totalItems / taskResponse?.size)
   const startIndex = (currentPage - 1) * itemsPerPage
   const endIndex = startIndex + itemsPerPage
-  const paginatedTasks = sortedTasks.slice(startIndex, endIndex)
 
   const handlePageChange = (page: number) => {
     if (page < 1) page = 1
@@ -182,7 +120,13 @@ export function TasksTable({ filters }: TasksTableProps) {
     }
   }
 
-  return (
+  return loading ?
+    <div className="grid gap-4 py-4">
+      <div className="flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+      </div>
+    </div>
+    :
     <>
       <div className="rounded-md border border-[var(--fixed-card-border)] overflow-hidden">
         <Table>
@@ -246,7 +190,7 @@ export function TasksTable({ filters }: TasksTableProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedTasks.map((task) => {
+            {allTasks.map((task: ProjectTask) => {
               const project = projects.find((p) => p.id === task.project)
 
               return (
@@ -270,30 +214,21 @@ export function TasksTable({ filters }: TasksTableProps) {
                   <TableCell>
                     <Badge
                       className={
-                        task.status === "to-do"
-                          ? "bg-[var(--fixed-secondary)] text-[var(--fixed-secondary-fg)]"
-                          : task.status === "in-progress"
-                            ? "bg-[var(--fixed-primary)] text-white"
-                            : task.status === "review"
-                              ? "bg-[var(--fixed-warning)] text-white"
-                              : "bg-[var(--fixed-success)] text-white"
+                        task.projectTaskStatus?.color ?
+                          "bg-[" + task.projectTaskStatus.color + "] text-black"
+                          :
+                          "bg-[var(--fixed-secondary)] text-black"
                       }
                     >
-                      {task.status === "to-do"
-                        ? "To Do"
-                        : task.status === "in-progress"
-                          ? "In Progress"
-                          : task.status === "review"
-                            ? "In Review"
-                            : "Done"}
+                      {task.projectTaskStatus?.name}
                     </Badge>
                   </TableCell>
                   <TableCell>
                     <Badge
                       className={
-                        task.priority === "High"
+                        task.priority === ProjectTaskPriority.HIGH
                           ? "bg-[var(--fixed-danger)] text-white"
-                          : task.priority === "Medium"
+                          : task.priority === ProjectTaskPriority.MEDIUM
                             ? "bg-[var(--fixed-warning)] text-white"
                             : "bg-[var(--fixed-secondary)] text-[var(--fixed-secondary-fg)]"
                       }
@@ -301,14 +236,16 @@ export function TasksTable({ filters }: TasksTableProps) {
                       {task.priority}
                     </Badge>
                   </TableCell>
-                  <TableCell>{project?.name || task.projectName}</TableCell>
+                  <TableCell>{task.createdProject?.name}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <Avatar className="h-6 w-6">
-                        <AvatarImage src={task.assignee?.avatar || "/placeholder.svg"} alt={task.assignee?.name} />
-                        <AvatarFallback>{task.assignee?.initials}</AvatarFallback>
+                        <AvatarImage
+                          src={task.assignee?.avatar || "/placeholder.svg"}
+                          alt={task.assignee?.firstname + " " + task.assignee?.lastname} />
+                        <AvatarFallback>{task.assignee?.email}</AvatarFallback>
                       </Avatar>
-                      <span>{task.assignee?.name}</span>
+                      <span>{task.assignee?.email}</span>
                     </div>
                   </TableCell>
                   <TableCell>
@@ -349,7 +286,7 @@ export function TasksTable({ filters }: TasksTableProps) {
               )
             })}
 
-            {sortedTasks.length === 0 && (
+            {allTasks.length === 0 && (
               <TableRow>
                 <TableCell colSpan={7} className="h-24 text-center">
                   No tasks found.
@@ -430,5 +367,4 @@ export function TasksTable({ filters }: TasksTableProps) {
         </AlertDialogContent>
       </AlertDialog>
     </>
-  )
 }

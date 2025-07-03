@@ -1,72 +1,15 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit"
-import { tasks } from "@/data/tasks"
-import type { TaskType } from "@/types/task"
-import { ProjectTaskStatus } from "@/types/project"
+import type { Task, TaskType } from "@/types/task"
 
-export interface Comment {
-  id: string
-  text: string
-  author: {
-    id: string
-    name: string
-    avatar: string
-    initials: string
-  }
-  createdAt: string
-  editedAt?: string
-  parentId?: string
-  isActivity?: boolean
-}
 
-export interface Task {
-  id: string | null
-  taskNumber: string | null
-  title: string
-  description: string
-  status: string
-  priority: string
-  taskType: TaskType
-  projectId: string
-  project: string
-  projectName: string
-  projectTaskStatusId: string
-  projectTaskStatus: ProjectTaskStatus | undefined
-  assignee: {
-    id: string
-    name: string
-    avatar: string
-    initials: string
-  }
-  sprint?: string
-  createdAt: string
-  comments?: Comment[]
-  parentTaskId?: string
-}
 
-export interface TaskCreateRequest {
-  id: string | null
-  taskNumber: string | null
-  title: string
-  description: string
-  priority: string
-  taskType: TaskType
-  projectId: string
-  projectTaskStatusId: string
-  assigneeId: string
-  assignee: {
-    id: string
-    email: string
-  } | null
-  sprintId?: string
-  parentTaskId?: string
-}
-interface TasksState {
+type TasksState = {
   tasks: Task[]
   selectedTask: Task | null
 }
 
 const initialState: TasksState = {
-  tasks: tasks,
+  tasks: [],
   selectedTask: null,
 }
 

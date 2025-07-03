@@ -23,7 +23,7 @@ import {
   TEAM_DETAIL_URL,
   PROJECT_TASK
 } from "@/lib/service/BasePath";
-import { ProjectTask, ProjectTaskFilterRequest } from "@/types/task";
+import { ProjectTask, ProjectTaskFilterRequest, TaskResponse } from "@/types/task";
 
 interface ApiOperationConfig<T> {
   url: string;
@@ -494,8 +494,8 @@ export const updateProjectTaskHelper = async (projectTaskData: any, options: Fet
   });
 };
 
-export const getAllProjectTaskHelper = async (page: number, size: number, filter: ProjectTaskFilterRequest, options: FetchEntitiesOptions): Promise<ProjectTask[] | null> => {
-  return apiCall<ProjectTask[]>({
+export const getAllProjectTaskHelper = async (page: number, size: number, filter: ProjectTaskFilterRequest, options: FetchEntitiesOptions): Promise<TaskResponse[] | null> => {
+  return apiCall<TaskResponse[]>({
     url: PROJECT_TASK + "/filter/" + page + "/" + size,
     method: httpMethods.POST,
     body: filter,

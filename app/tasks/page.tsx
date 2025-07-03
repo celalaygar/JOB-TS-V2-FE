@@ -1,13 +1,17 @@
 "use client"
 
-import { useCallback, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { TasksHeader } from "@/components/tasks/tasks-header"
 import { TasksTable } from "@/components/tasks/tasks-table"
-import { ProjectTask, ProjectTaskFilterRequest } from "@/types/task"
+import { ProjectTask, ProjectTaskFilterRequest, TaskResponse } from "@/types/task"
 import { getAllProjectTaskHelper } from "@/lib/service/api-helpers"
+import { useDispatch } from "react-redux"
+import { setTasks } from "@/lib/redux/features/tasks-slice"
 
 export default function TasksPage() {
-  const [taskList, setTaskList] = useState<ProjectTask[] | null>()
+  const dispatch = useDispatch()
+  const [taskList, setTaskList] = useState<ProjectTask[] | null>(null)
+  const [taskResponse, setTaskResponse] = useState<TaskResponse | null>(null)
   const [loading, setLoading] = useState(false);
 
   const [filters, setFilters] = useState<ProjectTaskFilterRequest>({
@@ -21,13 +25,24 @@ export default function TasksPage() {
 
   const fetchAllProjectTasks = useCallback(async (filters: ProjectTaskFilterRequest) => {
     setTaskList([]) // Clear previous tasks
-    const tasksData = await getAllProjectTaskHelper(0, 1000, filters, { setLoading });
-    if (tasksData) {
-      setTaskList(tasksData);
+    const response: TaskResponse[] | null = await getAllProjectTaskHelper(0, 1000, filters, { setLoading });
+    if (response) {
+      setTaskResponse(response);
+      dispatch(setTasks(response.content))
     } else {
       setTaskList([]);
     }
   }, []);
+
+  useEffect(() => {
+    let filter = Object.fromEntries(
+      Object.entries(filters).map(([key, value]) => [
+        key,
+        value === "all" || value === "" ? null : value,
+      ])
+    ) as unknown as ProjectTaskFilterRequest;
+    fetchAllProjectTasks(filter);
+  }, [fetchAllProjectTasks])
 
   const handleChange = (key: string, value: string) => {
     const newFilters = { ...filters, [key]: value }
@@ -39,10 +54,10 @@ export default function TasksPage() {
       ])
     ) as unknown as ProjectTaskFilterRequest;
 
-    console.log("filter");
-    console.log(filter);
     fetchAllProjectTasks(filter);
   }
+
+
 
   return (
     <div className="container mx-auto py-6">
@@ -51,7 +66,7 @@ export default function TasksPage() {
         setFilters={setFilters}
         handleChange={handleChange}
       />
-      <TasksTable filters={filters} taskList={taskList} loading={loading} />
+      <TasksTable filters={filters} taskResponse={taskResponse} loading={loading} />
     </div>
   )
 }
