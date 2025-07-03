@@ -34,7 +34,7 @@ export default function TasksPage() {
     }
   }, []);
 
-  useEffect(() => {
+  const fetchData = useCallback(() => {
     let filter = Object.fromEntries(
       Object.entries(filters).map(([key, value]) => [
         key,
@@ -42,6 +42,10 @@ export default function TasksPage() {
       ])
     ) as unknown as ProjectTaskFilterRequest;
     fetchAllProjectTasks(filter);
+  }, []);
+
+  useEffect(() => {
+    fetchData();
   }, [fetchAllProjectTasks])
 
   const handleChange = (key: string, value: string) => {
@@ -62,6 +66,7 @@ export default function TasksPage() {
   return (
     <div className="container mx-auto py-6">
       <TasksHeader
+        fetchData={fetchData}
         filters={filters}
         setFilters={setFilters}
         handleChange={handleChange}

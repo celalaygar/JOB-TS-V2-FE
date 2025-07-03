@@ -21,10 +21,11 @@ interface TasksHeaderProps {
   filters: ProjectTaskFilterRequest
   setFilters: (filters: any) => void
   handleChange: (key: string, value: string) => void
+  fetchData: () => void
 }
 
 
-export function TasksHeader({ filters, setFilters, handleChange }: TasksHeaderProps) {
+export function TasksHeader({ filters, setFilters, handleChange, fetchData }: TasksHeaderProps) {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
 
@@ -71,7 +72,7 @@ export function TasksHeader({ filters, setFilters, handleChange }: TasksHeaderPr
   const handleFilterChange = (key: string, value: string) => {
     handleChange(key, value);
 
-    if (key === "project") {
+    if (key === "projectId") {
       if (value && value !== "" && value !== "all") {
         fetchAllProjectTaskStatus(value);
         fetchProjectUsers(value);
@@ -237,6 +238,7 @@ export function TasksHeader({ filters, setFilters, handleChange }: TasksHeaderPr
       )}
 
       <CreateTaskDialog
+        fetchData={fetchData}
         open={isCreateDialogOpen}
         projectList={projectList}
         onOpenChange={setIsCreateDialogOpen}

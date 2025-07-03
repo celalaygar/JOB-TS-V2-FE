@@ -51,10 +51,10 @@ export async function apiCall<T>(config: ApiOperationConfig<T>): Promise<T | nul
   setLoading(true);
 
   try {
-    console.log("url : " + url)
-    console.log("method : " + method)
-    console.log("body : ")
-    console.log(body)
+    // console.log("url : " + url)
+    // console.log("method : " + method)
+    // console.log("body : ")
+    // console.log(body)
     const response: T = await BaseService.request(url, { method, body });
 
     if (successMessage) {

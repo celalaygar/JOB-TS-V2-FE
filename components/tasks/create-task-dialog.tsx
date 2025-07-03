@@ -32,6 +32,7 @@ interface CreateTaskDialogProps {
   onOpenChange: (open: boolean) => void
   parentTaskId?: string
   projectList?: Project[] | []
+  fetchData: () => void
 }
 
 interface SelectOption {
@@ -40,7 +41,7 @@ interface SelectOption {
   icon?: React.ReactNode;
 }
 
-export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList }: CreateTaskDialogProps) {
+export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList, fetchData }: CreateTaskDialogProps) {
   const dispatch = useDispatch()
   const users = useSelector((state: RootState) => state.users.users)
   const allTasks = useSelector((state: RootState) => state.tasks.tasks)
@@ -205,13 +206,13 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
 
     const response = await createProjectTaskHelper(newTask, { setLoading });
     if (response) {
-      dispatch(addTask(newTask))
+      //dispatch(addTask(newTask))
 
       toast({
         title: "Task Created",
         description: `Task "${newTask.title}" has been successfully created.`,
       });
-
+      fetchData()
       onOpenChange(false)
       setFormData({
         title: "",
