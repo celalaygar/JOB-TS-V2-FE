@@ -39,6 +39,7 @@ import { ProjectTaskPriority, type ProjectTask, type ProjectTaskFilterRequest, t
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { EditTaskDialog } from "./edit-task-dialog"
 
 interface TasksTableProps {
   filters: ProjectTaskFilterRequest
@@ -54,8 +55,9 @@ export function TasksTable({ filters, taskResponse, loading }: TasksTableProps) 
   const allTasks = useSelector((state: RootState) => state.tasks.tasks)
   const projects = useSelector((state: RootState) => state.projects.projects)
   const router = useRouter()
+  const [editDialogOpen, setEditDialogOpen] = useState(false)
 
-  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
+  const [selecteddTaskId, setSelecteddTaskId] = useState<string | null>(null)
   const [taskToDelete, setTaskToDelete] = useState<string | null>(null)
 
   const [sortField, setSortField] = useState<SortField>("title")
@@ -264,10 +266,17 @@ export function TasksTable({ filters, taskResponse, loading }: TasksTableProps) 
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
-                          <Link href={`/tasks/${task.id}/edit`} className="flex items-center cursor-pointer">
+                          <Button
+                            // href={`/tasks/${task.id}/edit`} 
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setSelecteddTaskId(task.id)
+                              setEditDialogOpen(true)
+                            }}
+                            className="flex items-center cursor-pointer">
                             <Edit className="mr-2 h-4 w-4" />
                             Edit
-                          </Link>
+                          </Button>
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           className="text-[var(--fixed-danger)]"
@@ -346,6 +355,8 @@ export function TasksTable({ filters, taskResponse, loading }: TasksTableProps) 
           </Button>
         </div>
       </div>
+
+      <EditTaskDialog taskId={selecteddTaskId} open={editDialogOpen} onOpenChange={setEditDialogOpen} />
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!taskToDelete} onOpenChange={(open) => !open && setTaskToDelete(null)}>

@@ -66,7 +66,7 @@ export interface ProjectTaskFilterRequest {
   taskNumber: string;
   title: string;
   description: string;
-  projectTaskSystemStatusId: string;
+  projectTaskStatusId: string;
   projectId: string;
   assigneeId: string;
   priority: ProjectTaskPriority;

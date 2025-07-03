@@ -25,7 +25,7 @@ interface TasksHeaderProps {
 }
 
 
-export function TasksHeader({ filters, setFilters, handleChange, fetchData }: TasksHeaderProps) {
+export function TasksHeader({ filters, setFilters, handleChange, fetchData, }: TasksHeaderProps) {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
 
@@ -98,144 +98,155 @@ export function TasksHeader({ filters, setFilters, handleChange, fetchData }: Ta
         </div>
       </div>
 
-      {loading ? (
-        <div className="grid gap-4 py-4">
-          <div className="flex items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+
+      <>
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-[var(--fixed-sidebar-muted)]" />
+            <Input
+              placeholder="Search tasks..."
+              className="pl-8 border-[var(--fixed-card-border)]"
+              value={filters.search}
+              onChange={(e) => handleFilterChange("search", e.target.value)}
+            />
           </div>
+          <Button
+            disabled={loading}
+            variant="outline"
+            className="border-[var(--fixed-card-border)]"
+            onClick={() => setShowFilters(!showFilters)}
+          >
+            <Filter className="mr-2 h-4 w-4" />
+            Filters {showFilters ? "(on)" : ""}
+          </Button>
         </div>
-      ) : (
-        <>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-[var(--fixed-sidebar-muted)]" />
-              <Input
-                placeholder="Search tasks..."
-                className="pl-8 border-[var(--fixed-card-border)]"
-                value={filters.search}
-                onChange={(e) => handleFilterChange("search", e.target.value)}
-              />
+
+        {showFilters && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 pt-2">
+            {/* Project */}
+            <div>
+              <Select
+                disabled={loading}
+                value={filters.projectId}
+                onValueChange={(value) => handleFilterChange("projectId", value)}>
+                <SelectTrigger className="border-[var(--fixed-card-border)]">
+                  <SelectValue placeholder="All Projects" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Projects</SelectItem>
+                  {projectList.map((project: Project) => (
+                    <SelectItem key={project.id} value={project.id || ""}>
+                      {project.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-            <Button
-              variant="outline"
-              className="border-[var(--fixed-card-border)]"
-              onClick={() => setShowFilters(!showFilters)}
-            >
-              <Filter className="mr-2 h-4 w-4" />
-              Filters {showFilters ? "(on)" : ""}
-            </Button>
+
+            {/* Task Status */}
+            <div>
+              <Select
+                disabled={loading}
+                value={filters.projectTaskStatusId}
+                onValueChange={(value) => handleFilterChange("projectTaskStatusId", value)}>
+                <SelectTrigger className="border-[var(--fixed-card-border)]">
+                  <SelectValue placeholder="Task Statuses" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Task Statuses</SelectItem>
+                  {projectTaskStatus.map((status: ProjectTaskStatus) => (
+                    <SelectItem key={status.id} value={status.id || ""}>
+                      {status.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Priority */}
+            <div>
+              <Select
+                disabled={loading}
+                value={filters.priority}
+                onValueChange={(value) => handleFilterChange("priority", value)}>
+                <SelectTrigger className="border-[var(--fixed-card-border)]">
+                  <SelectValue placeholder="All Priorities" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Priorities</SelectItem>
+                  <SelectItem value={ProjectTaskPriority.HIGH}>High</SelectItem>
+                  <SelectItem value={ProjectTaskPriority.MEDIUM}>Medium</SelectItem>
+                  <SelectItem value={ProjectTaskPriority.LOW}>Low</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Assignee */}
+            <div>
+              <Select
+                disabled={loading}
+                value={filters.assigneeId}
+                onValueChange={(value) => handleFilterChange("assigneeId", value)}>
+                <SelectTrigger className="border-[var(--fixed-card-border)]">
+                  <SelectValue placeholder="All Assignees" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Assignees</SelectItem>
+                  {projectUsers.map((user: ProjectUser) => (
+                    <SelectItem key={user.id} value={user.id || ""}>
+                      {user.email}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Task Type */}
+            <div>
+              <Select
+                disabled={loading}
+                value={filters.taskType}
+                onValueChange={(value) => handleFilterChange("taskType", value)}>
+                <SelectTrigger className="border-[var(--fixed-card-border)]">
+                  <SelectValue placeholder="All Types" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value={ProjectTaskType.BUG}>Bug</SelectItem>
+                  <SelectItem value={ProjectTaskType.FEATURE}>Feature</SelectItem>
+                  <SelectItem value={ProjectTaskType.STORY}>Story</SelectItem>
+                  <SelectItem value={ProjectTaskType.SUBTASK}>Subtask</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Reset */}
+            <div>
+              <Button
+                disabled={loading}
+                variant="outline"
+                className="w-full border-[var(--fixed-card-border)]"
+                onClick={() => {
+                  setFilters({
+                    search: "",
+                    project: "all",
+                    taskStatus: "all",
+                    priority: "all",
+                    assignee: "all",
+                    taskType: "all",
+                  });
+                  setProjectTaskStatus([]);
+                  setProjectUsers([]);
+                  handleChange("reset", "reset");
+                }}
+              >
+                Reset Filters
+              </Button>
+            </div>
           </div>
+        )}
+      </>
 
-          {showFilters && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 pt-2">
-              {/* Project */}
-              <div>
-                <Select value={filters.projectId} onValueChange={(value) => handleFilterChange("projectId", value)}>
-                  <SelectTrigger className="border-[var(--fixed-card-border)]">
-                    <SelectValue placeholder="All Projects" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Projects</SelectItem>
-                    {projectList.map((project: Project) => (
-                      <SelectItem key={project.id} value={project.id || ""}>
-                        {project.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Task Status */}
-              <div>
-                <Select value={filters.projectTaskStatusId} onValueChange={(value) => handleFilterChange("projectTaskStatusId", value)}>
-                  <SelectTrigger className="border-[var(--fixed-card-border)]">
-                    <SelectValue placeholder="Task Statuses" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Task Statuses</SelectItem>
-                    {projectTaskStatus.map((status: ProjectTaskStatus) => (
-                      <SelectItem key={status.id} value={status.id || ""}>
-                        {status.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Priority */}
-              <div>
-                <Select value={filters.priority} onValueChange={(value) => handleFilterChange("priority", value)}>
-                  <SelectTrigger className="border-[var(--fixed-card-border)]">
-                    <SelectValue placeholder="All Priorities" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Priorities</SelectItem>
-                    <SelectItem value={ProjectTaskPriority.HIGH}>High</SelectItem>
-                    <SelectItem value={ProjectTaskPriority.MEDIUM}>Medium</SelectItem>
-                    <SelectItem value={ProjectTaskPriority.LOW}>Low</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Assignee */}
-              <div>
-                <Select value={filters.assigneeId} onValueChange={(value) => handleFilterChange("assigneeId", value)}>
-                  <SelectTrigger className="border-[var(--fixed-card-border)]">
-                    <SelectValue placeholder="All Assignees" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Assignees</SelectItem>
-                    {projectUsers.map((user: ProjectUser) => (
-                      <SelectItem key={user.id} value={user.id || ""}>
-                        {user.email}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Task Type */}
-              <div>
-                <Select value={filters.taskType} onValueChange={(value) => handleFilterChange("taskType", value)}>
-                  <SelectTrigger className="border-[var(--fixed-card-border)]">
-                    <SelectValue placeholder="All Types" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Types</SelectItem>
-                    <SelectItem value={ProjectTaskType.BUG}>Bug</SelectItem>
-                    <SelectItem value={ProjectTaskType.FEATURE}>Feature</SelectItem>
-                    <SelectItem value={ProjectTaskType.STORY}>Story</SelectItem>
-                    <SelectItem value={ProjectTaskType.SUBTASK}>Subtask</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Reset */}
-              <div>
-                <Button
-                  variant="outline"
-                  className="w-full border-[var(--fixed-card-border)]"
-                  onClick={() => {
-                    setFilters({
-                      search: "",
-                      project: "all",
-                      taskStatus: "all",
-                      priority: "all",
-                      assignee: "all",
-                      taskType: "all",
-                    });
-                    setProjectTaskStatus([]);
-                    setProjectUsers([]);
-                    handleChange("reset", "reset");
-                  }}
-                >
-                  Reset Filters
-                </Button>
-              </div>
-            </div>
-          )}
-        </>
-      )}
 
       <CreateTaskDialog
         fetchData={fetchData}
