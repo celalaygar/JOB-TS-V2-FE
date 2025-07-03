@@ -4,16 +4,18 @@ import { useCallback, useEffect, useState } from "react"
 import { TasksHeader } from "@/components/tasks/tasks-header"
 import { TasksTable } from "@/components/tasks/tasks-table"
 import { ProjectTask, ProjectTaskFilterRequest, TaskResponse } from "@/types/task"
-import { getAllProjectTaskHelper } from "@/lib/service/api-helpers"
+import { getAllProjectsHelper, getAllProjectTaskHelper } from "@/lib/service/api-helpers"
 import { useDispatch } from "react-redux"
 import { setTasks } from "@/lib/redux/features/tasks-slice"
+import { Project } from "@/types/project"
 
 export default function TasksPage() {
   const dispatch = useDispatch()
   const [taskList, setTaskList] = useState<ProjectTask[] | null>(null)
   const [taskResponse, setTaskResponse] = useState<TaskResponse | null>(null)
   const [loading, setLoading] = useState(false);
-
+  const [loadingTaskTable, setLoadingTaskTable] = useState(false);
+  const [projectList, setProjectList] = useState<Project[] | []>([]);
   const [filters, setFilters] = useState<ProjectTaskFilterRequest>({
     search: "",
     projectId: "all",
@@ -22,6 +24,15 @@ export default function TasksPage() {
     assigneeId: "all",
     taskType: "all",
   })
+
+  const fetchAllProjects = useCallback(async () => {
+    const projectsData = await getAllProjectsHelper({ setLoading: setLoadingTaskTable });
+    if (projectsData) {
+      setProjectList(projectsData);
+    } else {
+      setProjectList([]);
+    }
+  }, []);
 
   const fetchAllProjectTasks = useCallback(async (filters: ProjectTaskFilterRequest) => {
     setTaskList([]) // Clear previous tasks
@@ -48,6 +59,11 @@ export default function TasksPage() {
     fetchData();
   }, [fetchAllProjectTasks])
 
+  useEffect(() => {
+    fetchAllProjects();
+  }, [fetchAllProjects])
+
+
   const handleChange = (key: string, value: string) => {
     const newFilters = { ...filters, [key]: value }
     setFilters(newFilters);
@@ -70,8 +86,15 @@ export default function TasksPage() {
         filters={filters}
         setFilters={setFilters}
         handleChange={handleChange}
+        projectList={projectList}
+        loadingTaskTable={loadingTaskTable}
       />
-      <TasksTable filters={filters} taskResponse={taskResponse} loading={loading} />
+      <TasksTable
+        loadingTaskTable={loadingTaskTable}
+        projectList={projectList}
+        filters={filters}
+        taskResponse={taskResponse}
+        loading={loading} />
     </div>
   )
 }

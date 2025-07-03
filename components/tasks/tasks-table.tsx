@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useSelector, useDispatch } from "react-redux"
 import type { RootState } from "@/lib/redux/store"
 import { updateTask } from "@/lib/redux/features/tasks-slice"
@@ -40,23 +40,26 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { EditTaskDialog } from "./edit-task-dialog"
+import { getAllProjectsHelper } from "@/lib/service/api-helpers"
+import { Project } from "@/types/project"
 
 interface TasksTableProps {
   filters: ProjectTaskFilterRequest
   taskResponse: TaskResponse | null
   loading: boolean
+  projectList?: Project[] | []
+  loadingTaskTable?: boolean
 }
 
 type SortField = "title" | "status" | "priority" | "project" | "assignee" | "taskType"
 type SortDirection = "asc" | "desc"
 
-export function TasksTable({ filters, taskResponse, loading }: TasksTableProps) {
+export function TasksTable({ filters, taskResponse, loading, projectList, loadingTaskTable }: TasksTableProps) {
   const dispatch = useDispatch()
   const allTasks = useSelector((state: RootState) => state.tasks.tasks)
   const projects = useSelector((state: RootState) => state.projects.projects)
   const router = useRouter()
   const [editDialogOpen, setEditDialogOpen] = useState(false)
-
   const [selecteddTaskId, setSelecteddTaskId] = useState<string | null>(null)
   const [taskToDelete, setTaskToDelete] = useState<string | null>(null)
 
@@ -65,6 +68,28 @@ export function TasksTable({ filters, taskResponse, loading }: TasksTableProps) 
 
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(10)
+
+
+
+  // const fetchAllProjectTaskStatus = useCallback(async (projectId: string) => {
+  //   setProjectTaskStatus([]);
+  //   const statusesData = await getAllProjectTaskStatusHelper(projectId, { setLoading });
+  //   if (statusesData) {
+  //     setProjectTaskStatus(statusesData);
+  //   } else {
+  //     setProjectTaskStatus([]);
+  //   }
+  // }, []);
+
+  // const fetchProjectUsers = useCallback(async (projectId: string) => {
+  //   setProjectUsers([]);
+  //   const usersData = await getProjectUsersHelper(projectId, { setLoading });
+  //   if (usersData) {
+  //     setProjectUsers(usersData);
+  //   } else {
+  //     setProjectUsers([]);
+  //   }
+  // }, []);
 
 
   // Calculate pagination
@@ -122,7 +147,7 @@ export function TasksTable({ filters, taskResponse, loading }: TasksTableProps) 
     }
   }
 
-  return loading ?
+  return loading || loadingTaskTable ?
     <div className="grid gap-4 py-4">
       <div className="flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
@@ -265,18 +290,17 @@ export function TasksTable({ filters, taskResponse, loading }: TasksTableProps) 
                             View Details
                           </Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Button
-                            // href={`/tasks/${task.id}/edit`} 
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              setSelecteddTaskId(task.id)
-                              setEditDialogOpen(true)
-                            }}
-                            className="flex items-center cursor-pointer">
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit
-                          </Button>
+                        <DropdownMenuItem
+                          // href={`/tasks/${task.id}/edit`} 
+                          className="flex items-center cursor-pointer"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setSelecteddTaskId(task.id)
+                            setEditDialogOpen(true)
+                          }}
+                        >
+                          <Edit className="mr-2 h-4 w-4" />
+                          Edit
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           className="text-[var(--fixed-danger)]"
@@ -356,7 +380,11 @@ export function TasksTable({ filters, taskResponse, loading }: TasksTableProps) 
         </div>
       </div>
 
-      <EditTaskDialog taskId={selecteddTaskId} open={editDialogOpen} onOpenChange={setEditDialogOpen} />
+      {selecteddTaskId &&
+        <EditTaskDialog
+          taskId={selecteddTaskId}
+          projectList={projectList}
+          open={editDialogOpen} onOpenChange={setEditDialogOpen} />}
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!taskToDelete} onOpenChange={(open) => !open && setTaskToDelete(null)}>

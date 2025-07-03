@@ -201,14 +201,12 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
       parentTaskId: parentTask || undefined,
     }
 
-    console.log("task newTask")
-    console.log(newTask)
 
     const response = await createProjectTaskHelper(newTask, { setLoading });
     if (response) {
       //dispatch(addTask(newTask))
 
-      
+
       toast({
         title: "Task Created",
         description: `Task "${newTask.title}" has been successfully created.`,
@@ -248,7 +246,7 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto ">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto ">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Create New Task</DialogTitle>

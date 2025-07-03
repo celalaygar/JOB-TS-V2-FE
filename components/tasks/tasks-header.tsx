@@ -22,28 +22,22 @@ interface TasksHeaderProps {
   setFilters: (filters: any) => void
   handleChange: (key: string, value: string) => void
   fetchData: () => void
+  projectList: Project[] | []
+  loadingTaskTable?: boolean
 }
 
 
-export function TasksHeader({ filters, setFilters, handleChange, fetchData, }: TasksHeaderProps) {
+export function TasksHeader({ filters, setFilters, handleChange, fetchData, projectList, loadingTaskTable }: TasksHeaderProps) {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
 
   const users = useSelector((state: RootState) => state.users.users)
 
-  const [loading, setLoading] = useState(false);
-  const [projectList, setProjectList] = useState<Project[] | []>([]);
+  const [loading, setLoading] = useState(loadingTaskTable | false);
   const [projectTaskStatus, setProjectTaskStatus] = useState<ProjectTaskStatus[]>([])
   const [projectUsers, setProjectUsers] = useState<ProjectUser[] | []>([])
 
-  const fetchAllProjects = useCallback(async () => {
-    const projectsData = await getAllProjectsHelper({ setLoading });
-    if (projectsData) {
-      setProjectList(projectsData);
-    } else {
-      setProjectList([]);
-    }
-  }, []);
+
 
   const fetchAllProjectTaskStatus = useCallback(async (projectId: string) => {
     setProjectTaskStatus([]);
@@ -65,9 +59,7 @@ export function TasksHeader({ filters, setFilters, handleChange, fetchData, }: T
     }
   }, []);
 
-  useEffect(() => {
-    fetchAllProjects();
-  }, [fetchAllProjects]);
+
 
   const handleFilterChange = (key: string, value: string) => {
     handleChange(key, value);

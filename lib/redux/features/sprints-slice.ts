@@ -39,8 +39,7 @@ export const sprintsSlice = createSlice({
       state.sprints.push(action.payload)
     },
     updateSprint: (state, action: PayloadAction<string>) => {
-      console.log(action.payload)
-      console.log(state.sprints)
+
       const sprint = state.sprints.find((sprint) => sprint.id === action.payload.id)
       if (sprint) {
         Object.assign(sprint, action.payload)

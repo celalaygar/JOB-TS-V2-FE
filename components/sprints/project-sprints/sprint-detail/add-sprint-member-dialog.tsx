@@ -116,8 +116,6 @@ export function AddSprintMemberDialog({ sprintId, open, onOpenChange }: AddSprin
     if (usersToAdd.length > 0) {
       setIsAdding(true)
       try {
-        // TODO: Dispatch action to add users to sprint
-        console.log("Adding users to sprint:", usersToAdd)
 
         // Simulate API call
         await new Promise((resolve) => setTimeout(resolve, 1000))

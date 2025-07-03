@@ -1,11 +1,10 @@
 "use client"
 
 import type React from "react"
-
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import type { RootState } from "@/lib/redux/store"
-import { updateTask } from "@/lib/redux/features/tasks-slice"
+import { updateTask } from "@/lib/redux/features/tasks-slice" // Keep for Redux state update if needed, but primary update will be via API
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -15,135 +14,256 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Bug, Lightbulb, BookOpen, GitBranch } from "lucide-react"
-import type { TaskType } from "@/types/task"
+import { Bug, Lightbulb, BookOpen, GitBranch, Loader2 } from "lucide-react"
+import type { ProjectTask, TaskType, TaskUpdateRequest } from "@/types/task" // Assuming TaskUpdateRequest type
+import { toast } from "@/hooks/use-toast"
+import { Project, ProjectTaskStatus, ProjectUser } from "@/types/project"
+import { Sprint } from "@/types/sprint"
+
+import Select from "react-select"
+
+import {
+  getProjectUsersHelper,
+  getNonCompletedSprintsHelper,
+  getAllProjectTaskStatusHelper,
+  updateProjectTaskHelper,
+} from "@/lib/service/api-helpers"
+import type { Task } from "@/types/task" // Import Task type if not already
 
 interface EditTaskDialogProps {
   taskId: string
   open: boolean
-  onOpenChange: (open: boolean) => void
+  onOpenChange: (open: boolean) => VideoFacingModeEnum
+  fetchData: () => void // Function to refresh task list after edit
+  projectList?: Project[] | []
 }
 
-export function EditTaskDialog({ taskId, open, onOpenChange }: EditTaskDialogProps) {
+interface SelectOption {
+  value: string;
+  label: string;
+  icon?: React.ReactNode;
+}
+
+export function EditTaskDialog({ taskId, open, onOpenChange, projectList, fetchData }: EditTaskDialogProps) {
   const dispatch = useDispatch()
-  const task = useSelector((state: RootState) => state.tasks.tasks.find((task) => task.id === taskId))
-  const projects = useSelector((state: RootState) => state.projects.projects)
-  const users = useSelector((state: RootState) => state.users.users)
-  const allTasks = useSelector((state: RootState) => state.tasks.tasks)
+  const allTasks = useSelector((state: RootState) => state.tasks.tasks) // Used for parent task options
+  const taskDetails: ProjectTask = useSelector((state: RootState) => state.tasks.tasks.find((task) => task.id === taskId))
+
+  const [loadingTask, setLoadingTask] = useState(true); // Loading state for initial task fetch
+  const [loadingProjectUsers, setLoadingProjectUsers] = useState(false);
+  const [projectUsers, setProjectUsers] = useState<ProjectUser[] | []>([]);
+  const [loadingSprints, setLoadingSprints] = useState(false);
+  const [sprintList, setSprintList] = useState<Sprint[] | []>([]);
+  const [projectTaskStatuses, setProjectTaskStatuses] = useState<ProjectTaskStatus[]>([])
+  const [loadingTaskStatus, setLoadingTaskStatus] = useState(false);
+  const [loadingUpdate, setLoadingUpdate] = useState(false); // Loading for update operation
 
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    project: "",
-    assignee: "",
-    priority: "",
-    taskType: "" as TaskType,
-    status: "",
-    sprint: "",
-    parentTask: "",
+    projectTaskStatusId: "" as string, // Changed from 'status' to 'projectTaskStatus'
+    projectId: "" as string | null,
+    assigneeId: "" as string | null,
+    priority: "Medium" as string,
+    taskType: "feature" as TaskType | null,
+    sprint: "" as string | null,
+    parentTask: "" as string | null,
   })
 
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  // Options for react-select
+  const projectOptions: SelectOption[] = useMemo(() =>
+    (projectList || []).map(p => ({ value: p.id, label: p.name })),
+    [projectList]
+  );
 
-  // Initialize form with task data
+  const assigneeOptions: SelectOption[] = useMemo(() =>
+    (projectUsers || []).map(user => ({ value: user.id, label: user.email })),
+    [projectUsers]
+  );
+  const projectTaskStatusList: SelectOption[] = useMemo(() =>
+    (projectTaskStatuses || []).map(status => ({ value: status.id, label: status.label })),
+    [projectTaskStatuses]
+  );
+
+  const priorityOptions: SelectOption[] = useMemo(() => [
+    { value: "HIGH", label: "High" },
+    { value: "MEDIUM", label: "Medium" },
+    { value: "LOW", label: "Low" },
+  ], []);
+
+  const taskTypeOptions: SelectOption[] = useMemo(() => [
+    { value: "BUG", label: "Bug", icon: <Bug className="mr-2 h-4 w-4 text-red-500" /> },
+    { value: "FEATURE", label: "Feature", icon: <Lightbulb className="mr-2 h-4 w-4 text-blue-500" /> },
+    { value: "STORY", label: "Story", icon: <BookOpen className="mr-2 h-4 w-4 text-purple-500" /> },
+    { value: "SUBTASK", label: "Subtask", icon: <GitBranch className="mr-2 h-4 w-4 text-gray-500" /> },
+  ], []);
+
+  const sprintOptions: SelectOption[] = useMemo(() =>
+    (sprintList || []).map(sprint => ({ value: sprint.id, label: sprint.name })),
+    [sprintList]
+  );
+
+  const parentTaskOptions: SelectOption[] = useMemo(() =>
+    allTasks
+      .filter((task) => task.id !== taskId && task.taskType !== "subtask" && (formData.projectId ? task.project === formData.projectId : true))
+      .map(task => ({ value: task.id, label: `${task.taskNumber} - ${task.title}` })),
+    [allTasks, taskId, formData.projectId]
+  );
+
+  const formatTaskTypeLabel = ({ label, icon }: SelectOption) => (
+    <div style={{ display: 'flex', alignItems: 'center' }}>
+      {icon}
+      <span>{label}</span>
+    </div>
+  );
+
+  // Fetch task details and populate form
   useEffect(() => {
-    if (task) {
-      setFormData({
-        title: task.title,
-        description: task.description,
-        project: task.project,
-        assignee: task.assignee.id,
-        priority: task.priority,
-        taskType: task.taskType,
-        status: task.status,
-        sprint: task.sprint || "",
-        parentTask: task.parentTaskId || "",
-      })
+    const fetchTaskDetails = async () => {
+      if (open && taskId) {
+        setLoadingTask(true);
+        if (taskDetails) {
+          setFormData({
+            title: taskDetails.title || "",
+            description: taskDetails.description || "",
+            projectTaskStatusId: taskDetails.projectTaskStatus.id || "",
+            projectId: taskDetails.createdProject.id || null,
+            assigneeId: taskDetails.assignee.id || null,
+            priority: taskDetails.priority || "Medium",
+            taskType: taskDetails.taskType || "feature",
+            sprint: taskDetails.sprint.id || null,
+            parentTask: taskDetails.parentTaskId || null,
+          });
+          if (taskDetails.createdProject.id) {
+            handleGetProjectUsers(taskDetails.createdProject.id);
+            handleGetSprints(taskDetails.createdProject.id);
+            fetchAllProjectTaskStatus(taskDetails.createdProject.id);
+          }
+        } else {
+          toast({
+            title: "Error",
+            description: "Failed to load task details.",
+            variant: "destructive",
+          });
+        }
+        setLoadingTask(false);
+      }
+    };
+    fetchTaskDetails();
+  }, [open, taskId]);
+
+
+  const handleChange = useCallback((field: keyof typeof formData, value: string | SelectOption | null) => {
+    let actualValue: string | null;
+
+    if (typeof value === 'object' && value !== null && 'value' in value) {
+      actualValue = value.value;
+    } else if (typeof value === 'string' || value === null) {
+      actualValue = value;
+    } else {
+      actualValue = null;
     }
-  }, [task])
 
-  const handleChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
-    // Clear error when field is edited
-    if (errors[field]) {
-      setErrors((prev) => {
-        const newErrors = { ...prev }
-        delete newErrors[field]
-        return newErrors
-      })
+    setFormData((prev) => ({ ...prev, [field]: actualValue }));
+
+    // When project changes, fetch relevant data for the new project
+    if (field === "project" && typeof actualValue === 'string' && actualValue !== "all") {
+      setFormData((prev) => ({ ...prev, assigneeId: null, sprint: null, projectTaskStatusId: "" })); // Clear assignee, sprint, status on project change
+      handleGetProjectUsers(actualValue);
+      handleGetSprints(actualValue);
+      fetchAllProjectTaskStatus(actualValue);
     }
-  }
+  }, []);
 
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {}
-
-    if (!formData.title.trim()) {
-      newErrors.title = "Task title is required"
+  const handleGetProjectUsers = useCallback(async (projectId: string) => {
+    setLoadingProjectUsers(true);
+    const usersData = await getProjectUsersHelper(projectId, { setLoading: setLoadingProjectUsers });
+    if (usersData) {
+      setProjectUsers(usersData);
+    } else {
+      setProjectUsers([]);
     }
+    setLoadingProjectUsers(false);
+  }, []);
 
-    if (!formData.project) {
-      newErrors.project = "Project is required"
+  const handleGetSprints = useCallback(async (projectId: string) => {
+    setLoadingSprints(true);
+    const sprintsData = await getNonCompletedSprintsHelper(projectId, { setLoading: setLoadingSprints });
+    if (sprintsData) {
+      setSprintList(sprintsData);
+    } else {
+      setSprintList([]);
     }
+    setLoadingSprints(false);
+  }, []);
 
-    if (!formData.assignee) {
-      newErrors.assignee = "Assignee is required"
+  const fetchAllProjectTaskStatus = useCallback(async (projectId: string) => {
+    setLoadingTaskStatus(true);
+    setProjectTaskStatuses([]); // Clear previous statuses
+    const statusesData = await getAllProjectTaskStatusHelper(projectId, { setLoading: setLoadingTaskStatus });
+    if (statusesData) {
+      setProjectTaskStatuses(statusesData);
+    } else {
+      setProjectTaskStatuses([]);
     }
+    setLoadingTaskStatus(false);
+  }, []);
 
-    if (formData.taskType === "subtask" && !formData.parentTask) {
-      newErrors.parentTask = "Parent task is required for subtasks"
-    }
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!validateForm() || !task) return
+    if (!formData.title || !formData.projectId || !formData.assigneeId || !formData.taskType || !formData.projectTaskStatusId ||
+      (formData.taskType === "subtask" && !formData.parentTask)) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    const assigneeUser = users.find((user) => user.id === formData.assignee)
-    const projectObj = projects.find((p) => p.id === formData.project)
+    const { title, description, projectId, projectTaskStatusId, assigneeId, priority, taskType, sprint, parentTask } = formData
 
-    dispatch(
-      updateTask({
-        id: taskId,
-        changes: {
-          title: formData.title,
-          description: formData.description,
-          project: formData.project,
-          projectName: projectObj?.name || task.projectName,
-          assignee: {
-            id: assigneeUser?.id || "",
-            name: assigneeUser?.name || "",
-            avatar: assigneeUser?.avatar || "",
-            initials: assigneeUser?.initials || "",
-          },
-          priority: formData.priority,
-          taskType: formData.taskType,
-          status: formData.status,
-          sprint: formData.sprint || undefined,
-          parentTaskId: formData.parentTask || undefined,
-        },
-      }),
-    )
+    const updatedTask: TaskUpdateRequest = {
+      id: taskId,
+      title,
+      description,
+      projectTaskStatusId: projectTaskStatusId,
+      priority: priority as "High" | "Medium" | "Low",
+      taskType: taskType as TaskType,
+      projectId: projectId!,
+      assigneeId: assigneeId!,
+      sprintId: sprint || null, // Changed from undefined to null for consistency
+      parentTaskId: parentTask || null, // Changed from undefined to null for consistency
+    }
 
-    onOpenChange(false)
+
+    setLoadingUpdate(true);
+    const response = await updateProjectTaskHelper(taskId, updatedTask, { setLoading: setLoadingUpdate });
+
+    if (response) {
+
+
+      toast({
+        title: "Task Updated",
+        description: `Task "${updatedTask.title}" has been successfully updated.`,
+      });
+      fetchData(); // Refresh data in parent component
+      onOpenChange(false);
+    } else {
+      toast({
+        title: "Update Failed",
+        description: "There was an error updating the task.",
+        variant: "destructive",
+      });
+    }
+    setLoadingUpdate(false);
   }
 
-  // Get parent tasks for subtask selection
-  const parentTaskOptions = allTasks.filter(
-    (t) =>
-      t.id !== taskId && // Can't be parent of itself
-      t.taskType !== "subtask" &&
-      (formData.project ? t.project === formData.project : true),
-  )
-
-  if (!task) return null
+  const overallLoading = loadingTask || loadingProjectUsers || loadingSprints || loadingTaskStatus || loadingUpdate;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -153,192 +273,141 @@ export function EditTaskDialog({ taskId, open, onOpenChange }: EditTaskDialogPro
             <DialogTitle>Edit Task</DialogTitle>
             <DialogDescription>Update the details of this task.</DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="title" className={errors.title ? "text-[var(--fixed-danger)]" : ""}>
-                Title
-              </Label>
-              <Input
-                id="title"
-                value={formData.title}
-                onChange={(e) => handleChange("title", e.target.value)}
-                placeholder="Enter task title"
-                className={errors.title ? "border-[var(--fixed-danger)]" : "border-[var(--fixed-card-border)]"}
-              />
-              {errors.title && <p className="text-xs text-[var(--fixed-danger)]">{errors.title}</p>}
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => handleChange("description", e.target.value)}
-                placeholder="Describe the task in detail"
-                rows={3}
-                className="border-[var(--fixed-card-border)]"
-              />
-            </div>
+          {
+            overallLoading ? (
+              <div className="grid gap-4 py-4">
+                <div className="flex items-center justify-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="title">Title</Label>
+                    <Input
+                      id="title"
+                      value={formData.title}
+                      onChange={(e) => handleChange("title", e.target.value)}
+                      placeholder="Enter task title"
+                      required
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="description">Description</Label>
+                    <Textarea
+                      id="description"
+                      value={formData.description || ""}
+                      onChange={(e) => handleChange("description", e.target.value)}
+                      placeholder="Describe the task in detail"
+                      rows={3}
+                    />
+                  </div>
 
-            <div className="grid gap-2">
-              <Label htmlFor="taskType">Task Type</Label>
-              <Select value={formData.taskType} onValueChange={(value) => handleChange("taskType", value as TaskType)}>
-                <SelectTrigger id="taskType" className="border-[var(--fixed-card-border)]">
-                  <SelectValue placeholder="Select task type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="bug">
-                    <div className="flex items-center">
-                      <Bug className="mr-2 h-4 w-4 text-red-500" />
-                      Bug
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="feature">
-                    <div className="flex items-center">
-                      <Lightbulb className="mr-2 h-4 w-4 text-blue-500" />
-                      Feature
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="story">
-                    <div className="flex items-center">
-                      <BookOpen className="mr-2 h-4 w-4 text-purple-500" />
-                      Story
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="subtask">
-                    <div className="flex items-center">
-                      <GitBranch className="mr-2 h-4 w-4 text-gray-500" />
-                      Subtask
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="project">Project</Label>
+                    <Select
+                      id="project"
+                      options={projectOptions}
+                      value={projectOptions.find(option => option.value === formData.projectId)}
+                      onChange={(option) => handleChange("projectId", option)}
+                      placeholder="Select project"
+                      required
+                    />
+                  </div>
 
-            {formData.taskType === "subtask" && (
-              <div className="grid gap-2">
-                <Label htmlFor="parentTask" className={errors.parentTask ? "text-[var(--fixed-danger)]" : ""}>
-                  Parent Task
-                </Label>
-                <Select value={formData.parentTask} onValueChange={(value) => handleChange("parentTask", value)}>
-                  <SelectTrigger
-                    id="parentTask"
-                    className={errors.parentTask ? "border-[var(--fixed-danger)]" : "border-[var(--fixed-card-border)]"}
-                  >
-                    <SelectValue placeholder="Select parent task" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {parentTaskOptions.map((parentTask) => (
-                      <SelectItem key={parentTask.id} value={parentTask.id}>
-                        {parentTask.taskNumber} - {parentTask.title}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.parentTask && <p className="text-xs text-[var(--fixed-danger)]">{errors.parentTask}</p>}
-              </div>
-            )}
+                  <div className="grid gap-2">
+                    <Label htmlFor="projectTaskStatus">Project Task Status</Label>
+                    <Select
+                      id="projectTaskStatus"
+                      options={projectTaskStatusList}
+                      value={projectTaskStatusList.find(option => option.value === formData.projectTaskStatusId)}
+                      onChange={(option) => handleChange("projectTaskStatusId", option)}
+                      placeholder="Select status"
+                      required
+                      isDisabled={projectTaskStatuses.length === 0}
+                      noOptionsMessage={() => "Select a project first to see statuses."}
+                    />
+                  </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="project" className={errors.project ? "text-[var(--fixed-danger)]" : ""}>
-                  Project
-                </Label>
-                <Select value={formData.project} onValueChange={(value) => handleChange("project", value)}>
-                  <SelectTrigger
-                    id="project"
-                    className={errors.project ? "border-[var(--fixed-danger)]" : "border-[var(--fixed-card-border)]"}
-                  >
-                    <SelectValue placeholder="Select project" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {projects.map((project) => (
-                      <SelectItem key={project.id} value={project.id}>
-                        {project.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.project && <p className="text-xs text-[var(--fixed-danger)]">{errors.project}</p>}
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="assignee" className={errors.assignee ? "text-[var(--fixed-danger)]" : ""}>
-                  Assignee
-                </Label>
-                <Select value={formData.assignee} onValueChange={(value) => handleChange("assignee", value)}>
-                  <SelectTrigger
-                    id="assignee"
-                    className={errors.assignee ? "border-[var(--fixed-danger)]" : "border-[var(--fixed-card-border)]"}
-                  >
-                    <SelectValue placeholder="Assign to" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {users.map((user) => (
-                      <SelectItem key={user.id} value={user.id}>
-                        {user.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.assignee && <p className="text-xs text-[var(--fixed-danger)]">{errors.assignee}</p>}
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="priority">Priority</Label>
-                <Select value={formData.priority} onValueChange={(value) => handleChange("priority", value)}>
-                  <SelectTrigger id="priority" className="border-[var(--fixed-card-border)]">
-                    <SelectValue placeholder="Select priority" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="High">High</SelectItem>
-                    <SelectItem value="Medium">Medium</SelectItem>
-                    <SelectItem value="Low">Low</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="status">Status</Label>
-                <Select value={formData.status} onValueChange={(value) => handleChange("status", value)}>
-                  <SelectTrigger id="status" className="border-[var(--fixed-card-border)]">
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="to-do">To Do</SelectItem>
-                    <SelectItem value="in-progress">In Progress</SelectItem>
-                    <SelectItem value="review">In Review</SelectItem>
-                    <SelectItem value="done">Done</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="sprint">Sprint</Label>
-              <Select value={formData.sprint} onValueChange={(value) => handleChange("sprint", value)}>
-                <SelectTrigger id="sprint" className="border-[var(--fixed-card-border)]">
-                  <SelectValue placeholder="Select sprint" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="current">Current Sprint</SelectItem>
-                  <SelectItem value="next">Next Sprint</SelectItem>
-                  <SelectItem value="backlog">Backlog</SelectItem>
-                  <SelectItem value="none">None</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              className="border-[var(--fixed-card-border)] text-[var(--fixed-sidebar-fg)]"
-            >
-              Cancel
-            </Button>
-            <Button type="submit" className="bg-[var(--fixed-primary)] text-white">
-              Save Changes
-            </Button>
-          </DialogFooter>
+
+                  {formData.taskType === "subtask" && (
+                    <div className="grid gap-2">
+                      <Label htmlFor="parentTask">Parent Task</Label>
+                      <Select
+                        id="parentTask"
+                        options={parentTaskOptions}
+                        value={parentTaskOptions.find(option => option.value === formData.parentTask)}
+                        onChange={(option) => handleChange("parentTask", option)}
+                        placeholder="Select parent task"
+                        isClearable
+                      />
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="taskType">Task Type</Label>
+                      <Select
+                        id="taskType"
+                        options={taskTypeOptions}
+                        value={taskTypeOptions.find(option => option.value === formData.taskType)}
+                        onChange={(option) => handleChange("taskType", option)}
+                        placeholder="Select task type"
+                        formatOptionLabel={formatTaskTypeLabel}
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="assignee">Assignee</Label>
+                      <Select
+                        id="assigneeId"
+                        options={assigneeOptions}
+                        value={assigneeOptions.find(option => option.value === formData.assigneeId)}
+                        onChange={(option) => handleChange("assigneeId", option)}
+                        placeholder="Assign to"
+                        required
+                        isClearable
+                        isDisabled={!formData.projectId || assigneeOptions.length === 0}
+                        noOptionsMessage={() => "Select a project first to see assignees."}
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="priority">Priority</Label>
+                      <Select
+                        id="priority"
+                        options={priorityOptions}
+                        value={priorityOptions.find(option => option.value === formData.priority)}
+                        onChange={(option) => handleChange("priority", option)}
+                        placeholder="Select priority"
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="sprint">Sprint</Label>
+                      <Select
+                        id="sprint"
+                        options={sprintOptions}
+                        value={sprintOptions.find(option => option.value === formData.sprint)}
+                        onChange={(option) => handleChange("sprint", option)}
+                        placeholder="Select sprint"
+                        isClearable
+                        isDisabled={!formData.projectId || sprintOptions.length === 0}
+                        noOptionsMessage={() => "Select a project first to see sprints."}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <DialogFooter>
+                  <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit">Save Changes</Button>
+                </DialogFooter>
+              </>
+            )
+          }
         </form>
       </DialogContent>
     </Dialog>

@@ -18,8 +18,7 @@ interface SprintDetailHeaderProps {
 
 export function SprintDetailHeader({ sprint, tasks, onEdit, onDelete }: SprintDetailHeaderProps) {
   const [isCompleteDialogOpen, setIsCompleteDialogOpen] = useState(false)
-  console.log("sprint")
-  console.log(sprint)
+
 
   // Helper function to get status badge
   const getStatusBadge = (status: string) => {

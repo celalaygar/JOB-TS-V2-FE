@@ -20,7 +20,6 @@ class BaseService {
 
     public static async request<T>(url: string, options: RequestOptions = {}): Promise<T> {
         const fullUrl = this.buildUrl(url, options.queryParams);
-        console.log("BaseService url : " + fullUrl)
         const config: RequestInit = {
             method: options.method || 'GET',
             headers: {
