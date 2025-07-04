@@ -323,6 +323,7 @@ export function CreateTaskDialog({ open, onOpenChange, parentTask, projectList, 
                       value={projectOptions.find(option => option.value === formData.project)}
                       onChange={(option) => handleChange("project", option)}
                       placeholder="Select project"
+                      isDisabled={parentTask}
                       required
                     />
                   </div>
@@ -348,7 +349,7 @@ export function CreateTaskDialog({ open, onOpenChange, parentTask, projectList, 
                       value={parentTaskOptions.find(option => option.value === formData.parentTask)}
                       onChange={(option) => handleChange("parentTask", option)}
                       placeholder={"Select parent task"}
-                      isDisabled={true}
+                      isDisabled={parentTask}
                       isClearable
                     />
                   </div>}
