@@ -36,3 +36,5 @@ export const GET_PROJECT_USERS = PROJECT_USERS + "/get-users/project";
 export const PROJECT_TASK = BASE_PATH_V2 + "project-task"
 
 
+export const PROJECT_TASK_SUBTASKS = PROJECT_TASK + "/subtasks";
+

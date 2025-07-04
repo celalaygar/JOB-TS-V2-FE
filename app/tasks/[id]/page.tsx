@@ -17,7 +17,7 @@ import { projects } from "@/data/projects"
 import { users } from "@/data/users"
 import { EditTaskDialog } from "@/components/tasks/edit-task-dialog"
 import { CreateTaskDialog } from "@/components/tasks/create-task-dialog"
-import { getAllProjectsHelper, getProjectTasByProjectTaskIdkHelper, getProjectTaskByProjectTaskIdkHelper } from "@/lib/service/api-helpers"
+import { getAllProjectsHelper, getProjectTaskByProjectTaskIdkHelper } from "@/lib/service/api-helpers"
 import { ProjectTask } from "@/types/task"
 import { Project } from "@/types/project"
 
@@ -137,6 +137,7 @@ export default function TaskDetailPage() {
 
             {activeTab === "related" && (
               <TaskRelatedTasks
+                parentTask={projectTask}
                 taskId={taskId}
                 onCreateSubtask={() => setCreateSubtaskDialogOpen(true)}
                 onEditTask={handleEditTask}

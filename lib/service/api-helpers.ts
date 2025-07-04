@@ -21,7 +21,8 @@ import {
   INVITE_TO_PROJECT,
   SPRINT_URL, // Import SPRINT_URL
   TEAM_DETAIL_URL,
-  PROJECT_TASK
+  PROJECT_TASK,
+  PROJECT_TASK_SUBTASKS
 } from "@/lib/service/BasePath";
 import { ProjectTask, ProjectTaskFilterRequest, TaskResponse } from "@/types/task";
 
@@ -518,3 +519,17 @@ export const getProjectTaskByProjectTaskIdkHelper = async (taskId: string, optio
     errorToastTitle: "Error Loading Project Task ",
   });
 };
+
+export const getSubTasksByProjectTaskIdkHelper = async (taskId: string, options: FetchEntitiesOptions): Promise<ProjectTask[] | null> => {
+  return apiCall<ProjectTask[]>({
+    url: PROJECT_TASK_SUBTASKS + "/" + taskId,
+    method: httpMethods.GET,
+    setLoading: options.setLoading,
+    successMessage: `Project Sub Task for project ${taskId} have been retrieved.`,
+    errorMessagePrefix: "Failed to load Project Sub Task ",
+    successToastTitle: "Project Sub Task Loaded",
+    errorToastTitle: "Error Loading Project Sub Task ",
+  });
+};
+
+
