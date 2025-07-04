@@ -120,7 +120,7 @@ export default function SprintDetailPage() {
 
       <ViewTaskDialog open={isViewTaskDialogOpen} onOpenChange={setIsViewTaskDialogOpen} taskId={selectedTaskId} />
 
-      <EditTaskDialog open={isEditTaskDialogOpen} onOpenChange={setIsEditTaskDialogOpen} taskId={selectedTaskId} />
+      <EditTaskDialog  open={isEditTaskDialogOpen} onOpenChange={setIsEditTaskDialogOpen} taskId={selectedTaskId} />
 
       <AssignTaskDialog
         open={isAssignTaskDialogOpen}

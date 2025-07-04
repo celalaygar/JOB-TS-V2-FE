@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Bug, Lightbulb, BookOpen, GitBranch, Loader2 } from "lucide-react"
-import type { TaskCreateRequest, TaskType } from "@/types/task"
+import type { ProjectTask, TaskCreateRequest, TaskType } from "@/types/task"
 import { toast } from "@/hooks/use-toast"
 import { Project, ProjectTaskStatus, ProjectUser } from "@/types/project"
 import { Sprint } from "@/types/sprint"
@@ -30,7 +30,7 @@ import { createProjectTaskHelper, getAllProjectTaskStatusHelper, getNonCompleted
 interface CreateTaskDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  parentTaskId?: string
+  parentTask: ProjectTask | null
   projectList?: Project[] | []
   fetchData: () => void
 }
@@ -41,7 +41,7 @@ interface SelectOption {
   icon?: React.ReactNode;
 }
 
-export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList, fetchData }: CreateTaskDialogProps) {
+export function CreateTaskDialog({ open, onOpenChange, parentTask, projectList, fetchData }: CreateTaskDialogProps) {
   const dispatch = useDispatch()
   const users = useSelector((state: RootState) => state.users.users)
   const allTasks = useSelector((state: RootState) => state.tasks.tasks)
@@ -63,7 +63,7 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
     priority: "Medium" as string,
     taskType: "feature" as TaskType | null,
     sprint: "" as string | null,
-    parentTask: (parentTaskId || "") as string | null,
+    parentTask: (parentTask?.id || "") as string | null,
   })
 
   const projectOptions: SelectOption[] = useMemo(() =>
@@ -99,12 +99,31 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
     [sprintList]
   );
 
-  const parentTaskOptions: SelectOption[] = useMemo(() =>
-    allTasks
-      .filter((task) => task.taskType !== "subtask" && (formData.project ? task.project === formData.project : true))
-      .map(task => ({ value: task.id, label: `${task.taskNumber} - ${task.title}` })),
-    [allTasks, formData.project]
-  );
+
+  const parentTaskOptions: SelectOption[] = useMemo(() => {
+    // Mevcut görevleri filtrele (alt görev olmayanlar ve seçili projeye ait olanlar)
+    const filteredTasks = allTasks.filter(
+      (task) => task.taskType !== "SUBTASK" && (formData.project ? task.createdProject.id === formData.project : true)
+    );
+
+    // parentTaskOptions'ı oluştur
+    let options = filteredTasks.map(task => ({
+      value: task.id,
+      label: `${task.taskNumber} - ${task.title}`
+    }));
+
+    // Eğer allTasks boşsa VEYA filtreleme sonucu hiçbir görev kalmamışsa VE parentTask prop'u varsa,
+    // parentTask'ı seçeneklere ekle.
+    // Ayrıca, parentTask zaten options içinde yoksa ekle kontrolü yapıyoruz.
+    if (parentTask && !options.some(option => option.value === parentTask.id)) {
+      options = [{
+        value: parentTask.id,
+        label: `${parentTask.taskNumber} - ${parentTask.title}`
+      }, ...options]; // Parent görevi en üste ekleyebiliriz
+    }
+
+    return options;
+  }, [allTasks, formData.project, parentTask]); // parentTask bağımlılığını eklemeyi unutmayın
 
   const formatTaskTypeLabel = ({ label, icon }: SelectOption) => (
     <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -113,23 +132,6 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
     </div>
   );
 
-  useEffect(() => {
-    if (parentTaskId) {
-      const parentTask = allTasks.find((task) => task.id === parentTaskId)
-      if (parentTask) {
-        setFormData((prev) => ({
-          ...prev,
-          project: parentTask.project,
-          taskType: "subtask",
-          parentTask: parentTaskId,
-        }))
-        if (parentTask.project) {
-          handleGetProjectUsers(parentTask.project);
-          handleGetSprints(parentTask.project);
-        }
-      }
-    }
-  }, [parentTaskId, allTasks])
 
   const handleChange = useCallback((field: keyof typeof formData, value: string | SelectOption | null) => {
     let actualValue: string | null;
@@ -240,6 +242,36 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
   }, []);
 
 
+  useEffect(() => {
+    console.log("Parent task değişti. Current parentTask:", parentTask);
+    if (parentTask?.id) { // parentTask'ın varlığını ve id'sinin olduğunu kontrol et
+      setFormData((prev) => ({
+        ...prev,
+        project: parentTask.createdProject.id,
+        taskType: "subtask",
+        parentTask: parentTask.id,
+      }));
+      // parentTask.createdProject'ın null veya undefined olmadığından emin olmak için ek bir kontrol ekleyebilirsiniz,
+      // ancak ProjectTask tip tanımınızda createdProject zorunlu ise gerek kalmaz.
+      // Yine de, API'den gelen verinin tutarlılığını sağlamak için eklemek iyi bir pratik olabilir.
+      if (parentTask.createdProject) { // Veya tip tanımınız garanti ediyorsa kaldırılabilir
+        handleGetProjectUsers(parentTask.createdProject.id);
+        handleGetSprints(parentTask.createdProject.id);
+        fetchAllProjectTaskStatus(parentTask.createdProject.id);
+      }
+    } else {
+      // parentTask null olduğunda form verilerini ve ilgili listeleri temizle
+      setFormData((prev) => ({
+        ...prev,
+        project: null,
+        taskType: "feature",
+        parentTask: null,
+      }));
+      setProjectUsers([]);
+      setSprintList([]);
+      setProjectTaskStatuses([]);
+    }
+  }, [parentTask, handleGetProjectUsers, handleGetSprints, fetchAllProjectTaskStatus]);
 
 
   const overallLoading = loading || loadingProjectUsers || loadingSprints || loadingTaskStatus;
@@ -292,7 +324,6 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
                       onChange={(option) => handleChange("project", option)}
                       placeholder="Select project"
                       required
-                      isDisabled={!!parentTaskId}
                     />
                   </div>
 
@@ -305,25 +336,22 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
                       onChange={(option) => handleChange("projectTaskStatus", option)}
                       placeholder="Select project"
                       required
-                      isDisabled={!!parentTaskId}
                     />
                   </div>
 
 
-                  {formData.taskType === "subtask" && (
-                    <div className="grid gap-2">
-                      <Label htmlFor="parentTask">Parent Task</Label>
-                      <Select
-                        id="parentTask"
-                        options={parentTaskOptions}
-                        value={parentTaskOptions.find(option => option.value === formData.parentTask)}
-                        onChange={(option) => handleChange("parentTask", option)}
-                        placeholder="Select parent task"
-                        isDisabled={!!parentTaskId}
-                        isClearable
-                      />
-                    </div>
-                  )}
+                  {parentTask && <div className="grid gap-2">
+                    <Label htmlFor="parentTask">Parent Task</Label>
+                    <Select
+                      id="parentTask"
+                      options={parentTaskOptions}
+                      value={parentTaskOptions.find(option => option.value === formData.parentTask)}
+                      onChange={(option) => handleChange("parentTask", option)}
+                      placeholder={"Select parent task"}
+                      isDisabled={true}
+                      isClearable
+                    />
+                  </div>}
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="grid gap-2">
@@ -334,7 +362,6 @@ export function CreateTaskDialog({ open, onOpenChange, parentTaskId, projectList
                         value={taskTypeOptions.find(option => option.value === formData.taskType)}
                         onChange={(option) => handleChange("taskType", option)}
                         placeholder="Select task type"
-                        isDisabled={!!parentTaskId}
                         formatOptionLabel={formatTaskTypeLabel}
                       />
                     </div>

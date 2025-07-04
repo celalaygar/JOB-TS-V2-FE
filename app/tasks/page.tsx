@@ -34,6 +34,11 @@ export default function TasksPage() {
     }
   }, []);
 
+  useEffect(() => {
+    fetchAllProjects();
+  }, [fetchAllProjects])
+
+  
   const fetchAllProjectTasks = useCallback(async (filters: ProjectTaskFilterRequest) => {
     setTaskList([]) // Clear previous tasks
     const response: TaskResponse[] | null = await getAllProjectTaskHelper(0, 1000, filters, { setLoading });
@@ -59,9 +64,6 @@ export default function TasksPage() {
     fetchData();
   }, [fetchAllProjectTasks])
 
-  useEffect(() => {
-    fetchAllProjects();
-  }, [fetchAllProjects])
 
 
   const handleChange = (key: string, value: string) => {

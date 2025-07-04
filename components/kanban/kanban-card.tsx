@@ -6,7 +6,7 @@ import { Avatar } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import type { Task } from "@/types/task"
+import { ProjectTaskType, type Task } from "@/types/task"
 import { AlertCircle, BookOpen, Bug, GitBranch, Lightbulb, MoreVertical } from "lucide-react"
 import { TaskDetailsDialog } from "@/components/tasks/task-details-dialog"
 import { EditTaskDialog } from "@/components/tasks/edit-task-dialog"
@@ -63,13 +63,13 @@ export default function KanbanCard({ task }: KanbanCardProps) {
 
   const getTypeIcon = () => {
     switch (task.taskType) {
-      case "bug":
+      case ProjectTaskType.BUG:
         return <Bug className="h-4 w-4" />
-      case "feature":
+      case ProjectTaskType.FEATURE:
         return <Lightbulb className="h-4 w-4" />
-      case "story":
+      case ProjectTaskType.STORY:
         return <BookOpen className="h-4 w-4" />
-      case "subtask":
+      case ProjectTaskType.SUBTASK:
         return <GitBranch className="h-4 w-4" />
       default:
         return <AlertCircle className="h-4 w-4" />
@@ -78,13 +78,13 @@ export default function KanbanCard({ task }: KanbanCardProps) {
 
   const getTypeColor = () => {
     switch (task.taskType) {
-      case "bug":
+      case ProjectTaskType.BUG:
         return "bg-red-100 text-red-800 border-red-200"
-      case "feature":
+      case ProjectTaskType.FEATURE:
         return "bg-blue-100 text-blue-800 border-blue-200"
-      case "story":
+      case ProjectTaskType.STORY:
         return "bg-purple-100 text-purple-800 border-purple-200"
-      case "subtask":
+      case ProjectTaskType.SUBTASK:
         return "bg-gray-100 text-gray-800 border-gray-200"
       default:
         return "bg-gray-100 text-gray-800 border-gray-200"

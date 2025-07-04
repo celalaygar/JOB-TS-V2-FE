@@ -60,7 +60,7 @@ export function TasksTable({ filters, taskResponse, loading, projectList, loadin
   const projects = useSelector((state: RootState) => state.projects.projects)
   const router = useRouter()
   const [editDialogOpen, setEditDialogOpen] = useState(false)
-  const [selecteddTaskId, setSelecteddTaskId] = useState<string | null>(null)
+  const [selecteddTask, setSelecteddTask] = useState<ProjectTask | null>(null)
   const [taskToDelete, setTaskToDelete] = useState<string | null>(null)
 
   const [sortField, setSortField] = useState<SortField>("title")
@@ -295,7 +295,7 @@ export function TasksTable({ filters, taskResponse, loading, projectList, loadin
                           className="flex items-center cursor-pointer"
                           onClick={(e) => {
                             e.stopPropagation()
-                            setSelecteddTaskId(task.id)
+                            setSelecteddTask(task)
                             setEditDialogOpen(true)
                           }}
                         >
@@ -380,9 +380,9 @@ export function TasksTable({ filters, taskResponse, loading, projectList, loadin
         </div>
       </div>
 
-      {selecteddTaskId &&
+      {selecteddTask &&
         <EditTaskDialog
-          taskId={selecteddTaskId}
+          projectTask={selecteddTask}
           projectList={projectList}
           open={editDialogOpen} onOpenChange={setEditDialogOpen} />}
 

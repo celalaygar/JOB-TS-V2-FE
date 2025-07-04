@@ -2,7 +2,7 @@
 
 interface TaskDetailDescriptionProps {
   description: string
-  acceptanceCriteria?: string
+  acceptanceCriteria?: string | null
 }
 
 export function TaskDetailDescription({ description, acceptanceCriteria }: TaskDetailDescriptionProps) {

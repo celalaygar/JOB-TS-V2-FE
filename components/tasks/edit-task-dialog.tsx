@@ -34,7 +34,7 @@ import {
 import type { Task } from "@/types/task" // Import Task type if not already
 
 interface EditTaskDialogProps {
-  taskId: string
+  projectTask: ProjectTask | null // Optional, can be used to pre-fill form if needed
   open: boolean
   onOpenChange: (open: boolean) => VideoFacingModeEnum
   fetchData: () => void // Function to refresh task list after edit
@@ -47,10 +47,9 @@ interface SelectOption {
   icon?: React.ReactNode;
 }
 
-export function EditTaskDialog({ taskId, open, onOpenChange, projectList, fetchData }: EditTaskDialogProps) {
+export function EditTaskDialog({ projectTask, open, onOpenChange, projectList, fetchData }: EditTaskDialogProps) {
   const dispatch = useDispatch()
-  const allTasks = useSelector((state: RootState) => state.tasks.tasks) // Used for parent task options
-  const taskDetails: ProjectTask = useSelector((state: RootState) => state.tasks.tasks.find((task) => task.id === taskId))
+  const allTasks = useSelector((state: RootState) => state.tasks.tasks) // Used for parent task options 
 
   const [loadingTask, setLoadingTask] = useState(true); // Loading state for initial task fetch
   const [loadingProjectUsers, setLoadingProjectUsers] = useState(false);
@@ -108,9 +107,9 @@ export function EditTaskDialog({ taskId, open, onOpenChange, projectList, fetchD
 
   const parentTaskOptions: SelectOption[] = useMemo(() =>
     allTasks
-      .filter((task) => task.id !== taskId && task.taskType !== "subtask" && (formData.projectId ? task.project === formData.projectId : true))
+      .filter((task) => task.id !== projectTask?.id && task.taskType !== "subtask" && (formData.projectId ? task.project === formData.projectId : true))
       .map(task => ({ value: task.id, label: `${task.taskNumber} - ${task.title}` })),
-    [allTasks, taskId, formData.projectId]
+    [allTasks, projectTask?.id, formData.projectId]
   );
 
   const formatTaskTypeLabel = ({ label, icon }: SelectOption) => (
@@ -122,25 +121,25 @@ export function EditTaskDialog({ taskId, open, onOpenChange, projectList, fetchD
 
   // Fetch task details and populate form
   useEffect(() => {
-    const fetchTaskDetails = async () => {
-      if (open && taskId) {
+    const fetchprojectTask = async () => {
+      if (open && projectTask?.id) {
         setLoadingTask(true);
-        if (taskDetails) {
+        if (projectTask) {
           setFormData({
-            title: taskDetails.title || "",
-            description: taskDetails.description || "",
-            projectTaskStatusId: taskDetails.projectTaskStatus.id || "",
-            projectId: taskDetails.createdProject.id || null,
-            assigneeId: taskDetails.assignee.id || null,
-            priority: taskDetails.priority || "Medium",
-            taskType: taskDetails.taskType || "feature",
-            sprint: taskDetails.sprint.id || null,
-            parentTask: taskDetails.parentTaskId || null,
+            title: projectTask.title || "",
+            description: projectTask.description || "",
+            projectTaskStatusId: projectTask.projectTaskStatus.id || "",
+            projectId: projectTask.createdProject.id || null,
+            assigneeId: projectTask.assignee.id || null,
+            priority: projectTask.priority || "Medium",
+            taskType: projectTask.taskType || "feature",
+            sprint: projectTask.sprint.id || null,
+            parentTask: projectTask.parentTaskId || null,
           });
-          if (taskDetails.createdProject.id) {
-            handleGetProjectUsers(taskDetails.createdProject.id);
-            handleGetSprints(taskDetails.createdProject.id);
-            fetchAllProjectTaskStatus(taskDetails.createdProject.id);
+          if (projectTask.createdProject.id) {
+            handleGetProjectUsers(projectTask.createdProject.id);
+            handleGetSprints(projectTask.createdProject.id);
+            fetchAllProjectTaskStatus(projectTask.createdProject.id);
           }
         } else {
           toast({
@@ -152,8 +151,8 @@ export function EditTaskDialog({ taskId, open, onOpenChange, projectList, fetchD
         setLoadingTask(false);
       }
     };
-    fetchTaskDetails();
-  }, [open, taskId]);
+    fetchprojectTask();
+  }, [open, projectTask?.id]);
 
 
   const handleChange = useCallback((field: keyof typeof formData, value: string | SelectOption | null) => {
@@ -228,7 +227,7 @@ export function EditTaskDialog({ taskId, open, onOpenChange, projectList, fetchD
     const { title, description, projectId, projectTaskStatusId, assigneeId, priority, taskType, sprint, parentTask } = formData
 
     const updatedTask: TaskUpdateRequest = {
-      id: taskId,
+      id: projectTask?.id,
       title,
       description,
       projectTaskStatusId: projectTaskStatusId,
@@ -242,7 +241,7 @@ export function EditTaskDialog({ taskId, open, onOpenChange, projectList, fetchD
 
 
     setLoadingUpdate(true);
-    const response = await updateProjectTaskHelper(taskId, updatedTask, { setLoading: setLoadingUpdate });
+    const response = await updateProjectTaskHelper(projectTask?.id, updatedTask, { setLoading: setLoadingUpdate });
 
     if (response) {
 

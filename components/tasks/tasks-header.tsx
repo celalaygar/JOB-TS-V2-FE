@@ -9,12 +9,10 @@ import type { RootState } from "@/lib/redux/store"
 import { Plus, Search, Filter, Bug, Lightbulb, BookOpen, GitBranch, Loader2 } from "lucide-react"
 import { CreateTaskDialog } from "@/components/tasks/create-task-dialog"
 import {
-  getAllProjectsHelper,
   getAllProjectTaskStatusHelper,
   getProjectUsersHelper
 } from "@/lib/service/api-helpers" // Import helpers
 import { Project, ProjectTaskStatus, ProjectUser } from "@/types/project"
-import { toast } from "@/hooks/use-toast" // Keep toast for specific, non-apiCall related messages if any
 import { ProjectTaskFilterRequest, ProjectTaskPriority, ProjectTaskType } from "@/types/task"
 
 interface TasksHeaderProps {
@@ -224,6 +222,7 @@ export function TasksHeader({ filters, setFilters, handleChange, fetchData, proj
                     project: "all",
                     taskStatus: "all",
                     priority: "all",
+                    projectTaskStatusId: "all",
                     assignee: "all",
                     taskType: "all",
                   });

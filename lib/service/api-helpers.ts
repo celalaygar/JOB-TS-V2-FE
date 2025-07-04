@@ -506,3 +506,15 @@ export const getAllProjectTaskHelper = async (page: number, size: number, filter
     errorToastTitle: "Error Creating Project Task",
   });
 };
+
+export const getProjectTaskByProjectTaskIdkHelper = async (taskId: string, options: FetchEntitiesOptions): Promise<ProjectTask | null> => {
+  return apiCall<ProjectTask>({
+    url: PROJECT_TASK + "/" + taskId,
+    method: httpMethods.GET,
+    setLoading: options.setLoading,
+    successMessage: `Project Task for project ${taskId} have been retrieved.`,
+    errorMessagePrefix: "Failed to load Project Task ",
+    successToastTitle: "Project Task  Loaded",
+    errorToastTitle: "Error Loading Project Task ",
+  });
+};
