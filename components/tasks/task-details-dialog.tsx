@@ -147,7 +147,7 @@ export function TaskDetailsDialog({ taskId, open, onOpenChange }: TaskDetailsDia
                 </div>
               )}
 
-              {activeTab === "activity" && <TaskActivity activities={task.activities || []} />}
+              {activeTab === "activity" && <TaskActivity task={task} activities={task.activities || []} />}
             </div>
           </div>
 

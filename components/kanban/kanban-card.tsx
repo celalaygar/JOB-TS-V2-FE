@@ -6,7 +6,7 @@ import { Avatar } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { ProjectTaskType, type Task } from "@/types/task"
+import { ProjectTaskPriority, ProjectTaskType, type Task } from "@/types/task"
 import { AlertCircle, BookOpen, Bug, GitBranch, Lightbulb, MoreVertical } from "lucide-react"
 import { TaskDetailsDialog } from "@/components/tasks/task-details-dialog"
 import { EditTaskDialog } from "@/components/tasks/edit-task-dialog"
@@ -93,11 +93,11 @@ export default function KanbanCard({ task }: KanbanCardProps) {
 
   const getPriorityColor = () => {
     switch (task.priority.toLowerCase()) {
-      case "high":
+      case ProjectTaskPriority.HIGH:
         return "bg-red-500"
-      case "medium":
+      case ProjectTaskPriority.MEDIUM:
         return "bg-yellow-500"
-      case "low":
+      case ProjectTaskPriority.LOW:
         return "bg-green-500"
       default:
         return "bg-gray-500"

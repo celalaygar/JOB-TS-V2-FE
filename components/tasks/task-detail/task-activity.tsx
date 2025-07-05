@@ -1,12 +1,12 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import type { Task } from "@/types/task"
+import type { ProjectTask, Task } from "@/types/task"
 import type { User } from "@/types/user"
 import { formatDistanceToNow } from "date-fns"
 import { Activity, AlertCircle, CheckCircle, Clock, Edit, MessageSquare, Plus } from "lucide-react"
 
 interface TaskActivityProps {
-  task: Task
+  task: ProjectTask
   users: User[]
 }
 
@@ -19,31 +19,31 @@ export function TaskActivity({ task, users }: TaskActivityProps) {
     {
       id: `activity-created-${task.id}`,
       type: "created",
-      user: users.find((u) => u.id === task.createdBy),
+      user: users.find((u) => u.id === task.createdBy.id),
       date: task.createdAt,
       content: "created this task",
     },
     ...(task.updatedAt !== task.createdAt
       ? [
-          {
-            id: `activity-updated-${task.id}`,
-            type: "updated",
-            user: users.find((u) => u.id === task.updatedBy),
-            date: task.updatedAt,
-            content: "updated this task",
-          },
-        ]
+        {
+          id: `activity-updated-${task.id}`,
+          type: "updated",
+          user: users.find((u) => u.id === task.createdBy.id),
+          date: task.updatedAt,
+          content: "updated this task",
+        },
+      ]
       : []),
-    ...(task.status === "completed"
+    ...(task.projectTaskStatus.name === "completed"
       ? [
-          {
-            id: `activity-completed-${task.id}`,
-            type: "completed",
-            user: users.find((u) => u.id === task.assignee.id),
-            date: task.completedAt || new Date(),
-            content: "marked this task as completed",
-          },
-        ]
+        {
+          id: `activity-completed-${task.id}`,
+          type: "completed",
+          user: users.find((u) => u.id === task.assignee.id),
+          date: task.createdAt || new Date(),
+          content: "marked this task as completed",
+        },
+      ]
       : []),
   ]
 
