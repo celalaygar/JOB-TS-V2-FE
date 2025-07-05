@@ -91,7 +91,7 @@ export function TaskRelatedTasks({ parentTask, taskId, onCreateSubtask, onEditTa
     <>
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <h3 className="text-lg font-medium">Related Tasks</h3>
+          <h3 className="text-lg font-medium">Related Tasks (Subtasks) ({projectSubTasks?.length})</h3>
           <Button size="sm" onClick={onCreateSubtask}>
             <Plus className="h-4 w-4 mr-1" />
             Add Subtask
@@ -99,7 +99,7 @@ export function TaskRelatedTasks({ parentTask, taskId, onCreateSubtask, onEditTa
         </div>
 
         <div className="space-y-4">
-          <div className="flex flex-wrap gap-2 border-b">
+          {/* <div className="flex flex-wrap gap-2 border-b">
             <button
               onClick={() => setRelatedTab("subtasks")}
               className={cn(
@@ -110,29 +110,7 @@ export function TaskRelatedTasks({ parentTask, taskId, onCreateSubtask, onEditTa
             >
               Subtasks ({projectSubTasks?.length})
             </button>
-            <button
-              onClick={() => setRelatedTab("siblings")}
-              disabled={!parentTask}
-              className={cn(
-                "px-4 py-2 text-sm font-medium transition-all",
-                "hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                !parentTask && "opacity-50 cursor-not-allowed",
-                relatedTab === "siblings" ? "border-b-2 border-primary text-primary" : "text-muted-foreground",
-              )}
-            >
-              Siblings ({projectSubTasks?.length})
-            </button>
-            <button
-              onClick={() => setRelatedTab("project")}
-              className={cn(
-                "px-4 py-2 text-sm font-medium transition-all",
-                "hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                relatedTab === "project" ? "border-b-2 border-primary text-primary" : "text-muted-foreground",
-              )}
-            >
-              Project Tasks
-            </button>
-          </div>
+          </div> */}
 
           <div className="flex flex-col sm:flex-row gap-2 mb-4">
             <div className="relative flex-1">
@@ -173,50 +151,47 @@ export function TaskRelatedTasks({ parentTask, taskId, onCreateSubtask, onEditTa
           </div>
 
           <div className="mt-4">
-            {relatedTab === "subtasks" && projectSubTasks && renderTasksTable(projectSubTasks, handleEditTaskClick)}
 
-            {relatedTab === "siblings" &&
-              (parentTask ? (
-                <>
-                  <Card className="mb-4">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium">Parent Task</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline" className="font-mono text-xs">
-                            {parentTask.taskNumber}
-                          </Badge>
-                          <span className="font-medium">{parentTask.title}</span>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button variant="outline" size="sm" onClick={() => handleEditTaskClick(parentTask.id)}>
-                            <Edit className="h-4 w-4 mr-1" />
-                            Edit
-                          </Button>
-                          <Button variant="outline" size="sm" asChild>
-                            <Link href={`/tasks/${parentTask.id}`}>
-                              <Eye className="h-4 w-4 mr-1" />
-                              View
-                            </Link>
-                          </Button>
-                        </div>
+            {parentTask ? (
+              <>
+                <Card className="mb-4">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium">Parent Task</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="font-mono text-xs">
+                          {parentTask.taskNumber}
+                        </Badge>
+                        <span className="font-medium">{parentTask.title}</span>
                       </div>
-                      <div className="mt-2 text-sm text-muted-foreground">
-                        <p className="line-clamp-2">{parentTask.description}</p>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={() => handleEditTaskClick(parentTask.id)}>
+                          <Edit className="h-4 w-4 mr-1" />
+                          Edit
+                        </Button>
+                        <Button variant="outline" size="sm" asChild>
+                          <Link href={`/tasks/${parentTask.id}`}>
+                            <Eye className="h-4 w-4 mr-1" />
+                            View
+                          </Link>
+                        </Button>
                       </div>
-                    </CardContent>
-                  </Card>
-                  {projectSubTasks && renderTasksTable(projectSubTasks, handleEditTaskClick)}
-                </>
-              ) : (
-                <div className="text-center p-6 border rounded-md">
-                  <p className="text-muted-foreground">This task is not a subtask of any parent task</p>
-                </div>
-              ))}
+                    </div>
+                    <div className="mt-2 text-sm text-muted-foreground">
+                      <p className="line-clamp-2">{parentTask.description}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                {projectSubTasks && renderTasksTable(projectSubTasks, handleEditTaskClick)}
+              </>
+            ) : (
+              <div className="text-center p-6 border rounded-md">
+                <p className="text-muted-foreground">This task is not a subtask of any parent task</p>
+              </div>
+            )}
 
-            {relatedTab === "project" && projectSubTasks && renderTasksTable(projectSubTasks, handleEditTaskClick)}
           </div>
         </div>
       </div>
@@ -271,9 +246,9 @@ function renderTasksTable(tasksList: ProjectTask[], onEditTask: (taskId: string)
                   <Badge
                     className={
                       task?.priority === ProjectTaskPriority.HIGH
-                        ? "bg-red-500 text-white"
+                        ? "bg-red-500 text-black"
                         : task?.priority === ProjectTaskPriority.MEDIUM
-                          ? "bg-yellow-500 text-white"
+                          ? "bg-yellow-500 text-black"
                           : "bg-secondary text-secondary-foreground"
                     }
                   >
