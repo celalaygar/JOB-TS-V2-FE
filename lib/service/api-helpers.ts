@@ -58,13 +58,13 @@ export async function apiCall<T>(config: ApiOperationConfig<T>): Promise<T | nul
     // console.log(body)
     const response: T = await BaseService.request(url, { method, body });
 
-    if (successMessage) {
-      toast({
-        title: successToastTitle || "Success",
-        description: successMessage,
-        variant: "default",
-      });
-    }
+    // if (successMessage) {
+    //   toast({
+    //     title: successToastTitle || "Success",
+    //     description: successMessage,
+    //     variant: "default",
+    //   });
+    // }
 
     return response;
   } catch (error: any) {
@@ -482,9 +482,9 @@ export const createProjectTaskHelper = async (projectTaskData: any, options: Fet
   });
 };
 
-export const updateProjectTaskHelper = async (projectTaskData: any, options: FetchEntitiesOptions): Promise<ProjectTask | null> => {
+export const updateProjectTaskHelper = async (taskId: string, projectTaskData: any, options: FetchEntitiesOptions): Promise<ProjectTask | null> => {
   return apiCall<ProjectTask>({
-    url: PROJECT_TASK,
+    url: `${PROJECT_TASK}/${taskId}`,
     method: httpMethods.PUT,
     body: projectTaskData,
     setLoading: options.setLoading,

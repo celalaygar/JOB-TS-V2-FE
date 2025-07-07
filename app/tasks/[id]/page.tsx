@@ -138,6 +138,7 @@ export default function TaskDetailPage() {
             {activeTab === "related" && (
               <TaskRelatedTasks
                 parentTask={projectTask}
+                projectList={projectList}
                 taskId={taskId}
                 onCreateSubtask={() => setCreateSubtaskDialogOpen(true)}
                 onEditTask={handleEditTask}

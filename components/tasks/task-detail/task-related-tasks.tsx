@@ -12,57 +12,37 @@ import { Edit, Eye, Loader2, MoreHorizontal, Plus, Search } from "lucide-react"
 import Link from "next/link"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { cn } from "@/lib/utils"
 import { ProjectTask, ProjectTaskPriority, ProjectTaskSystemStatus } from "@/types/task"
 import { Project } from "@/types/project"
 import { getSubTasksByProjectTaskIdkHelper } from "@/lib/service/api-helpers"
+import { EditTaskDialog } from "../edit-task-dialog"
 
 interface TaskRelatedTasksProps {
   taskId: string
   parentTask: ProjectTask | null
+  projectList: Project[] | []
   onCreateSubtask: () => void
   onEditTask?: (taskId: string) => void
 }
 
-export function TaskRelatedTasks({ parentTask, taskId, onCreateSubtask, onEditTask }: TaskRelatedTasksProps) {
+export function TaskRelatedTasks({ parentTask, taskId, projectList, onCreateSubtask, onEditTask }: TaskRelatedTasksProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [filterType, setFilterType] = useState("all")
   const [filterStatus, setFilterStatus] = useState("all")
-  const [relatedTab, setRelatedTab] = useState("subtasks")
 
   const [loading, setLoading] = useState(false);
   const [projectSubTasks, setProjecSubtTasks] = useState<ProjectTask[] | null>(null)
+  const [selectedSubtask, setSelectedSubtask] = useState<ProjectTask | null>(null)
+  const [editDialogOpen, setEditDialogOpen] = useState(false)
 
 
 
 
-
-  // Apply filters and search
-  const filterAndSearch = (taskList: any[]) => {
-    return taskList.filter((task) => {
-      // Apply type filter
-      if (filterType !== "all" && task?.taskType !== filterType) return false
-
-      // Apply status filter
-      if (filterStatus !== "all" && task?.status !== filterStatus) return false
-
-      // Apply search
-      if (
-        searchQuery &&
-        !task?.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
-        !task?.taskNumber.toLowerCase().includes(searchQuery.toLowerCase())
-      ) {
-        return false
-      }
-
-      return true
-    })
-  }
-
-
-  const handleEditTaskClick = (id: string) => {
-    if (onEditTask) {
-      onEditTask(id)
+  const handleEditTaskClick = (subTask: ProjectTask) => {
+    console.log("Edit Task Clicked: ", subTask)
+    if (subTask && subTask.id) {
+      setSelectedSubtask(subTask)
+      setEditDialogOpen(true)
     }
   }
 
@@ -195,10 +175,17 @@ export function TaskRelatedTasks({ parentTask, taskId, onCreateSubtask, onEditTa
           </div>
         </div>
       </div>
+      {/* Edit Task Dialog */}
+      <EditTaskDialog
+        projectList={projectList}
+        projectTask={selectedSubtask}
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+      />
     </>
 }
 
-function renderTasksTable(tasksList: ProjectTask[], onEditTask: (taskId: string) => void) {
+function renderTasksTable(tasksList: ProjectTask[], handleEditTaskClick: (task: ProjectTask) => void) {
   if (tasksList.length === 0) {
     return (
       <div className="text-center p-6 border rounded-md">
@@ -237,7 +224,7 @@ function renderTasksTable(tasksList: ProjectTask[], onEditTask: (taskId: string)
                 <TableCell className="capitalize">{task?.taskType}</TableCell>
                 <TableCell>
                   <Badge
-                    className={task?.projectTaskStatus ? "bg-[" + task?.projectTaskStatus.color + "]" : "bg-green-500 text-white"}
+                    className={task?.projectTaskStatus ? "bg-[" + task?.projectTaskStatus.color + "]  text-black" : "bg-green-500 text-black"}
                   >
                     {task?.projectTaskStatus.name}
                   </Badge>
@@ -279,7 +266,7 @@ function renderTasksTable(tasksList: ProjectTask[], onEditTask: (taskId: string)
                           View Details
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onEditTask(task?.id)}>
+                      <DropdownMenuItem onClick={() => handleEditTaskClick(task)}>
                         <Edit className="mr-2 h-4 w-4" />
                         Edit
                       </DropdownMenuItem>

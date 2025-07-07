@@ -17,3 +17,15 @@ export async function GET(req: NextRequest,
     });
 }
 
+
+export async function PUT(req: NextRequest,
+    { params }: { params: Promise<{ projectTaskId: string }> }
+) {
+    const body = await req.json();
+    const pId = await (await params).projectTaskId;
+    return RouteBaseService.request(URL + PROJECTS_TASK + "/" + pId, {
+        method: 'PUT',
+        body: body
+        // withAuth default: true
+    });
+}

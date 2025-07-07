@@ -124,6 +124,7 @@ export function EditTaskDialog({ projectTask, open, onOpenChange, projectList, f
     const fetchprojectTask = async () => {
       if (open && projectTask?.id) {
         setLoadingTask(true);
+        console.log("Project Task : ", projectTask);
         if (projectTask) {
           setFormData({
             title: projectTask.title || "",
@@ -169,7 +170,7 @@ export function EditTaskDialog({ projectTask, open, onOpenChange, projectList, f
     setFormData((prev) => ({ ...prev, [field]: actualValue }));
 
     // When project changes, fetch relevant data for the new project
-    if (field === "project" && typeof actualValue === 'string' && actualValue !== "all") {
+    if (field === "projectId" && typeof actualValue === 'string' && actualValue !== "all") {
       setFormData((prev) => ({ ...prev, assigneeId: null, sprint: null, projectTaskStatusId: "" })); // Clear assignee, sprint, status on project change
       handleGetProjectUsers(actualValue);
       handleGetSprints(actualValue);
@@ -271,6 +272,14 @@ export function EditTaskDialog({ projectTask, open, onOpenChange, projectList, f
           <DialogHeader>
             <DialogTitle>Edit Task</DialogTitle>
             <DialogDescription>Update the details of this task.</DialogDescription>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-500">
+                {projectTask ? `Task ID: ${projectTask.taskNumber}` : "No task selected"}
+              </span>
+              <span className="text-sm text-gray-500">
+                {projectTask ? `Project: ${projectTask.createdProject.name}` : "No project selected"}
+              </span>
+            </div>
           </DialogHeader>
           {
             overallLoading ? (
@@ -311,6 +320,7 @@ export function EditTaskDialog({ projectTask, open, onOpenChange, projectList, f
                       value={projectOptions.find(option => option.value === formData.projectId)}
                       onChange={(option) => handleChange("projectId", option)}
                       placeholder="Select project"
+                      isDisabled={true} // Disable if editing a subtask
                       required
                     />
                   </div>
