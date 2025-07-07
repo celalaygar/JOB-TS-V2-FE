@@ -79,6 +79,11 @@ export interface TaskResponse {
   page: number;
   size: number;
 }
+export interface ParentTask {
+  id: string;
+  taskNumber: string;
+  title: string;
+}
 
 export interface ProjectTask {
   id: string;
@@ -93,6 +98,7 @@ export interface ProjectTask {
   createdAt: string;
   // comments?: ProjectTaskComment[]; // Yorumlar eğer eklenirse
   parentTaskId: string;
+  parentTask: ParentTask | null;
   createdBy: CreatedBy;
   assignee: CreatedBy;
   createdProject: CreatedProject;

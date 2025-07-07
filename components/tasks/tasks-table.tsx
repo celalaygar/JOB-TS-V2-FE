@@ -171,6 +171,14 @@ export function TasksTable({ filters, taskResponse, loading, projectList, loadin
               <TableHead>
                 <Button
                   variant="ghost"
+                  className="flex items-center p-0 hover:bg-transparent hover:text-[var(--fixed-sidebar-fg)]"
+                >
+                  Parent Task
+                </Button>
+              </TableHead>
+              <TableHead>
+                <Button
+                  variant="ghost"
                   onClick={() => handleSort("taskType")}
                   className="flex items-center p-0 hover:bg-transparent hover:text-[var(--fixed-sidebar-fg)]"
                 >
@@ -217,8 +225,7 @@ export function TasksTable({ filters, taskResponse, loading, projectList, loadin
             </TableRow>
           </TableHeader>
           <TableBody>
-            {allTasks.map((task: ProjectTask) => {
-              const project = projects.find((p) => p.id === task.project)
+            {!!allTasks && (allTasks as ProjectTask[]).map((task: ProjectTask) => {
 
               return (
                 <TableRow
@@ -231,6 +238,15 @@ export function TasksTable({ filters, taskResponse, loading, projectList, loadin
                       {task.taskNumber}
                     </Badge>
                     {task.title}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1">
+                      <span className="capitalize">{task.parentTask ?
+                        task.parentTask.title
+                        :
+                        "No Parent Task"}
+                      </span>
+                    </div>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
@@ -328,7 +344,7 @@ export function TasksTable({ filters, taskResponse, loading, projectList, loadin
             )}
           </TableBody>
         </Table>
-      </div>
+      </div >
       <div className="flex items-center justify-between mt-4 px-2">
         <div className="text-sm text-[var(--fixed-sidebar-muted)]">
           Showing {startIndex + 1}-{Math.min(endIndex, totalItems)} of {totalItems} tasks
@@ -380,11 +396,13 @@ export function TasksTable({ filters, taskResponse, loading, projectList, loadin
         </div>
       </div>
 
-      {selecteddTask &&
+      {
+        selecteddTask &&
         <EditTaskDialog
           projectTask={selecteddTask}
           projectList={projectList}
-          open={editDialogOpen} onOpenChange={setEditDialogOpen} />}
+          open={editDialogOpen} onOpenChange={setEditDialogOpen} />
+      }
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!taskToDelete} onOpenChange={(open) => !open && setTaskToDelete(null)}>

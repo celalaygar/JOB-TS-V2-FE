@@ -1,11 +1,11 @@
+import { ProjectTask, ProjectTaskType } from "@/types/task"
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit"
-import type { Task, TaskType } from "@/types/task"
 
 
 
 type TasksState = {
-  tasks: Task[]
-  selectedTask: Task | null
+  tasks: ProjectTask[]
+  selectedTask: ProjectTask | null
 }
 
 const initialState: TasksState = {
@@ -17,7 +17,7 @@ export const tasksSlice = createSlice({
   name: "tasks",
   initialState,
   reducers: {
-    setTasks: (state, action: PayloadAction<Task[]>) => {
+    setTasks: (state, action: PayloadAction<ProjectTask[]>) => {
       state.tasks = action.payload
     },
     selectTask: (state, action: PayloadAction<string>) => {
@@ -29,32 +29,8 @@ export const tasksSlice = createSlice({
         task.status = action.payload.status
       }
     },
-    addTask: (state, action: PayloadAction<Task>) => {
-      // If no taskNumber is provided, generate one
-      if (!action.payload.taskNumber) {
-        let prefix = ""
+    addTask: (state, action: PayloadAction<ProjectTask>) => {
 
-        // Set prefix based on task type
-        switch (action.payload.taskType) {
-          case "bug":
-            prefix = "BUG"
-            break
-          case "feature":
-            prefix = "FTR"
-            break
-          case "story":
-            prefix = "STORY"
-            break
-          case "subtask":
-            prefix = "SUB"
-            break
-          default:
-            prefix = "PBI"
-        }
-
-        const randomNumber = Math.floor(Math.random() * 10000)
-        action.payload.taskNumber = `${prefix}-${randomNumber}`
-      }
       state.tasks.push(action.payload)
     },
     updateTask: (state, action: PayloadAction<{ id: string; changes: Partial<Task> }>) => {
