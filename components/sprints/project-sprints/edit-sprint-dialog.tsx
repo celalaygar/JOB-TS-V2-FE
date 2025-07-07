@@ -31,6 +31,7 @@ import { httpMethods } from "@/lib/service/HttpService"
 import { toast } from "@/hooks/use-toast"
 import { Sprint } from "@/types/sprint"
 import { getAllProjectTaskStatusHelper, saveUpdateSprintHelper } from "@/lib/service/api-helpers"
+import { useLanguage } from "@/lib/i18n/context"
 
 
 interface EditSprintDialogProps {
@@ -46,10 +47,8 @@ interface SelectOption {
 }
 
 export function EditSprintDialog({ open, onOpenChange, sprint, projectList }: EditSprintDialogProps) {
+  const { translations } = useLanguage()
   const dispatch = useDispatch()
-  //const sprint: Sprint = useSelector((state: RootState) => state.sprints.sprints.find((s) => s.id === sprintId))
-  // const projects = useSelector((state: RootState) => state.projects.projects) // Bu satır artık kullanılmıyor
-
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
@@ -188,8 +187,8 @@ export function EditSprintDialog({ open, onOpenChange, sprint, projectList }: Ed
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Edit Sprint</DialogTitle>
-            <DialogDescription>Update the sprint details.</DialogDescription>
+            <DialogTitle>{translations.sprint.editSprint}</DialogTitle>
+            <DialogDescription> {translations.sprint.updateSprint}</DialogDescription>
           </DialogHeader>
           {loading ? (
             <div className="grid gap-4 py-4">
@@ -201,13 +200,13 @@ export function EditSprintDialog({ open, onOpenChange, sprint, projectList }: Ed
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label className="text-right">
-                  Name
+                  {translations.sprint.form.name}
                 </Label>
                 <Input id="name" value={name} onChange={(e) => setName(e.target.value)} className="col-span-3" required />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label className="text-right">
-                  Description
+                  {translations.sprint.form.description}
                 </Label>
                 <Textarea
                   id="description"
@@ -218,7 +217,7 @@ export function EditSprintDialog({ open, onOpenChange, sprint, projectList }: Ed
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label className="text-right">
-                  Project
+                  {translations.sprint.project}
                 </Label>
                 <div className="col-span-3">
                   <Select
@@ -237,7 +236,7 @@ export function EditSprintDialog({ open, onOpenChange, sprint, projectList }: Ed
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label className="text-right">
-                  Sprint Type
+                  {translations.sprint.sprintType}
                 </Label>
                 <div className="col-span-3">
                   <Select
@@ -250,14 +249,14 @@ export function EditSprintDialog({ open, onOpenChange, sprint, projectList }: Ed
                         setSelectedTeamId(null);
                       }
                     }}
-                    placeholder="Select Sprint Type"
+                    placeholder={translations.sprint.selectSprintType}
                   />
                 </div>
               </div>
               {sprintType === "project-team" && selectedProjectId && (
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label className="text-right">
-                    Project Team
+                    {translations.sprint.form.projectTeam}
                   </Label>
                   <div className="col-span-3">
                     <Select
@@ -274,7 +273,7 @@ export function EditSprintDialog({ open, onOpenChange, sprint, projectList }: Ed
               )}
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label className="text-right">
-                  Task Status on Completion
+                  {translations.sprint.tasks.noTaskCompleted}
                 </Label>
                 <div className="col-span-3">
                   {
@@ -302,7 +301,7 @@ export function EditSprintDialog({ open, onOpenChange, sprint, projectList }: Ed
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label className="text-right">
-                  Start Date
+                  {translations.sprint.form.startDate}
                 </Label>
                 <div className="col-span-3">
                   <div className="relative">
@@ -323,7 +322,7 @@ export function EditSprintDialog({ open, onOpenChange, sprint, projectList }: Ed
 
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label className="text-right">
-                  End Date
+                  {translations.sprint.form.endDate}
                 </Label>
                 <div className="col-span-3">
                   <div className="relative">
@@ -364,7 +363,7 @@ export function EditSprintDialog({ open, onOpenChange, sprint, projectList }: Ed
             </Button>
             <Button type="submit" disabled={loading || (sprintType === "project-team" && !selectedTeamId)}>
               {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-              Save Changes
+              {translations.sprint.form.saveChanges}
             </Button>
           </DialogFooter>
         </form>

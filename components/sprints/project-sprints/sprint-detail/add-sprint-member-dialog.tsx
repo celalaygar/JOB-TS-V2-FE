@@ -219,7 +219,7 @@ export function AddSprintMemberDialog({ sprintId, open, onOpenChange }: AddSprin
                 ${isActive
                               ? "bg-background text-foreground shadow-sm font-medium"
                               : "text-muted-foreground hover:text-foreground hover:bg-background/50"
-                            }
+                            } 
               `}
                         >
                           <Icon className="h-4 w-4 flex-shrink-0" />

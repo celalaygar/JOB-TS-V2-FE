@@ -58,13 +58,13 @@ export async function apiCall<T>(config: ApiOperationConfig<T>): Promise<T | nul
     // console.log(body)
     const response: T = await BaseService.request(url, { method, body });
 
-    // if (successMessage) {
-    //   toast({
-    //     title: successToastTitle || "Success",
-    //     description: successMessage,
-    //     variant: "default",
-    //   });
-    // }
+    if (successMessage) {
+      toast({
+        title: successToastTitle || "Success",
+        description: successMessage,
+        variant: "default",
+      });
+    }
 
     return response;
   } catch (error: any) {

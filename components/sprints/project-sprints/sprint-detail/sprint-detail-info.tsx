@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { AddSprintMemberDialog } from "./add-sprint-member-dialog"
 import { useState } from "react"
 import { Sprint } from "@/types/sprint"
+import { useLanguage } from "@/lib/i18n/context"
 
 interface SprintDetailInfoProps {
   sprint: Sprint
@@ -20,6 +21,7 @@ interface SprintDetailInfoProps {
 
 export function SprintDetailInfo({ sprint, team }: SprintDetailInfoProps) {
   const [isAddMemberDialogOpen, setIsAddMemberDialogOpen] = useState(false)
+  const { translations } = useLanguage()
 
   return (
     <>
@@ -36,7 +38,7 @@ export function SprintDetailInfo({ sprint, team }: SprintDetailInfoProps) {
           <div className="flex flex-col sm:flex-row sm:justify-between sm:flex-wrap gap-4"> {/* sm breakpoint'inde yan yana, altında dikey */}
             {sprint.createdProject && (
               <div className="flex-1 min-w-0"> {/* flex-1 ve min-w-0 div'in içeriği kadar yer kaplamasını ve taşmasını engellemesini sağlar */}
-                <h3 className="text-sm font-medium mb-2">Project</h3>
+                <h3 className="text-sm font-medium mb-2">{translations.sprint.project}</h3>
                 {/* Uzun project isimlerinin satır sonuna geldiğinde kelime kırmasını sağlar */}
                 <p className="text-sm text-muted-foreground break-words">{sprint.createdProject.name}</p>
               </div>
@@ -55,7 +57,7 @@ export function SprintDetailInfo({ sprint, team }: SprintDetailInfoProps) {
           {/* Description */}
           {sprint.description && (
             <div>
-              <h3 className="text-sm font-medium mb-2">Description</h3>
+              <h3 className="text-sm font-medium mb-2"> {translations.sprint.form.description} </h3>
               <p className="text-sm text-muted-foreground break-words">{sprint.description}</p> {/* Açıklama için de ekledim */}
             </div>
           )}
@@ -65,7 +67,7 @@ export function SprintDetailInfo({ sprint, team }: SprintDetailInfoProps) {
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-medium flex items-center">
                 <Users className="h-4 w-4 mr-1" />
-                Team
+                {translations.sprint.form.team}
               </h3>
               <Button size="sm" variant="outline" onClick={() => setIsAddMemberDialogOpen(true)} className="h-8 px-3">
                 <Plus className="h-3 w-3 mr-1" />

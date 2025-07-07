@@ -12,6 +12,7 @@ import { format } from "date-fns"
 import type { DateRange } from "react-day-picker"
 import { Project, ProjectTeam } from "@/types/project"
 import { getAllProjectTeamsHelper } from "@/lib/service/api-helpers" // Import the new helper
+import { useLanguage } from "@/lib/i18n/context"
 
 interface ProjectSprintsFiltersProps {
   filters: {
@@ -26,6 +27,7 @@ interface ProjectSprintsFiltersProps {
 }
 
 export function ProjectSprintsFilters({ projectList, filters, onFilterChange, teams }: ProjectSprintsFiltersProps) {
+  const { translations } = useLanguage()
   const [dateRange, setDateRange] = useState<DateRange | undefined>(filters.dateRange)
   const [projectTeams, setProjectTeams] = useState<ProjectTeam[]>([]);
 
@@ -69,7 +71,7 @@ export function ProjectSprintsFilters({ projectList, filters, onFilterChange, te
   return (
     <div className="bg-[var(--fixed-card-bg)] border border-[var(--fixed-card-border)] rounded-lg p-4 space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-medium">Filters</h2>
+        <h2 className="text-lg font-medium">{translations.sprint.filters}</h2>
         <Button
           variant="ghost"
           size="sm"
@@ -77,7 +79,7 @@ export function ProjectSprintsFilters({ projectList, filters, onFilterChange, te
           className="text-[var(--fixed-sidebar-muted)] hover:text-[var(--fixed-sidebar-fg)]"
         >
           <FilterX className="mr-2 h-4 w-4" />
-          Reset Filters
+          {translations.sprint.resetFilters}
         </Button>
       </div>
       {
@@ -91,13 +93,13 @@ export function ProjectSprintsFilters({ projectList, filters, onFilterChange, te
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="project">Project</Label>
+                <Label htmlFor="project">{translations.sprint.project}</Label>
                 <Select value={filters.project} onValueChange={handleProjectChange}>
                   <SelectTrigger id="project" className="border-[var(--fixed-card-border)]">
                     <SelectValue placeholder="All Projects" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Projects</SelectItem>
+                    <SelectItem value="all">{translations.sprint.allProject}</SelectItem>
                     {!!projectList && projectList.map((project: Project) => (
                       <SelectItem key={project.id} value={project.id}>
                         {project.name}
@@ -108,7 +110,7 @@ export function ProjectSprintsFilters({ projectList, filters, onFilterChange, te
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="team">Team</Label>
+                <Label htmlFor="team">{translations.sprint.team}</Label>
                 <Select value={filters.team} onValueChange={handleTeamChange}>
                   <SelectTrigger id="team" className="border-[var(--fixed-card-border)]">
                     <SelectValue placeholder="All Teams" />
@@ -125,7 +127,7 @@ export function ProjectSprintsFilters({ projectList, filters, onFilterChange, te
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="status">Status</Label>
+                <Label htmlFor="status">{translations.sprint.status}</Label>
                 <Select value={filters.status} onValueChange={handleStatusChange}>
                   <SelectTrigger id="status" className="border-[var(--fixed-card-border)]">
                     <SelectValue placeholder="All Statuses" />
@@ -140,7 +142,7 @@ export function ProjectSprintsFilters({ projectList, filters, onFilterChange, te
               </div>
 
               <div className="space-y-2">
-                <Label>Date Range</Label>
+                <Label>{translations.sprint.dateRange}</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button

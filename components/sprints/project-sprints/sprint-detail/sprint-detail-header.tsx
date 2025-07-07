@@ -8,6 +8,7 @@ import { format } from "date-fns"
 import { useState } from "react"
 import { CompleteSprintDialog } from "./complete-sprint-dialog"
 import { Sprint, SprintStatus } from "@/types/sprint"
+import { useLanguage } from "@/lib/i18n/context"
 
 interface SprintDetailHeaderProps {
   sprint: Sprint // Using any for simplicity, but should be properly typed
@@ -18,23 +19,24 @@ interface SprintDetailHeaderProps {
 
 export function SprintDetailHeader({ sprint, tasks, onEdit, onDelete }: SprintDetailHeaderProps) {
   const [isCompleteDialogOpen, setIsCompleteDialogOpen] = useState(false)
+  const { translations } = useLanguage()
 
 
   // Helper function to get status badge
   const getStatusBadge = (status: string) => {
     switch (status) {
       case SprintStatus.ACTIVE:
-        return <Badge className="bg-green-500 hover:bg-green-600 text-white">Active</Badge>
+        return <Badge className="bg-green-500 hover:bg-green-600 text-white">{translations.sprint.statusOptions.active}</Badge>
       case SprintStatus.PLANNED:
         return (
           <Badge variant="outline" className="border-[var(--fixed-card-border)]">
-            Planned
+            {translations.sprint.statusOptions.planned}
           </Badge>
         )
       case SprintStatus.COMPLETED:
         return (
           <Badge variant="secondary" className="bg-[var(--fixed-secondary)] text-[var(--fixed-secondary-fg)]">
-            Completed
+            {translations.sprint.statusOptions.completed}
           </Badge>
         )
       default:
@@ -69,7 +71,7 @@ export function SprintDetailHeader({ sprint, tasks, onEdit, onDelete }: SprintDe
             className="border-[var(--fixed-card-border)]"
             onClick={onEdit}>
             <Edit className="h-4 w-4 mr-1" />
-            Edit
+            {translations.sprint.form.edit}
           </Button>
           <Button
             variant="outline"
@@ -78,7 +80,7 @@ export function SprintDetailHeader({ sprint, tasks, onEdit, onDelete }: SprintDe
             onClick={onDelete}
           >
             <Trash2 className="h-4 w-4 mr-1" />
-            Delete
+            {translations.sprint.form.delete}
           </Button>
         </div>
       </div>

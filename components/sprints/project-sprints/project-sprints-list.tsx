@@ -9,6 +9,7 @@ import { Progress } from "@/components/ui/progress"
 import Link from "next/link"
 import { format } from "date-fns"
 import { Sprint } from "@/types/sprint"
+import { useLanguage } from "@/lib/i18n/context"
 
 interface ProjectSprintsListProps {
   sprints: Sprint[]
@@ -17,21 +18,22 @@ interface ProjectSprintsListProps {
 }
 
 export function ProjectSprintsList({ sprints, onEditSprint, onDeleteSprint }: ProjectSprintsListProps) {
+  const { translations } = useLanguage()
   // Helper function to get status badge
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "active":
-        return <Badge className="bg-green-500 hover:bg-green-600 text-white">Active</Badge>
+        return <Badge className="bg-green-500 hover:bg-green-600 text-white">{translations.sprint.statusOptions.active}</Badge>
       case "planned":
         return (
           <Badge variant="outline" className="border-[var(--fixed-card-border)]">
-            Planned
+            {translations.sprint.statusOptions.planned}
           </Badge>
         )
       case "completed":
         return (
           <Badge variant="secondary" className="bg-[var(--fixed-secondary)] text-[var(--fixed-secondary-fg)]">
-            Completed
+            {translations.sprint.statusOptions.completed}
           </Badge>
         )
       default:
@@ -43,7 +45,7 @@ export function ProjectSprintsList({ sprints, onEditSprint, onDeleteSprint }: Pr
   if (sprints.length === 0) {
     return (
       <div className="text-center py-12 bg-[var(--fixed-card-bg)] border border-[var(--fixed-card-border)] rounded-lg">
-        <h3 className="text-lg font-medium">No sprints found</h3>
+        <h3 className="text-lg font-medium">{translations.sprint.noSprints}</h3>
         <p className="text-[var(--fixed-sidebar-muted)] mt-1">Try adjusting your filters or create a new sprint.</p>
       </div>
     )
@@ -116,30 +118,30 @@ export function ProjectSprintsList({ sprints, onEditSprint, onDeleteSprint }: Pr
           </CardContent>
 
           <CardFooter className="flex justify-between pt-2">
-            <Button variant="outline" size="sm" asChild className="border-[var(--fixed-card-border)]">
+            <Button variant="outline" size="sm" asChild className="border-[var(--fixed-card-border)] text-sm">
               <Link href={`/project-sprints/${sprint.id}`}>
                 <Eye className="h-4 w-4 mr-1" />
-                View Details
+                {translations.sprint.form.view}
               </Link>
             </Button>
             <div className="flex gap-2">
               <Button
                 variant="outline"
                 size="sm"
-                className="border-[var(--fixed-card-border)]"
+                className="border-[var(--fixed-card-border)] text-sm"
                 onClick={() => onEditSprint(sprint)}
               >
                 <Edit className="h-4 w-4" />
-                <span className="sr-only md:not-sr-only md:ml-1">Edit</span>
+                <span className="sr-only md:not-sr-only md:ml-1">{translations.sprint.form.edit}</span>
               </Button>
               <Button
                 variant="outline"
                 size="sm"
-                className="border-[var(--fixed-danger)] text-[var(--fixed-danger)]"
+                className="border-[var(--fixed-danger)] text-[var(--fixed-danger)] text-sm"
                 onClick={() => onDeleteSprint(sprint.id)}
               >
                 <Trash2 className="h-4 w-4" />
-                <span className="sr-only md:not-sr-only md:ml-1">Delete</span>
+                <span className="sr-only md:not-sr-only md:ml-1">{translations.sprint.form.delete}</span>
               </Button>
             </div>
           </CardFooter>

@@ -11,7 +11,6 @@ import { EditSprintDialog } from "@/components/sprints/project-sprints/edit-spri
 import { DeleteSprintDialog } from "@/components/sprints/project-sprints/delete-sprint-dialog"
 import { Pagination } from "@/components/ui/pagination"
 import { Project } from "@/types/project"
-import { toast } from "@/hooks/use-toast"
 import { Loader2 } from "lucide-react"
 import { Sprint } from "@/types/sprint"
 import { setSprints } from "@/lib/redux/features/sprints-slice"

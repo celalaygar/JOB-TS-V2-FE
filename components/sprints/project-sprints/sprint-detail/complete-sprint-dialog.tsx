@@ -1,8 +1,6 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
-import { useSelector } from "react-redux"
-import type { RootState } from "@/lib/redux/store"
 import { updateSprint } from "@/lib/redux/features/sprints-slice"
 import { useDispatch } from "react-redux"
 import {
@@ -31,6 +29,7 @@ import { Sprint, SprintStatus } from "@/types/sprint"
 import { toast } from "@/hooks/use-toast"
 import { getNonCompletedSprintsHelper } from "@/lib/service/api-helpers" // Import the new helper
 import { saveUpdateSprintHelper } from "@/lib/service/api-helpers" // Import saveUpdateSprintHelper for dispatching updates
+import { useLanguage } from "@/lib/i18n/context"
 
 
 interface CompleteSprintDialogProps {
@@ -42,6 +41,7 @@ interface CompleteSprintDialogProps {
 
 export function CompleteSprintDialog({ sprint, open, onOpenChange, tasks }: CompleteSprintDialogProps) {
   const dispatch = useDispatch()
+  const { translations } = useLanguage()
 
   const [destination, setDestination] = useState<"backlog" | "sprint">("backlog")
   const [targetSprintId, setTargetSprintId] = useState<string>("")

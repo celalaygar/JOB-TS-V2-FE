@@ -14,6 +14,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { useLanguage } from "@/lib/i18n/context"
 
 interface DeleteSprintDialogProps {
   sprintId: string
@@ -22,6 +23,7 @@ interface DeleteSprintDialogProps {
 }
 
 export function DeleteSprintDialog({ sprintId, open, onOpenChange }: DeleteSprintDialogProps) {
+  const { translations } = useLanguage()
   const dispatch = useDispatch()
   const sprint = useSelector((state: RootState) => state.sprints.sprints.find((s) => s.id === sprintId))
   const [isDeleting, setIsDeleting] = useState(false)
@@ -47,9 +49,9 @@ export function DeleteSprintDialog({ sprintId, open, onOpenChange }: DeleteSprin
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete Sprint</AlertDialogTitle>
+          <AlertDialogTitle>{translations.sprint.form.deleteSprintTitle}</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete <strong>{sprint.name}</strong>? This action cannot be undone and will remove
+            {translations.sprint.form.deleteSprintDescription} <strong>{sprint.name}</strong>? This action cannot be undone and will remove
             all tasks associated with this sprint.
           </AlertDialogDescription>
         </AlertDialogHeader>
@@ -58,14 +60,14 @@ export function DeleteSprintDialog({ sprintId, open, onOpenChange }: DeleteSprin
             className="border-[var(--fixed-card-border)] text-[var(--fixed-sidebar-fg)]"
             disabled={isDeleting}
           >
-            Cancel
+            {translations.sprint.form.cancel}
           </AlertDialogCancel>
           <AlertDialogAction
             className="bg-[var(--fixed-danger)] text-white"
             onClick={handleDelete}
             disabled={isDeleting}
           >
-            {isDeleting ? "Deleting..." : "Delete Sprint"}
+            {isDeleting ? translations.sprint.form.deleting : translations.sprint.form.delete}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
