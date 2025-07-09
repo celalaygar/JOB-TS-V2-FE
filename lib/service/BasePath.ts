@@ -27,6 +27,9 @@ export const SPRINT_GET_ALL_URL = SPRINT_URL + "/getAll";
 export const SPRINT_NON_COMPLETED_GET_ALL_URL = SPRINT_URL + "/non-completed/project";
 
 
+export const SPRINT_TASK_URL = BASE_PATH_V2 + "sprint-task";
+export const SPRINT_TASK_ADD_URL = SPRINT_TASK_URL + "/add";
+export const SPRINT_TASK_REMOVE_URL = SPRINT_TASK_URL + "/remove";
 
 export const PROJECT_USERS = BASE_PATH_V2 + "project-users";
 export const GET_PROJECT_USERS = PROJECT_USERS + "/get-users/project";

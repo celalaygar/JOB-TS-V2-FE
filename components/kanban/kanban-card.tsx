@@ -12,7 +12,7 @@ import { TaskDetailsDialog } from "@/components/tasks/task-details-dialog"
 import { EditTaskDialog } from "@/components/tasks/edit-task-dialog"
 
 interface KanbanCardProps {
-  task: Task
+  task: ProjectTask
 }
 
 export default function KanbanCard({ task }: KanbanCardProps) {
@@ -92,15 +92,17 @@ export default function KanbanCard({ task }: KanbanCardProps) {
   }
 
   const getPriorityColor = () => {
-    switch (task.priority.toLowerCase()) {
-      case ProjectTaskPriority.HIGH:
-        return "bg-red-500"
-      case ProjectTaskPriority.MEDIUM:
-        return "bg-yellow-500"
+    switch (task.priority) {
       case ProjectTaskPriority.LOW:
-        return "bg-green-500"
+        return "bg-slate-500"
+      case ProjectTaskPriority.MEDIUM:
+        return "bg-blue-500"
+      case ProjectTaskPriority.HIGH:
+        return "bg-amber-500"
+      case ProjectTaskPriority.CRITICAL:
+        return "bg-red-500"
       default:
-        return "bg-gray-500"
+        return "bg-slate-500"
     }
   }
 

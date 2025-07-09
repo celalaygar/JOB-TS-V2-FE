@@ -30,6 +30,7 @@ import { toast } from "@/hooks/use-toast"
 import { getNonCompletedSprintsHelper } from "@/lib/service/api-helpers" // Import the new helper
 import { saveUpdateSprintHelper } from "@/lib/service/api-helpers" // Import saveUpdateSprintHelper for dispatching updates
 import { useLanguage } from "@/lib/i18n/context"
+import { ProjectTask } from "@/types/task"
 
 
 interface CompleteSprintDialogProps {
@@ -48,7 +49,7 @@ export function CompleteSprintDialog({ sprint, open, onOpenChange, tasks }: Comp
 
   // Calculate task statistics
   const completedTasks = tasks.filter(
-    (task) => task.status.toLowerCase() === "done" || task.status.toLowerCase() === "completed",
+    (task: ProjectTask) => task.projectTaskStatus.id === sprint.taskStatusOnCompletion.id,
   ).length
   const incompleteTasks = tasks.length - completedTasks
   const completionPercentage = tasks.length > 0 ? Math.round((completedTasks / tasks.length) * 100) : 0

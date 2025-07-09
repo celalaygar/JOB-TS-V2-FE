@@ -114,6 +114,7 @@ export enum ProjectTaskPriority {
   HIGH = "HIGH",
   MEDIUM = "MEDIUM",
   LOW = "LOW",
+  CRITICAL = "CRITICAL",
 }
 
 export enum ProjectTaskType {

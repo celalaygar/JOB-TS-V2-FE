@@ -232,11 +232,15 @@ function renderTasksTable(tasksList: ProjectTask[], handleEditTaskClick: (task: 
                 <TableCell>
                   <Badge
                     className={
-                      task?.priority === ProjectTaskPriority.HIGH
+                      task?.priority === ProjectTaskPriority.CRITICAL
                         ? "bg-red-500 text-black"
-                        : task?.priority === ProjectTaskPriority.MEDIUM
-                          ? "bg-yellow-500 text-black"
-                          : "bg-secondary text-secondary-foreground"
+                        : task?.priority === ProjectTaskPriority.HIGH
+                          ? "bg-orange-500 text-black"
+                          : task?.priority === ProjectTaskPriority.MEDIUM
+                            ? "bg-yellow-500 text-black" :
+                            task?.priority === ProjectTaskPriority.LOW
+                              ? "bg-blue-500 text-black"
+                              : "bg-gray-500 text-black"
                     }
                   >
                     {task?.priority}

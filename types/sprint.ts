@@ -68,5 +68,17 @@ export interface Sprint {
   updatedAt?: string;
 }
 
+export interface SprintTaskAddRequest {
+  sprintId: string;
+  taskId: string;
+  projectId: string;
+}
+
+export interface SprintTaskRemoveRequest {
+  sprintId: string;
+  taskId: string;
+  projectId: string;
+}
+
 // Diğer tanımlamalarınız (SprintType, SprintTeamMember, CreatedProject, TaskStatusOnCompletion, SprintCreatedUser)
 // Bu örnekte yer almadığı için olduğu gibi bırakıldı.

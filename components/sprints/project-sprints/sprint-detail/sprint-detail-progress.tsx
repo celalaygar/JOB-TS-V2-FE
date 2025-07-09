@@ -2,28 +2,19 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
+import { Sprint } from "@/types/sprint"
+import { ProjectTask } from "@/types/task"
 import { CheckCircle2, Clock, AlertCircle, BarChart2 } from "lucide-react"
 
 interface SprintDetailProgressProps {
-  sprint: {
-    id: string
-    name: string
-    startDate: string
-    endDate: string
-    status: string
-  }
-  tasks: Array<{
-    id: string
-    title: string
-    status: string
-    priority: string
-  }>
+  sprint: Sprint
+  tasks: ProjectTask[] | []
 }
 
 export function SprintDetailProgress({ sprint, tasks }: SprintDetailProgressProps) {
   // Calculate task statistics
   const totalTasks = tasks.length
-  const completedTasks = tasks.filter((task) => task.status === "done").length
+  const completedTasks = tasks.filter((task: ProjectTask) => task.status === "done").length
   const inProgressTasks = tasks.filter((task) => task.status === "in-progress").length
   const blockedTasks = tasks.filter((task) => task.status === "blocked").length
 

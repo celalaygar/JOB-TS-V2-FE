@@ -4,7 +4,7 @@ import BaseService from "@/lib/service/BaseService";
 import { httpMethods } from "@/lib/service/HttpService";
 import { toast } from "@/hooks/use-toast";
 import type { ProjectUser } from "@/types/project";
-import type { Sprint } from "@/types/sprint";
+import type { Sprint, SprintTaskAddRequest, SprintTaskRemoveRequest } from "@/types/sprint";
 import type { ProjectTeam, Project, ProjectTaskStatus } from "@/types/project";
 import type { ProjectRole, ProjectRolePermission, ProjectRoleRequest } from "@/types/project-role";
 import type { Invitation } from "@/lib/redux/features/invitations-slice";
@@ -19,6 +19,9 @@ import {
   PROJECT_TASK_STATUS_URL,
   INVITATION_BY_PROJECTID,
   INVITE_TO_PROJECT,
+  SPRINT_TASK_URL,
+  SPRINT_TASK_ADD_URL,
+  SPRINT_TASK_REMOVE_URL,
   SPRINT_URL, // Import SPRINT_URL
   TEAM_DETAIL_URL,
   PROJECT_TASK,
@@ -532,4 +535,43 @@ export const getSubTasksByProjectTaskIdkHelper = async (taskId: string, options:
   });
 };
 
+export const addTaskToSprintHelper = async (body: SprintTaskAddRequest, options: FetchEntitiesOptions): Promise<ProjectTask | null> => {
+  return apiCall<ProjectTask>({
+    url: SPRINT_TASK_ADD_URL,
+    method: httpMethods.POST,
+    body,
+    setLoading: options.setLoading,
+    successMessage: `Task has been added to the sprint.`,
+    errorMessagePrefix: "Failed to add task to sprint",
+    successToastTitle: "Task Added to Sprint",
+    errorToastTitle: "Error Adding Task to Sprint",
+  });
+}
+export const removeTaskFromSprintHelper = async (body: SprintTaskRemoveRequest, options: FetchEntitiesOptions): Promise<ProjectTask | null> => {
+  return apiCall<ProjectTask>({
+    url: SPRINT_TASK_REMOVE_URL,
+    method: httpMethods.POST,
+    body,
+    setLoading: options.setLoading,
+    successMessage: `Task has been removed from the sprint.`,
+    errorMessagePrefix: "Failed to remove task from sprint",
+    successToastTitle: "Task Removed from Sprint",
+    errorToastTitle: "Error Removing Task from Sprint",
+  });
+}
 
+export const getAllSprintTasksHelper = async (sprintId: string, projectId: string, options: FetchEntitiesOptions): Promise<ProjectTask[] | null> => {
+  if (!sprintId || !projectId) {
+    options.setLoading(false);
+    return [];
+  }
+  return apiCall<ProjectTask[]>({
+    url: `${SPRINT_TASK_URL}/sprint/${sprintId}/project/${projectId}`,
+    method: httpMethods.GET,
+    setLoading: options.setLoading,
+    successMessage: `Tasks for sprint ${sprintId} in project ${projectId} have been retrieved.`,
+    errorMessagePrefix: "Failed to load sprint tasks",
+    successToastTitle: "Sprint Tasks Loaded",
+    errorToastTitle: "Error Loading Sprint Tasks",
+  });
+}

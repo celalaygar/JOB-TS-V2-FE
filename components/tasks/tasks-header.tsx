@@ -164,6 +164,7 @@ export function TasksHeader({ filters, setFilters, handleChange, fetchData, proj
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Priorities</SelectItem>
+                  <SelectItem value={ProjectTaskPriority.CRITICAL}>CRITICAL</SelectItem>
                   <SelectItem value={ProjectTaskPriority.HIGH}>High</SelectItem>
                   <SelectItem value={ProjectTaskPriority.MEDIUM}>Medium</SelectItem>
                   <SelectItem value={ProjectTaskPriority.LOW}>Low</SelectItem>

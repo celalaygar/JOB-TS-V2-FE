@@ -72,11 +72,15 @@ export function TaskDetailInfo({ task, project }: TaskDetailInfoProps) {
           <div>
             <Badge
               className={
-                task.priority === ProjectTaskPriority.HIGH
+                task.priority === ProjectTaskPriority.CRITICAL
                   ? "bg-[var(--fixed-danger)] text-white"
-                  : task.priority === ProjectTaskPriority.MEDIUM
+                  : task.priority === ProjectTaskPriority.HIGH
                     ? "bg-[var(--fixed-warning)] text-white"
-                    : "bg-[var(--fixed-secondary)] text-[var(--fixed-secondary-fg)]"
+                    : task.priority === ProjectTaskPriority.MEDIUM
+                      ? "bg-[var(--fixed-info)] text-white"
+                      : task.priority === ProjectTaskPriority.LOW
+                        ? "bg-[var(--fixed-secondary)] text-white"
+                        : "bg-[var(--fixed-secondary)] text-white"
               }
             >
               {task.priority}
