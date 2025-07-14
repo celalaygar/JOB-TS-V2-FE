@@ -27,7 +27,9 @@ import {
   PROJECT_TASK,
   PROJECT_TASK_SUBTASKS,
   INVITATION_BY_PENDING,
-  INVITATION_PROJECT
+  INVITATION_PROJECT,
+  INVITATION_ACCEPT,
+  INVITATION_DECLINE
 } from "@/lib/service/BasePath";
 import { ProjectTask, ProjectTaskFilterRequest, TaskResponse } from "@/types/task";
 
@@ -598,5 +600,30 @@ export const getAllInvitationsCountByInvitationStatusHelper = async (status: str
     errorMessagePrefix: "Failed to load invitations count",
     successToastTitle: "Invitations Count Loaded",
     errorToastTitle: "Error Loading Invitations Count",
+  });
+}
+
+export const invitationAcceptHelper = async (invitationId: string, options: FetchEntitiesOptions): Promise<Invitation | null> => {
+  return apiCall<Invitation>({
+    url: INVITATION_ACCEPT,
+    method: httpMethods.POST,
+    body: { invitationId },
+    setLoading: options.setLoading,
+    successMessage: `Invitation ${invitationId} has been accepted.`,
+    errorMessagePrefix: "Failed to accept invitation",
+    successToastTitle: "Invitation Accepted",
+    errorToastTitle: "Error Accepting Invitation",
+  });
+}
+export const invitationDeclineHelper = async (invitationId: string, options: FetchEntitiesOptions): Promise<Invitation | null> => {
+  return apiCall<Invitation>({
+    url: INVITATION_DECLINE,
+    method: httpMethods.POST,
+    body: { invitationId },
+    setLoading: options.setLoading,
+    successMessage: `Invitation ${invitationId} has been declined.`,
+    errorMessagePrefix: "Failed to decline invitation",
+    successToastTitle: "Invitation Declined",
+    errorToastTitle: "Error Declining Invitation",
   });
 }

@@ -17,12 +17,10 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Check, X, Calendar, Building2, Users, Mail, Loader2 } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
-import { AuthenticationUser } from "@/types/user"
-import { Invitation, InvitationStatus } from "@/lib/redux/features/invitations-slice"
-import BaseService from "@/lib/service/BaseService"
-import { httpMethods } from "@/lib/service/HttpService"
 import { toast } from "@/hooks/use-toast"
-import { INVITATION_PROJECT } from "@/lib/service/BasePath"
+import { useAuthUser } from "@/lib/hooks/useAuthUser"
+import { invitationAcceptHelper, invitationDeclineHelper } from "@/lib/service/api-helpers"
+import { Invitation, InvitationStatus } from "@/types/invitation"
 
 interface InvitationDetailsDialogProps {
     invitation: Invitation
@@ -34,7 +32,6 @@ interface InvitationDetailsDialogProps {
     onDecline: () => void
     onRemove: () => void
 */
-    currentUser: AuthenticationUser | undefined
 }
 
 export function InvitationDetailsDialog({
@@ -44,8 +41,7 @@ export function InvitationDetailsDialog({
     onResetInvitations,
     //onAccept,
     //onDecline,
-    //onRemove,
-    currentUser,
+    //onRemove, 
 }: InvitationDetailsDialogProps) {
     const [confirmRemove, setConfirmRemove] = useState(false)
     const authUser = useAuthUser();
@@ -68,72 +64,29 @@ export function InvitationDetailsDialog({
     const [loading, setLoading] = useState(false);
 
     const acceptInvitations = async () => {
-        setLoading(true)
-        try {
-            const response: Invitation[] = await BaseService.request(INVITATION_PROJECT + "/accept", {
-                method: httpMethods.POST,
-                body: { invitationId: invitation.id }
-            })
-            toast({
-                title: `accept Invitations.`,
-                description: `acceptInvitations `,
-            })
 
-        } catch (error: any) {
-            if (error.status === 400 && error.message) {
-                toast({
-                    title: `accept Invitations failed. (400)`,
-                    description: error.message,
-                    variant: "destructive",
-                })
-            } else {
-                console.error('accept Invitations failed:', error)
-                toast({
-                    title: `accept Invitations failed.`,
-                    description: error.message,
-                    variant: "destructive",
-                })
-            }
+        const response = await invitationAcceptHelper(invitation.id, { setLoading });
+        if (response) {
+            toast({
+                title: `Invitation accepted.`,
+                description: `You have successfully accepted the invitation to join the project.`,
+            })
+            onResetInvitations()
+            onOpenChange(false)
         }
-        setLoading(false)
-        //onAccept()
-        onResetInvitations()
-        onOpenChange(false)
+
     }
 
     const declineInvitations = async () => {
-        setLoading(true)
-        try {
-            const response: Invitation[] = await BaseService.request(INVITATION_PROJECT + "/decline", {
-                method: httpMethods.POST,
-                body: { invitationId: invitation.id }
-            })
+        const response = await invitationDeclineHelper(invitation.id, { setLoading });
+        if (response) {
             toast({
-                title: `decline Invitations.`,
-                description: `decline Invitations `,
+                title: `Invitation declined.`,
+                description: `You have successfully declined the invitation to join the project.`,
             })
-
-        } catch (error: any) {
-            if (error.status === 400 && error.message) {
-                toast({
-                    title: `decline Invitations failed. (400)`,
-                    description: error.message,
-                    variant: "destructive",
-                })
-            } else {
-                console.error('decline Invitations failed:', error)
-                toast({
-                    title: `decline Invitations failed.`,
-                    description: error.message,
-                    variant: "destructive",
-                })
-            }
+            onResetInvitations()
+            onOpenChange(false)
         }
-        setLoading(false)
-        //onDecline()
-
-        onResetInvitations()
-        onOpenChange(false)
     }
 
 
@@ -172,9 +125,9 @@ export function InvitationDetailsDialog({
 
                                     <div className="flex items-center gap-3">
                                         <Avatar className="h-8 w-8">
-                                            <AvatarImage src={invitation.senderAvatar || "/placeholder.svg"}
-                                                alt={invitation.invitedBy?.firstname + " " + invitation?.invitedBy?.lastname} />
-                                            <AvatarFallback>{invitation.senderInitials}</AvatarFallback>
+                                            <AvatarImage src={"/placeholder.svg"}
+                                                alt={invitation.invitedBy?.firstname + " " + invitation?.invitedBy?.email} />
+                                            <AvatarFallback>{invitation?.invitedBy?.email}</AvatarFallback>
                                         </Avatar>
                                         <div>
                                             <p className="font-medium">{invitation?.invitedBy?.firstname + " " + invitation?.invitedBy?.lastname}</p>
@@ -188,7 +141,7 @@ export function InvitationDetailsDialog({
                                         </div>
                                         <div>
                                             <p className="font-medium">
-                                                {invitation?.invitedUser?.id === currentUser?.id ? "You" : invitation?.invitedUser?.firstname + " " + invitation?.invitedUser?.lastname}
+                                                {invitation?.invitedUser?.id === authUser?.user?.id ? "You" : invitation?.invitedUser?.firstname + " " + invitation?.invitedUser?.lastname}
                                             </p>
                                             <p className="text-sm text-[var(--fixed-sidebar-muted)]">Recipient</p>
                                         </div>
@@ -238,7 +191,8 @@ export function InvitationDetailsDialog({
                                         <Button
                                             disabled={
                                                 invitation.status === InvitationStatus.ACCEPTED ||
-                                                invitation.status === InvitationStatus.DECLINED
+                                                invitation.status === InvitationStatus.DECLINED ||
+                                                invitation.invitedBy?.id === authUser?.user?.id
                                             }
                                             className="flex-1 bg-[var(--fixed-success)] text-white hover:bg-[var(--fixed-success)]/90"
                                             onClick={() => {
@@ -264,7 +218,7 @@ export function InvitationDetailsDialog({
                             </>
                     }
                 </DialogContent>
-            </Dialog>
+            </Dialog >
 
             <AlertDialog open={confirmRemove} onOpenChange={setConfirmRemove}>
                 <AlertDialogContent>

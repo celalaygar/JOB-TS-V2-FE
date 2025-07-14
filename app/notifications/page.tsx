@@ -5,29 +5,29 @@ import { NotificationsHeader } from "@/components/notifications/notifications-he
 import { NotificationsList } from "@/components/notifications/notifications-list"
 import { InvitationsList } from "@/components/notifications/invitations-list"
 import { InvitationStatus, Invitation } from "@/types/invitation"
-import { getAllInvitationsByPendingHelper } from "@/lib/service/api-helpers"
+import { getAllInvitationsByPendingHelper, getAllInvitationsCountByInvitationStatusHelper } from "@/lib/service/api-helpers"
 
 export default function Notifications() {
   const [filter, setFilter] = useState<"all" | "unread" | "mentions" | "invitations">("all")
   const [searchQuery, setSearchQuery] = useState("")
-  const [invitations, setInvitations] = useState<Invitation[]>([])
-  const [loading, setLoading] = useState(false)
+  const [notificationLoading, setNotificationLoading] = useState<boolean>(false)
+  const [invitationCount, setInvitationCount] = useState<number>(0)
 
 
-  const getAllInvitationsByPending = useCallback(async () => {
-    setInvitations([]);
-    const invitationsData: Invitation[] = await getAllInvitationsByPendingHelper({ setLoading });
-    if (invitationsData) {
-      setInvitations(invitationsData);
+  const getAllInvitationsCount = useCallback(async () => {
+    const response: number | null = await getAllInvitationsCountByInvitationStatusHelper(InvitationStatus.PENDING, {
+      setLoading: setNotificationLoading
+    })
+    if (typeof response === "number") {
+      setInvitationCount((prevCount) => prevCount + response)
     }
   }, [])
 
   useEffect(() => {
-    getAllInvitationsByPending()
-  }, [getAllInvitationsByPending])
+    getAllInvitationsCount()
+  }, [getAllInvitationsCount])
 
-
-  return loading ?
+  return notificationLoading ?
     <div className="flex items-center justify-center h-screen">
       <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500"></div>
     </div>
@@ -36,7 +36,7 @@ export default function Notifications() {
 
       <div className="space-y-6">
         <NotificationsHeader
-          invitations={invitations}
+          invitationCount={invitationCount}
           filter={filter}
           onFilterChange={setFilter}
           searchQuery={searchQuery}
@@ -45,8 +45,7 @@ export default function Notifications() {
 
         {filter === "invitations" ? (
           <InvitationsList
-            invitations={invitations}
-            searchQuery={searchQuery} resetPage={getAllInvitationsByPending} />
+            searchQuery={searchQuery} />
         ) : (
           <NotificationsList filter={filter} searchQuery={searchQuery} />
         )}

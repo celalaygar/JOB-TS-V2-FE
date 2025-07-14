@@ -5,9 +5,12 @@ import { NotificationsDropdown } from "./notifications-dropdown"
 import { UserProfileDropdown } from "./user-profile-dropdown"
 import { useCallback, useEffect, useState } from "react"
 import { getAllInvitationsCountByInvitationStatusHelper } from "@/lib/service/api-helpers"
-import { InvitationStatus } from "@/types/invitation"
+import { Invitation, InvitationStatus } from "@/types/invitation"
 
-export function HeaderActions() {
+interface HeaderActionsProps {
+}
+
+export function HeaderActions({ }: HeaderActionsProps) {
 
 
   const [notificationLoading, setNotificationLoading] = useState<boolean>(false)

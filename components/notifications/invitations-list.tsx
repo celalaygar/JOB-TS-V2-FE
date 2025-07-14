@@ -11,28 +11,29 @@ import { formatDistanceToNow } from "date-fns"
 import { useCallback, useEffect, useState } from "react"
 import { InvitationDetailsDialog } from "./invitation-details-dialog"
 import { useAuthUser } from "@/lib/hooks/useAuthUser"
+import { toast } from "@/hooks/use-toast"
+import BaseService from "@/lib/service/BaseService"
+import { INVITATION_BY_PENDING, INVITATION_BY_PROJECTID } from "@/lib/service/BasePath"
+import { httpMethods } from "@/lib/service/HttpService"
+import { getAllInvitationsByPendingHelper } from "@/lib/service/api-helpers"
 
 interface InvitationsListProps {
   searchQuery: string
-  invitations?: Invitation[]
-  resetPage: () => Promise<void>
 }
 
 
-export function InvitationsList({
-  searchQuery,
-  invitations,
-  resetPage,
-}: InvitationsListProps) {
+export function InvitationsList({ searchQuery, }: InvitationsListProps) {
   const dispatch = useDispatch()
   const authUser = useAuthUser();
   const [loading, setLoading] = useState(false);
+  const [invitations, setInvitations] = useState<Invitation[]>([]);
 
   // Add this state at the beginning of the InvitationsList component
+  const [isOpenInvitationDetails, setIsOpenInvitationDetails] = useState(false)
   const [selectedInvitation, setSelectedInvitation] = useState<(typeof invitations)[0] | null>(null)
 
   // Filter invitations based on search query
-  const filteredInvitations = (invitations ?? []).filter((invitation) => {
+  const filteredInvitations = invitations.filter((invitation) => {
     if (searchQuery) {
       const query = searchQuery.toLowerCase()
       return (
@@ -55,10 +56,75 @@ export function InvitationsList({
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   })
 
+  /*
+  
+    const handleAcceptInvitation = (invitationId: string) => {
+      const invitation = invitations.find((inv) => inv.id === invitationId)
+      if (invitation && currentUser) {
+        // Update invitation status
+        dispatch(updateInvitationStatus({ id: invitationId, status: "accepted" }))
+  
+        // Find the project
+        const project = projects.find((p) => p.id === invitation.projectId)
+  
+        if (project) {
+          // Add current user to project team if not already there
+          const isAlreadyInTeam = project.team.some((member) => member.name === currentUser.name)
+  
+          if (!isAlreadyInTeam) {
+            const updatedTeam = [
+              ...project.team,
+              {
+                name: currentUser.name,
+                avatar: currentUser.avatar || "/placeholder.svg",
+                initials: currentUser.initials || currentUser.name.substring(0, 2).toUpperCase(),
+              },
+            ]
+  
+            // Update project with new team member
+            dispatch(
+              updateProject({
+                id: project.id,
+                changes: { team: updatedTeam },
+              }),
+            )
+          }
+        }
+      }
+    }
+  
+    const handleDeclineInvitation = (invitationId: string) => {
+      dispatch(updateInvitationStatus({ id: invitationId, status: "declined" }))
+    }
+  
+    const handleRemoveInvitation = (invitationId: string) => {
+      dispatch(removeInvitation(invitationId))
+    }
+  */
 
 
+  const getAllInvitationsByPending = async () => {
+    setInvitations([]);
+    const invitationsData = await getAllInvitationsByPendingHelper({ setLoading });
+    if (invitationsData) {
+      setInvitations(invitationsData);
+    }
+  }
 
 
+  const getAllInvitations = useCallback(async () => {
+    await getAllInvitationsByPending()
+  }, [])
+
+  useEffect(() => {
+    getAllInvitations()
+  }, [getAllInvitations])
+
+
+  const openInvitationDetailDialog = (invitation: Invitation) => {
+    setSelectedInvitation(invitation)
+    setIsOpenInvitationDetails(true)
+  }
 
   return loading ? (
     <>
@@ -73,7 +139,7 @@ export function InvitationsList({
           <Card
             key={invitation.id}
             className="fixed-card overflow-hidden cursor-pointer hover:border-[var(--fixed-primary)]/50 transition-colors"
-            onClick={() => setSelectedInvitation(invitation)}
+            onClick={() => openInvitationDetailDialog(invitation)}
           >
             <CardContent className="p-0">
               <div className="p-4 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
@@ -118,7 +184,7 @@ export function InvitationsList({
                       className="border-[var(--fixed-card-border)] text-[var(--fixed-danger)]"
                       onClick={(e) => {
                         e.stopPropagation()
-                        setSelectedInvitation(invitation)
+                        openInvitationDetailDialog(invitation)
                       }}
                     >
                       <X className="h-4 w-4 mr-2" />
@@ -129,7 +195,7 @@ export function InvitationsList({
                       className="bg-[var(--fixed-success)] text-white hover:bg-[var(--fixed-success)]/90"
                       onClick={(e) => {
                         e.stopPropagation()
-                        setSelectedInvitation(invitation)
+                        openInvitationDetailDialog(invitation)
                       }}
                     >
                       <Check className="h-4 w-4 mr-2" />
@@ -156,15 +222,22 @@ export function InvitationsList({
         {selectedInvitation && (
           <InvitationDetailsDialog
             invitation={selectedInvitation}
-            open={!!selectedInvitation}
+            open={isOpenInvitationDetails}
             onOpenChange={(open) => {
-              if (!open) setSelectedInvitation(null)
+              if (!open) {
+                setIsOpenInvitationDetails(false)
+                setSelectedInvitation(null)
+              }
             }}
-            onResetInvitations={() => getAllInvitations()}
-            //onAccept={() => handleAcceptInvitation(selectedInvitation.id)}
-            //onDecline={() => handleDeclineInvitation(selectedInvitation.id)}
-            //onRemove={() => handleRemoveInvitation(selectedInvitation.id)}
-            currentUser={authUser?.user}
+            onResetInvitations={() => {
+              setInvitations([])
+              getAllInvitationsByPending()
+            }}
+          //onAccept={() => handleAcceptInvitation(selectedInvitation.id)}
+          //onDecline={() => handleDeclineInvitation(selectedInvitation.id)}
+          //onAccept={() => handleAcceptInvitation(selectedInvitation.id)}
+          //onDecline={() => handleDeclineInvitation(selectedInvitation.id)}
+          //onRemove={() => handleRemoveInvitation(selectedInvitation.id)} 
           />
         )}
       </div>

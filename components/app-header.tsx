@@ -14,8 +14,7 @@ import { InvitationDetailsDialog } from "@/components/notifications/invitation-d
 import { NotificationDetailsDialog } from "@/components/notifications/notification-details-dialog"
 import { HeaderSearch } from "./header/header-search"
 import { HeaderActions } from "./header/header-actions"
-import { getAllInvitationsCountByInvitationStatusHelper } from "@/lib/service/api-helpers"
-import { InvitationStatus } from "@/types/invitation"
+import { Invitation } from "@/types/invitation"
 
 export function AppHeader() {
   const router = useRouter()
@@ -32,11 +31,6 @@ export function AppHeader() {
 
   const unreadNotifications = notifications.filter((n) => !n.read)
   const pendingInvitations = invitations.filter((inv) => inv.status === "pending")
-  const recentNotifications = notifications.slice(0, 5)
-  const recentInvitations = invitations.slice(0, 5)
-
-
-
 
 
 
@@ -101,52 +95,8 @@ export function AppHeader() {
         onChange={(e) => setSearchQuery(e.target.value)}
       />
 
-      <HeaderActions
-        notifications={notifications}
-        invitations={invitations}
-        projects={projects}
-        currentUser={currentUser}
-        unreadNotifications={unreadNotifications}
-        pendingInvitations={pendingInvitations}
-        recentNotifications={recentNotifications}
-        recentInvitations={recentInvitations}
-        totalUnread={totalUnread}
-        handleLogout={handleLogout}
-        handleAcceptInvitation={handleAcceptInvitation}
-        handleDeclineInvitation={handleDeclineInvitation}
-        handleRemoveInvitation={handleRemoveInvitation}
-        handleMarkNotificationAsRead={handleMarkNotificationAsRead}
-        handleDeleteNotification={handleDeleteNotification}
-        selectedInvitation={selectedInvitation}
-        setSelectedInvitation={setSelectedInvitation}
-        selectedNotification={selectedNotification}
-        setSelectedNotification={setSelectedNotification}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-      />
+      <HeaderActions />
 
-      {selectedInvitation && (
-        <InvitationDetailsDialog
-          invitation={selectedInvitation}
-          open={!!selectedInvitation}
-          onOpenChange={(open) => {
-            if (!open) setSelectedInvitation(null)
-          }}
-          onAccept={() => {
-            handleAcceptInvitation(selectedInvitation.id)
-            setSelectedInvitation(null)
-          }}
-          onDecline={() => {
-            handleDeclineInvitation(selectedInvitation.id)
-            setSelectedInvitation(null)
-          }}
-          onRemove={() => {
-            handleRemoveInvitation(selectedInvitation.id)
-            setSelectedInvitation(null)
-          }}
-          currentUser={currentUser}
-        />
-      )}
       {selectedNotification && (
         <NotificationDetailsDialog
           notification={selectedNotification}

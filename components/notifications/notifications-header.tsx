@@ -24,16 +24,15 @@ interface NotificationsHeaderProps {
   onFilterChange: (filter: "all" | "unread" | "mentions" | "invitations") => void
   searchQuery: string
   onSearchChange: (query: string) => void
-  invitations?: Invitation[]
+  invitationCount?: number
 }
 
-export function NotificationsHeader({ filter, onFilterChange, searchQuery, onSearchChange, invitations }: NotificationsHeaderProps) {
+export function NotificationsHeader({ invitationCount, filter, onFilterChange, searchQuery, onSearchChange }: NotificationsHeaderProps) {
   const dispatch = useDispatch()
   const notifications = useSelector((state: RootState) => state.notifications.notifications)
 
   const unreadCount = notifications.filter((n) => !n.read).length
   const mentionsCount = notifications.filter((n) => n.type === "mention").length
-  const invitationsCount = invitations.length
 
   const handleMarkAllAsRead = () => {
     dispatch(markAllAsRead())
@@ -121,7 +120,7 @@ export function NotificationsHeader({ filter, onFilterChange, searchQuery, onSea
         ${filter === "invitations" ? "bg-white text-[var(--fixed-sidebar-fg)] shadow-sm" : "text-[var(--fixed-sidebar-muted)] hover:text-[var(--fixed-sidebar-fg)]"}`}
               onClick={() => onFilterChange("invitations")}
             >
-              Invitations ({invitationsCount})
+              Invitations ({invitationCount})
             </div>
           </div>
         </div>

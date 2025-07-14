@@ -23,6 +23,7 @@ import { InvitationDetailsDialog } from "@/components/notifications/invitation-d
 import { NotificationDetailsDialog } from "@/components/notifications/notification-details-dialog"
 import { getAllInvitationsByPendingHelper } from "@/lib/service/api-helpers"
 import { Invitation, InvitationStatus } from "@/types/invitation"
+import { useAuthUser } from "@/lib/hooks/useAuthUser"
 
 interface NotificationsDropdownProps {
   invitationCount: number
@@ -36,10 +37,10 @@ export function NotificationsDropdown({ invitationCount, notificationLoading }: 
   const [activeTab, setActiveTab] = useState<"notifications" | "invitations">("notifications")
   const [selectedInvitation, setSelectedInvitation] = useState<any>(null)
   const [selectedNotification, setSelectedNotification] = useState<any>(null)
-
-  const currentUser = useSelector((state: RootState) => state.auth.currentUser)
+  const authUser = useAuthUser();
   const notifications = useSelector((state: RootState) => state.notifications.notifications)
   const projects = useSelector((state: RootState) => state.projects.projects)
+  const [isOpenInvitationDetails, setIsOpenInvitationDetails] = useState(false)
 
   const [invitations, setInvitations] = useState<Invitation[]>([])
   const [loading, setLoading] = useState(false)
@@ -47,12 +48,11 @@ export function NotificationsDropdown({ invitationCount, notificationLoading }: 
   const unreadNotifications = notifications.filter((n) => !n.read)
   const pendingInvitations = invitations.filter((inv) => inv.status === InvitationStatus.PENDING)
   const recentNotifications = notifications.slice(0, 5)
-  const recentInvitations = invitations.slice(0, 5)
 
   const getAllInvitationsByPending = useCallback(async () => {
     setInvitations([]);
     const invitationsData: Invitation[] | null = await getAllInvitationsByPendingHelper({ setLoading });
-    if (!!invitationsData) {
+    if (invitationsData) {
       setInvitations(invitationsData);
     }
   }, [])
@@ -66,19 +66,19 @@ export function NotificationsDropdown({ invitationCount, notificationLoading }: 
 
   const handleAcceptInvitation = (invitationId: string) => {
     const invitation = invitations.find((inv) => inv.id === invitationId)
-    if (invitation && currentUser) {
+    if (invitation && authUser?.user) {
       dispatch(updateInvitationStatus({ id: invitationId, status: "accepted" }))
 
       const project = projects.find((p) => p.id === invitation.projectId)
       if (project) {
-        const isAlreadyInTeam = project.team.some((member) => member.name === currentUser.name)
+        const isAlreadyInTeam = project.team.some((member) => member.name === authUser?.user.name)
         if (!isAlreadyInTeam) {
           const updatedTeam = [
             ...project.team,
             {
-              name: currentUser.name,
-              avatar: currentUser.avatar || "/placeholder.svg",
-              initials: currentUser.initials || currentUser.name.substring(0, 2).toUpperCase(),
+              name: authUser?.user.name,
+              avatar: authUser?.user.avatar || "/placeholder.svg",
+              initials: authUser?.user.initials || authUser?.user.name.substring(0, 2).toUpperCase(),
             },
           ]
           dispatch(updateProject({ id: project.id, changes: { team: updatedTeam } }))
@@ -103,6 +103,11 @@ export function NotificationsDropdown({ invitationCount, notificationLoading }: 
   const handleDeleteNotification = (notificationId: string) => {
     // Add your notification delete logic here
     // dispatch(deleteNotification(notificationId))
+  }
+
+  const openInvitationDetailDialog = (invitation: Invitation) => {
+    setSelectedInvitation(invitation)
+    setIsOpenInvitationDetails(true)
   }
 
   return (
@@ -188,7 +193,7 @@ export function NotificationsDropdown({ invitationCount, notificationLoading }: 
                 <DropdownMenuItem
                   key={invitation.id}
                   className="py-2 px-3 cursor-pointer"
-                  onClick={() => setSelectedInvitation(invitation)}
+                  onClick={() => openInvitationDetailDialog(invitation)}
                 >
                   <div className="flex items-start gap-2 w-full ">
                     <Avatar className="h-8 w-8">
@@ -228,10 +233,18 @@ export function NotificationsDropdown({ invitationCount, notificationLoading }: 
       {selectedInvitation && (
         <InvitationDetailsDialog
           invitation={selectedInvitation}
-          open={!!selectedInvitation}
+          open={isOpenInvitationDetails}
           onOpenChange={(open) => {
-            if (!open) setSelectedInvitation(null)
+            if (!open) {
+              setIsOpenInvitationDetails(false)
+              setSelectedInvitation(null)
+            }
           }}
+          onResetInvitations={() => {
+            setInvitations([])
+            getAllInvitationsByPending()
+          }}
+
           onAccept={() => {
             handleAcceptInvitation(selectedInvitation.id)
             setSelectedInvitation(null)
@@ -244,26 +257,9 @@ export function NotificationsDropdown({ invitationCount, notificationLoading }: 
             handleRemoveInvitation(selectedInvitation.id)
             setSelectedInvitation(null)
           }}
-          currentUser={currentUser}
         />
       )}
-      {selectedNotification && (
-        <NotificationDetailsDialog
-          notification={selectedNotification}
-          open={!!selectedNotification}
-          onOpenChange={(open) => {
-            if (!open) setSelectedNotification(null)
-          }}
-          onMarkAsRead={() => {
-            handleMarkNotificationAsRead(selectedNotification.id)
-            setSelectedNotification(null)
-          }}
-          onDelete={() => {
-            handleDeleteNotification(selectedNotification.id)
-            setSelectedNotification(null)
-          }}
-        />
-      )}
+
     </>
   )
 }
