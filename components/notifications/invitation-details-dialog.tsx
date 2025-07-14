@@ -130,7 +130,7 @@ export function InvitationDetailsDialog({
                                             <AvatarFallback>{invitation?.invitedBy?.email}</AvatarFallback>
                                         </Avatar>
                                         <div>
-                                            <p className="font-medium">{invitation?.invitedBy?.firstname + " " + invitation?.invitedBy?.lastname}</p>
+                                            <p className="font-medium">{invitation?.invitedBy?.email}</p>
                                             <p className="text-sm text-[var(--fixed-sidebar-muted)]">Sender</p>
                                         </div>
                                     </div>
