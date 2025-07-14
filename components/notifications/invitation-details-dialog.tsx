@@ -59,18 +59,12 @@ export function InvitationDetailsDialog({
         }
     }
 
-
-
     const [loading, setLoading] = useState(false);
 
     const acceptInvitations = async () => {
 
         const response = await invitationAcceptHelper(invitation.id, { setLoading });
         if (response) {
-            toast({
-                title: `Invitation accepted.`,
-                description: `You have successfully accepted the invitation to join the project.`,
-            })
             onResetInvitations()
             onOpenChange(false)
         }
@@ -80,10 +74,6 @@ export function InvitationDetailsDialog({
     const declineInvitations = async () => {
         const response = await invitationDeclineHelper(invitation.id, { setLoading });
         if (response) {
-            toast({
-                title: `Invitation declined.`,
-                description: `You have successfully declined the invitation to join the project.`,
-            })
             onResetInvitations()
             onOpenChange(false)
         }

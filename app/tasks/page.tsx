@@ -38,10 +38,10 @@ export default function TasksPage() {
     fetchAllProjects();
   }, [fetchAllProjects])
 
-  
+
   const fetchAllProjectTasks = useCallback(async (filters: ProjectTaskFilterRequest) => {
     setTaskList([]) // Clear previous tasks
-    const response: TaskResponse[] | null = await getAllProjectTaskHelper(0, 1000, filters, { setLoading });
+    const response: TaskResponse | null = await getAllProjectTaskHelper(0, 1000, filters, { setLoading });
     if (response) {
       setTaskResponse(response);
       dispatch(setTasks(response.content))

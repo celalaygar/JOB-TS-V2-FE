@@ -208,11 +208,6 @@ export function CreateTaskDialog({ open, onOpenChange, parentTask, projectList, 
     if (response) {
       //dispatch(addTask(newTask))
 
-
-      toast({
-        title: "Task Created",
-        description: `Task "${newTask.title}" has been successfully created.`,
-      });
       fetchData()
       onOpenChange(false)
       setFormData({

@@ -246,11 +246,6 @@ export function EditTaskDialog({ projectTask, open, onOpenChange, projectList, f
 
     if (response) {
 
-
-      toast({
-        title: "Task Updated",
-        description: `Task "${updatedTask.title}" has been successfully updated.`,
-      });
       fetchData(); // Refresh data in parent component
       onOpenChange(false);
     } else {
