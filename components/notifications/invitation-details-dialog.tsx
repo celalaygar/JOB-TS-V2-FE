@@ -48,6 +48,7 @@ export function InvitationDetailsDialog({
     currentUser,
 }: InvitationDetailsDialogProps) {
     const [confirmRemove, setConfirmRemove] = useState(false)
+    const authUser = useAuthUser();
 
     const getStatusColor = () => {
         switch (invitation.status) {

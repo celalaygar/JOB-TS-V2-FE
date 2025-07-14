@@ -1,31 +1,21 @@
 "use client"
 
-import { useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { Bell, Menu, Search, LogOut, User, Settings } from "lucide-react"
+import { Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useSidebar } from "@/lib/hooks/use-sidebar"
 import { useSelector, useDispatch } from "react-redux"
 import { logout } from "@/lib/redux/features/auth-slice"
 import { updateInvitationStatus, removeInvitation } from "@/lib/redux/features/invitations-slice"
 import { updateProject } from "@/lib/redux/features/projects-slice"
 import type { RootState } from "@/lib/redux/store"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Badge } from "@/components/ui/badge"
-import { formatDistanceToNow } from "date-fns"
-import { LanguageSelector } from "@/components/language-selector"
 import { InvitationDetailsDialog } from "@/components/notifications/invitation-details-dialog"
 import { NotificationDetailsDialog } from "@/components/notifications/notification-details-dialog"
+import { HeaderSearch } from "./header/header-search"
+import { HeaderActions } from "./header/header-actions"
+import { getAllInvitationsCountByInvitationStatusHelper } from "@/lib/service/api-helpers"
+import { InvitationStatus } from "@/types/invitation"
 
 export function AppHeader() {
   const router = useRouter()
@@ -44,6 +34,11 @@ export function AppHeader() {
   const pendingInvitations = invitations.filter((inv) => inv.status === "pending")
   const recentNotifications = notifications.slice(0, 5)
   const recentInvitations = invitations.slice(0, 5)
+
+
+
+
+
 
   const totalUnread = unreadNotifications.length + pendingInvitations.length
 
@@ -99,177 +94,36 @@ export function AppHeader() {
         <Menu className="h-5 w-5" />
         <span className="sr-only">Toggle Menu</span>
       </Button>
-      <div className="flex-1 md:grow-0 md:w-64 lg:w-80">
-        <form>
-          <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-[var(--fixed-sidebar-muted)]" />
-            <Input
-              type="search"
-              placeholder="Search..."
-              className="w-full bg-[var(--fixed-background)] pl-8 md:w-[200px] lg:w-[300px] border-[var(--fixed-card-border)]"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-        </form>
-      </div>
-      <div className="ml-auto flex items-center gap-2">
-        <LanguageSelector />
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="relative text-[var(--fixed-header-fg)]">
-              <Bell className="h-5 w-5" />
-              {totalUnread > 0 && (
-                <Badge className="absolute top-1 right-1 h-4 w-4 p-0 flex items-center justify-center bg-[var(--fixed-primary)] text-white text-[10px]">
-                  {totalUnread}
-                </Badge>
-              )}
-              <span className="sr-only">Notifications</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-80">
-            <DropdownMenuLabel className="flex items-center justify-between">
-              <span>Notifications</span>
-              {totalUnread > 0 && <Badge className="bg-[var(--fixed-primary)] text-white">{totalUnread} new</Badge>}
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
+      <HeaderSearch
+        className="flex-1 md:grow-0 md:w-64 lg:w-80"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+      />
 
-            {/* Tab Navigation */}
-            <div className="flex bg-[var(--fixed-secondary)] rounded-md p-1 m-2 text-sm font-medium">
-              <div
-                className={`flex-1 px-3 py-1.5 rounded-sm cursor-pointer transition-colors text-center
-                  ${activeTab === "notifications" ? "bg-white text-[var(--fixed-sidebar-fg)] shadow-sm" : "text-[var(--fixed-sidebar-muted)] hover:text-[var(--fixed-sidebar-fg)]"}`}
-                onClick={() => setActiveTab("notifications")}
-              >
-                Notifications ({unreadNotifications.length})
-              </div>
-              <div
-                className={`flex-1 px-3 py-1.5 rounded-sm cursor-pointer transition-colors text-center
-                  ${activeTab === "invitations" ? "bg-white text-[var(--fixed-sidebar-fg)] shadow-sm" : "text-[var(--fixed-sidebar-muted)] hover:text-[var(--fixed-sidebar-fg)]"}`}
-                onClick={() => setActiveTab("invitations")}
-              >
-                Invitations ({pendingInvitations.length})
-              </div>
-            </div>
-
-            <div className="max-h-[300px] overflow-auto">
-              {activeTab === "notifications" ? (
-                recentNotifications.length > 0 ? (
-                  recentNotifications.map((notification) => (
-                    <DropdownMenuItem
-                      key={notification.id}
-                      className="py-2 px-3 cursor-pointer"
-                      onClick={() => setSelectedNotification(notification)}
-                    >
-                      <div className="flex items-start gap-2 w-full">
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage
-                            src={notification.sender.avatar || "/placeholder.svg"}
-                            alt={notification.sender.name}
-                          />
-                          <AvatarFallback>{notification.sender.initials}</AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <p
-                              className={`text-sm font-medium truncate ${!notification.read ? "text-[var(--fixed-primary)]" : ""}`}
-                            >
-                              {notification.title}
-                            </p>
-                            {!notification.read && (
-                              <div className="h-2 w-2 rounded-full bg-[var(--fixed-primary)]"></div>
-                            )}
-                          </div>
-                          <p className="text-xs text-[var(--fixed-sidebar-muted)] truncate">{notification.message}</p>
-                          <p className="text-xs text-[var(--fixed-sidebar-muted)] mt-1">
-                            {formatDistanceToNow(new Date(notification.date), { addSuffix: true })}
-                          </p>
-                        </div>
-                      </div>
-                    </DropdownMenuItem>
-                  ))
-                ) : (
-                  <div className="py-8 text-center">
-                    <p className="text-sm text-[var(--fixed-sidebar-muted)]">No notifications yet</p>
-                  </div>
-                )
-              ) : recentInvitations.length > 0 ? (
-                recentInvitations.map((invitation) => (
-                  <DropdownMenuItem
-                    key={invitation.id}
-                    className="py-2 px-3 cursor-pointer"
-                    onClick={() => setSelectedInvitation(invitation)}
-                  >
-                    <div className="flex items-start gap-2 w-full">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={invitation.senderAvatar || "/placeholder.svg"} alt={invitation.senderName} />
-                        <AvatarFallback>{invitation.senderInitials}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <p className="text-sm font-medium truncate">{invitation.projectName}</p>
-                          {invitation.status === "pending" && (
-                            <div className="h-2 w-2 rounded-full bg-[var(--fixed-warning)]"></div>
-                          )}
-                        </div>
-                        <p className="text-xs text-[var(--fixed-sidebar-muted)] truncate">
-                          Invitation from {invitation.senderName}
-                        </p>
-                        <p className="text-xs text-[var(--fixed-sidebar-muted)] mt-1">
-                          {formatDistanceToNow(new Date(invitation.createdAt), { addSuffix: true })}
-                        </p>
-                      </div>
-                    </div>
-                  </DropdownMenuItem>
-                ))
-              ) : (
-                <div className="py-8 text-center">
-                  <p className="text-sm text-[var(--fixed-sidebar-muted)]">No invitations yet</p>
-                </div>
-              )}
-            </div>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="justify-center font-medium" onClick={() => router.push("/notifications")}>
-              View all {activeTab}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="relative rounded-full h-8 w-8 border border-[var(--fixed-card-border)]"
-            >
-              <Avatar className="h-8 w-8">
-                <AvatarImage src={currentUser?.avatar || "/placeholder.svg"} alt={currentUser?.name || "User"} />
-                <AvatarFallback>{currentUser?.initials || "U"}</AvatarFallback>
-              </Avatar>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem onClick={() => router.push("/profile")}>
-                <User className="mr-2 h-4 w-4" />
-                <span>Profile</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => router.push("/settings")}>
-                <Settings className="mr-2 h-4 w-4" />
-                <span>Settings</span>
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleLogout}>
-              <LogOut className="mr-2 h-4 w-4" />
-              <span>Log out</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+      <HeaderActions
+        notifications={notifications}
+        invitations={invitations}
+        projects={projects}
+        currentUser={currentUser}
+        unreadNotifications={unreadNotifications}
+        pendingInvitations={pendingInvitations}
+        recentNotifications={recentNotifications}
+        recentInvitations={recentInvitations}
+        totalUnread={totalUnread}
+        handleLogout={handleLogout}
+        handleAcceptInvitation={handleAcceptInvitation}
+        handleDeclineInvitation={handleDeclineInvitation}
+        handleRemoveInvitation={handleRemoveInvitation}
+        handleMarkNotificationAsRead={handleMarkNotificationAsRead}
+        handleDeleteNotification={handleDeleteNotification}
+        selectedInvitation={selectedInvitation}
+        setSelectedInvitation={setSelectedInvitation}
+        selectedNotification={selectedNotification}
+        setSelectedNotification={setSelectedNotification}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+      />
 
       {selectedInvitation && (
         <InvitationDetailsDialog
