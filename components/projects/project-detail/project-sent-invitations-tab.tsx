@@ -94,6 +94,7 @@ export function ProjectSentInvitationsTab({ project }: ProjectSentInvitationsTab
 
                 {selectedInvitation && (
                     <InvitationDetailsDialog
+                        onResetInvitations={fetchAllInvitations}
                         invitation={selectedInvitation}
                         open={detailDialogOpen}
                         onOpenChange={setDetailDialogOpen}
