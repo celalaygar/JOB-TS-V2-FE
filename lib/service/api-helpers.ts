@@ -25,7 +25,9 @@ import {
   SPRINT_URL, // Import SPRINT_URL
   TEAM_DETAIL_URL,
   PROJECT_TASK,
-  PROJECT_TASK_SUBTASKS
+  PROJECT_TASK_SUBTASKS,
+  INVITATION_BY_PENDING,
+  INVITATION_PROJECT
 } from "@/lib/service/BasePath";
 import { ProjectTask, ProjectTaskFilterRequest, TaskResponse } from "@/types/task";
 
@@ -573,5 +575,28 @@ export const getAllSprintTasksHelper = async (sprintId: string, projectId: strin
     errorMessagePrefix: "Failed to load sprint tasks",
     successToastTitle: "Sprint Tasks Loaded",
     errorToastTitle: "Error Loading Sprint Tasks",
+  });
+}
+
+export const getAllInvitationsByPendingHelper = async (options: FetchEntitiesOptions): Promise<Invitation[] | null> => {
+  return apiCall<Invitation[]>({
+    url: INVITATION_BY_PENDING,
+    method: httpMethods.GET,
+    setLoading: options.setLoading,
+    successMessage: "All invitations have been retrieved.",
+    errorMessagePrefix: "Failed to load invitations",
+    successToastTitle: "Invitations Loaded",
+    errorToastTitle: "Error Loading Invitations",
+  });
+};
+export const getAllInvitationsCountByInvitationStatusHelper = async (status: string, options: FetchEntitiesOptions): Promise<number | null> => {
+  return apiCall<number>({
+    url: `${INVITATION_PROJECT}/count/${status}`,
+    method: httpMethods.GET,
+    setLoading: options.setLoading,
+    successMessage: `Count of invitations with status ${status} has been retrieved.`,
+    errorMessagePrefix: "Failed to load invitations count",
+    successToastTitle: "Invitations Count Loaded",
+    errorToastTitle: "Error Loading Invitations Count",
   });
 }

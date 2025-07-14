@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect, memo } from "react"
+import React, { useState, useEffect, memo, use, useCallback } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -35,6 +35,9 @@ import { Badge } from "@/components/ui/badge"
 import type { SidebarRoutes } from "@/types/sidebarRoute" // Declare the SidebarRoutes variable
 import { signOut, useSession } from "next-auth/react"
 import { useAuthUser } from "@/lib/hooks/useAuthUser"
+import { InvitationStatus } from "@/types/invitation"
+import { get } from "http"
+import { getAllInvitationsCountByInvitationStatusHelper } from "@/lib/service/api-helpers"
 
 function AppSidebar() {
 
@@ -45,9 +48,24 @@ function AppSidebar() {
   const [openCategories, setOpenCategories] = useState<string[]>([])
   const currentUser = useSelector((state: RootState) => state.auth.currentUser)
   const [userRole, setUserRole] = useState<string | null>(null)
-  const unreadNotifications = useSelector(
-    (state: RootState) => state.notifications?.notifications.filter((n) => !n.read).length || 0,
-  )
+  const [notificationLoading, setNotificationLoading] = useState<boolean>(false)
+  const [invitationCount, setInvitationCount] = useState<number>(0)
+
+
+  const getAllInvitationsCount = useCallback(async () => {
+    const response: number | null = await getAllInvitationsCountByInvitationStatusHelper(InvitationStatus.PENDING, {
+      setLoading: setNotificationLoading
+    })
+    if (typeof response === "number") {
+      setInvitationCount((prevCount) => prevCount + response)
+    }
+  }, [])
+
+  useEffect(() => {
+    getAllInvitationsCount()
+  }, [getAllInvitationsCount])
+
+
   useEffect(() => {
     if (currentUser?.role) {
       setUserRole(currentUser.role)
@@ -62,7 +80,7 @@ function AppSidebar() {
       routes: [
         { href: "/dashboard", icon: LayoutDashboard, label: translations.sidebar.dashboard },
         { href: "/weekly-board", icon: Calendar, label: translations.sidebar.weeklyBoard },
-        { href: "/notifications", icon: Bell, label: translations.sidebar.notifications, badge: unreadNotifications },
+        { href: "/notifications", icon: Bell, label: translations.sidebar.notifications, badge: invitationCount > 0 ? invitationCount : undefined },
         { href: "/reports", icon: BarChart3, label: translations.sidebar.reports },
         { href: "/users", icon: Users, label: translations.sidebar.users },
       ],
@@ -206,8 +224,10 @@ function AppSidebar() {
                         >
                           {React.createElement(route.icon, { className: "h-4 w-4" })}
                           <span>{route.label}</span>
-                          {route.badge !== undefined && (
-                            <Badge className="bg-[var(--fixed-primary)] text-white">{route.badge}</Badge>
+                          {route.href === "/notifications" && invitationCount > 0 && (
+                            <Badge className="bg-[var(--fixed-primary)] text-white ml-auto">
+                              {invitationCount}
+                            </Badge>
                           )}
                         </Link>
                       )

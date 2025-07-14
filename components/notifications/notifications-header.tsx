@@ -17,23 +17,23 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { Invitation } from "@/types/invitation"
 
 interface NotificationsHeaderProps {
   filter: "all" | "unread" | "mentions" | "invitations"
   onFilterChange: (filter: "all" | "unread" | "mentions" | "invitations") => void
   searchQuery: string
   onSearchChange: (query: string) => void
+  invitations?: Invitation[]
 }
 
-export function NotificationsHeader({ filter, onFilterChange, searchQuery, onSearchChange }: NotificationsHeaderProps) {
+export function NotificationsHeader({ filter, onFilterChange, searchQuery, onSearchChange, invitations }: NotificationsHeaderProps) {
   const dispatch = useDispatch()
   const notifications = useSelector((state: RootState) => state.notifications.notifications)
-  const invitations = useSelector((state: RootState) => state.invitations.invitations)
-  const pendingInvitations = invitations.filter((inv) => inv.status === "pending")
 
   const unreadCount = notifications.filter((n) => !n.read).length
   const mentionsCount = notifications.filter((n) => n.type === "mention").length
-  const invitationsCount = pendingInvitations.length
+  const invitationsCount = invitations.length
 
   const handleMarkAllAsRead = () => {
     dispatch(markAllAsRead())
