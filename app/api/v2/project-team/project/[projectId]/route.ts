@@ -11,9 +11,11 @@ export async function GET(req: NextRequest,
     { params }: { params: Promise<{ projectId: string }> }
 ) {
 
+    const clientIp = req.ip || req.headers.get('x-forwarded-for') || req.headers.get('remote-address');
     const pId = await (await params).projectId;
     return RouteBaseService.request(URL + PROJECT_TEAM + "/project/" + pId, {
-        method: 'GET'
+        method: 'GET',
+        clientIp: clientIp, // ✅ IP'yi servise ilet
         // withAuth default: true
     });
 }

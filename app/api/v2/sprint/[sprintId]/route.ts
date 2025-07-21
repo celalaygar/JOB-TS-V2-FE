@@ -9,10 +9,12 @@ const SPRINT = "sprint"
 export async function GET(req: NextRequest,
     { params }: { params: Promise<{ sprintId: string }> }
 ) {
+    const clientIp = req.ip || req.headers.get('x-forwarded-for') || req.headers.get('remote-address');
 
     const sId = await (await params).sprintId;
     return RouteBaseService.request(URL + SPRINT + "/" + sId, {
-        method: 'GET'
+        method: 'GET',
+        clientIp: clientIp,
         // withAuth default: true
     });
 }
@@ -21,11 +23,13 @@ export async function PUT(req: NextRequest,
     { params }: { params: Promise<{ sprintId: string }> }
 ) {
 
+    const clientIp = req.ip || req.headers.get('x-forwarded-for') || req.headers.get('remote-address');
     const sId = await (await params).sprintId;
     const body = await req.json();
     return RouteBaseService.request(URL + SPRINT + "/" + sId, {
         method: 'PUT',
-        body: body
+        body: body,
+        clientIp: clientIp, // ✅ IP'yi servise ilet
         // withAuth default: true
     });
 }

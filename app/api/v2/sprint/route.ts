@@ -7,18 +7,21 @@ const URL = process.env.BASE_V2_URL
 const SPRINT = "sprint"
 
 export async function GET(req: NextRequest) {
-
+    const clientIp = req.ip || req.headers.get('x-forwarded-for') || req.headers.get('remote-address');
     return RouteBaseService.request(URL + SPRINT, {
-        method: 'GET'
+        method: 'GET',
+        clientIp: clientIp, // ✅ IP'yi servise ilet
         // withAuth default: true
     });
 }
 
 export async function POST(req: NextRequest) {
+    const clientIp = req.ip || req.headers.get('x-forwarded-for') || req.headers.get('remote-address');
     const body = await req.json();
     return RouteBaseService.request(URL + SPRINT, {
         method: 'POST',
-        body: body
+        body: body,
+        clientIp: clientIp, // ✅ IP'yi servise ilet
         // withAuth default: true
     });
 }

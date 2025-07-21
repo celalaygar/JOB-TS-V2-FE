@@ -9,10 +9,12 @@ const PROJECTS_TASK = "project-task"
 export async function GET(req: NextRequest,
     { params }: { params: Promise<{ projectTaskId: string }> }
 ) {
+    const clientIp = req.ip || req.headers.get('x-forwarded-for') || req.headers.get('remote-address');
 
     const pId = await (await params).projectTaskId;
     return RouteBaseService.request(URL + PROJECTS_TASK + "/" + pId, {
-        method: 'GET'
+        method: 'GET',
+        clientIp: clientIp, // ✅ IP'yi servise ilet
         // withAuth default: true
     });
 }
@@ -21,11 +23,14 @@ export async function GET(req: NextRequest,
 export async function PUT(req: NextRequest,
     { params }: { params: Promise<{ projectTaskId: string }> }
 ) {
+    const clientIp = req.ip || req.headers.get('x-forwarded-for') || req.headers.get('remote-address');
+
     const body = await req.json();
     const pId = await (await params).projectTaskId;
     return RouteBaseService.request(URL + PROJECTS_TASK + "/" + pId, {
         method: 'PUT',
-        body: body
+        body: body,
+        clientIp: clientIp, // ✅ IP'yi servise ilet
         // withAuth default: true
     });
 }

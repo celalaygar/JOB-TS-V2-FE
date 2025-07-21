@@ -11,9 +11,11 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ role
 
     const roleId = await (await params).roleId;
     const body = await req.json();
+    const clientIp = req.ip || req.headers.get('x-forwarded-for') || req.headers.get('remote-address');
     return RouteBaseService.request(URL + USER_ROLES + "/" + roleId, {
         method: 'PUT',
-        body: body
+        body: body,
+        clientIp: clientIp, // ✅ IP'yi servise ilet
         // withAuth default: true
     });
 }
