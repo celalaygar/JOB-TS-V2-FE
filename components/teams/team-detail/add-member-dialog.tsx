@@ -1,12 +1,12 @@
 "use client"
 
-import { useState } from "react"
-import { Check, ChevronsUpDown, UserX } from "lucide-react"
+
+import { useCallback, useEffect, useState } from "react"
+import { Check, ChevronsUpDown, UserX, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import {
   Dialog,
   DialogContent,
@@ -15,31 +15,48 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { cn } from "@/lib/utils"
+import { useToast } from "@/hooks/use-toast"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { cn } from "@/lib/utils"
-import { useToast } from "@/hooks/use-toast"
-import type { User } from "@/data/users"
+import { ProjectUser } from "@/types/project"
+import { getProjectUsersHelper } from "@/lib/service/api-helpers"
 
 interface AddMemberDialogProps {
   isOpen: boolean
   onOpenChange: (open: boolean) => void
-  availableUsers: User[]
+  projectId: string
 }
 
-export function AddMemberDialog({ isOpen, onOpenChange, availableUsers }: AddMemberDialogProps) {
+export function AddMemberDialog({ isOpen, onOpenChange, projectId }: AddMemberDialogProps) {
   const { toast } = useToast()
 
-  const [addMemberTab, setAddMemberTab] = useState<"existing" | "new">("existing")
   const [selectedUsers, setSelectedUsers] = useState<string[]>([])
-  const [newMemberData, setNewMemberData] = useState({
-    name: "",
-    email: "",
-    role: "Member",
-  })
+  const [searchQuery, setSearchQuery] = useState("")
+  const [isComboboxOpen, setIsComboboxOpen] = useState(false)
   const [addMemberErrors, setAddMemberErrors] = useState<Record<string, string>>({})
+
+
+  const [loading, setLoading] = useState(false);
+  const [projectUsers, setprojectUsers] = useState<ProjectUser[]>()
+
+  const fetchProjectUsers = useCallback(async () => {
+    const usersData = await getProjectUsersHelper(projectId, { setLoading });
+    if (usersData) {
+      setprojectUsers(usersData);
+      console.log("Project users fetched:", usersData);
+    } else {
+      setprojectUsers([]);
+    }
+  }, [projectId]);
+
+  useEffect(() => {
+    fetchProjectUsers();
+  }, [fetchProjectUsers]);
+
+
 
   const handleUserSelection = (userId: string) => {
     setSelectedUsers((prev) => {
@@ -49,16 +66,12 @@ export function AddMemberDialog({ isOpen, onOpenChange, availableUsers }: AddMem
         return [...prev, userId]
       }
     })
-  }
 
-  const handleNewMemberChange = (field: string, value: string) => {
-    setNewMemberData((prev) => ({ ...prev, [field]: value }))
-
-    // Clear error when field is edited
-    if (addMemberErrors[field]) {
+    // Clear error when user is selected
+    if (addMemberErrors.users) {
       setAddMemberErrors((prev) => {
         const newErrors = { ...prev }
-        delete newErrors[field]
+        delete newErrors.users
         return newErrors
       })
     }
@@ -67,24 +80,8 @@ export function AddMemberDialog({ isOpen, onOpenChange, availableUsers }: AddMem
   const validateAddMemberForm = () => {
     const newErrors: Record<string, string> = {}
 
-    if (addMemberTab === "new") {
-      if (!newMemberData.name.trim()) {
-        newErrors.name = "Name is required"
-      }
-
-      if (!newMemberData.email.trim()) {
-        newErrors.email = "Email is required"
-      } else if (!/\S+@\S+\.\S+/.test(newMemberData.email)) {
-        newErrors.email = "Email is invalid"
-      }
-
-      if (!newMemberData.role.trim()) {
-        newErrors.role = "Role is required"
-      }
-    } else {
-      if (selectedUsers.length === 0) {
-        newErrors.users = "Please select at least one user"
-      }
+    if (selectedUsers.length === 0) {
+      newErrors.users = "Please select at least one user"
     }
 
     setAddMemberErrors(newErrors)
@@ -94,181 +91,156 @@ export function AddMemberDialog({ isOpen, onOpenChange, availableUsers }: AddMem
   const handleAddMembers = () => {
     if (!validateAddMemberForm()) return
 
-    if (addMemberTab === "existing") {
-      const selectedUserNames = selectedUsers
-        .map((id) => availableUsers.find((user) => user.id === id)?.name || "")
-        .filter(Boolean)
+    const selectedUserNames = selectedUsers
+      .map((id) => !!projectUsers && projectUsers.find((user) => user.id === id)?.name || "")
+      .filter(Boolean)
 
-      toast({
-        title: "Team members added",
-        description: `Added ${selectedUserNames.length} members to the team`,
-      })
-    } else {
-      toast({
-        title: "Team member invited",
-        description: `Invitation sent to ${newMemberData.email}`,
-      })
-    }
+    toast({
+      title: "Team members added",
+      description: `Added ${selectedUserNames.length} members to the team`,
+    })
 
     // Reset form
     setSelectedUsers([])
-    setNewMemberData({
-      name: "",
-      email: "",
-      role: "Member",
-    })
+    setSearchQuery("")
+    setIsComboboxOpen(false)
+    onOpenChange(false)
+  }
+
+  const handleRemoveUser = (userId: string) => {
+    setSelectedUsers((prev) => prev.filter((id) => id !== userId))
+  }
+
+  const handleDialogClose = () => {
+    setSelectedUsers([])
+    setSearchQuery("")
+    setIsComboboxOpen(false)
+    setAddMemberErrors({})
     onOpenChange(false)
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto ">
-        <DialogHeader>
-          <DialogTitle>Add Team Member</DialogTitle>
-          <DialogDescription>Add existing users or invite new members to join the team.</DialogDescription>
+    <Dialog open={isOpen} onOpenChange={handleDialogClose}>
+      <DialogContent className="sm:max-w-[600px] max-h-[80vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
+          <DialogTitle>Add Team Members</DialogTitle>
+          <DialogDescription>Search and select existing users to add to the team.</DialogDescription>
         </DialogHeader>
 
-        <Tabs value={addMemberTab} onValueChange={(value) => setAddMemberTab(value as "existing" | "new")}>
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="existing">Add Existing Users</TabsTrigger>
-            <TabsTrigger value="new">Invite New Member</TabsTrigger>
-          </TabsList>
+        <div className="flex-1 min-h-0 space-y-4 py-4">
+          <div className="space-y-4">
+            <Label className={addMemberErrors.users ? "text-destructive" : ""}>Search and Select Users</Label>
 
-          <TabsContent value="existing" className="space-y-4 py-4">
-            <div className="space-y-4">
-              <Label className={addMemberErrors.users ? "text-destructive" : ""}>Select Users to Add</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    className={cn("w-full justify-between", addMemberErrors.users ? "border-destructive" : "")}
-                  >
-                    {selectedUsers.length > 0 ? `${selectedUsers.length} users selected` : "Select users"}
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-full p-0">
-                  <Command>
-                    <CommandInput placeholder="Search users..." />
-                    <CommandList>
-                      <CommandEmpty>No users found.</CommandEmpty>
-                      <CommandGroup>
-                        {availableUsers.map((user) => (
-                          <CommandItem key={user.id} value={user.id} onSelect={() => handleUserSelection(user.id)}>
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                selectedUsers.includes(user.id) ? "opacity-100" : "opacity-0",
-                              )}
-                            />
-                            <div className="flex items-center">
-                              <span>{user.name}</span>
-                              <Badge className="ml-2 text-xs">{user.role}</Badge>
+            {/* Searchable Combobox */}
+            <div className="relative">
+              <div
+                className={cn(
+                  "flex items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background cursor-pointer",
+                  "focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2",
+                  addMemberErrors.users ? "border-destructive" : "",
+                  isComboboxOpen ? "ring-2 ring-ring ring-offset-2" : "",
+                )}
+                onClick={() => setIsComboboxOpen(!isComboboxOpen)}
+              >
+                <div className="flex items-center flex-1">
+                  <Search className="mr-2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search users by name, email, or role..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="border-0 p-0 h-auto focus-visible:ring-0 focus-visible:ring-offset-0"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </div>
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </div>
+
+              {/* Dropdown */}
+              {isComboboxOpen && (
+                <div className="absolute top-full left-0 right-0 z-50 mt-1 max-h-60 overflow-auto rounded-md border bg-popover text-popover-foreground shadow-md">
+                  {!!projectUsers && projectUsers.length > 0 ? (
+                    <div className="p-1">
+                      {projectUsers.map((user) => (
+                        <div
+                          key={user.id}
+                          className={cn(
+                            "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none",
+                            "hover:bg-blue-100 hover:text-dark",
+                            selectedUsers.includes(user.id) ? "bg-blue-200" : "",
+                          )}
+                          onClick={() => handleUserSelection(user.id)}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              selectedUsers.includes(user.id) ? "opacity-100" : "opacity-0",
+                            )}
+                          />
+                          <div className="flex items-center flex-1">
+                            <div className="flex flex-col">
+                              <span className="font-medium">{user.email}</span>
+                              <span className="text-xs text-muted-foreground">{user.firstname + " " + user.lastname}</span>
                             </div>
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-              {addMemberErrors.users && <p className="text-xs text-destructive">{addMemberErrors.users}</p>}
-
-              {selectedUsers.length > 0 && (
-                <div className="mt-4">
-                  <Label>Selected Users ({selectedUsers.length})</Label>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {selectedUsers.map((userId) => {
-                      const user = availableUsers.find((u) => u.id === userId)
-                      return user ? (
-                        <Badge key={userId} variant="secondary" className="flex items-center gap-1">
-                          {user.name}
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-4 w-4 p-0 hover:bg-transparent"
-                            onClick={() => handleUserSelection(userId)}
-                          >
-                            <UserX className="h-3 w-3" />
-                            <span className="sr-only">Remove</span>
-                          </Button>
-                        </Badge>
-                      ) : null
-                    })}
-                  </div>
+                            <Badge variant="secondary" className="ml-2 text-xs">
+                              {user.projectSystemRole}
+                            </Badge>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-4 text-center text-sm text-muted-foreground">
+                      {searchQuery ? "No users found matching your search." : "No users available."}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
-          </TabsContent>
 
-          <TabsContent value="new" className="space-y-4 py-4">
-            <div className="grid gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="name" className={addMemberErrors.name ? "text-destructive" : ""}>
-                  Full Name
-                </Label>
-                <Input
-                  id="name"
-                  value={newMemberData.name}
-                  onChange={(e) => handleNewMemberChange("name", e.target.value)}
-                  placeholder="John Smith"
-                  className={addMemberErrors.name ? "border-destructive" : ""}
-                />
-                {addMemberErrors.name && <p className="text-xs text-destructive">{addMemberErrors.name}</p>}
+            {addMemberErrors.users && <p className="text-xs text-destructive">{addMemberErrors.users}</p>}
+
+            {/* Selected Users Display */}
+            {selectedUsers.length > 0 && (
+              <div className="space-y-2">
+                <Label>Selected Users ({selectedUsers.length})</Label>
+                <div className="max-h-32 overflow-y-auto space-y-2 p-3 border rounded-md bg-muted/500">
+                  {selectedUsers.map((userId) => {
+                    const user = !!projectUsers && projectUsers.find((u: ProjectUser) => u.id === userId)
+                    return user ? (
+                      <div key={userId} className="flex items-center justify-between p-2 bg-background rounded border">
+                        <div className="flex items-center space-x-2">
+                          <div className="flex flex-col">
+                            <span className="text-sm font-medium">{user.email}</span>
+                            <span className="text-xs text-muted-foreground">{user.firstname + " " + user.lastname}</span>
+                          </div>
+                          <Badge variant="secondary" className="text-xs">
+                            {user.projectSystemRole}
+                          </Badge>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRemoveUser(userId)}
+                          className="h-8 w-8 p-0 hover:bg-destructive/10"
+                        >
+                          <UserX className="h-4 w-4 text-destructive" />
+                          <span className="sr-only">Remove user</span>
+                        </Button>
+                      </div>
+                    ) : null
+                  })}
+                </div>
               </div>
+            )}
+          </div>
+        </div>
 
-              <div className="grid gap-2">
-                <Label htmlFor="email" className={addMemberErrors.email ? "text-destructive" : ""}>
-                  Email Address
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={newMemberData.email}
-                  onChange={(e) => handleNewMemberChange("email", e.target.value)}
-                  placeholder="john.smith@example.com"
-                  className={addMemberErrors.email ? "border-destructive" : ""}
-                />
-                {addMemberErrors.email && <p className="text-xs text-destructive">{addMemberErrors.email}</p>}
-              </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="role" className={addMemberErrors.role ? "text-destructive" : ""}>
-                  Role
-                </Label>
-                <Select value={newMemberData.role} onValueChange={(value) => handleNewMemberChange("role", value)}>
-                  <SelectTrigger id="role" className={addMemberErrors.role ? "border-destructive" : ""}>
-                    <SelectValue placeholder="Select role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Member">Member</SelectItem>
-                    <SelectItem value="Lead">Lead</SelectItem>
-                    <SelectItem value="Manager">Manager</SelectItem>
-                    <SelectItem value="Admin">Admin</SelectItem>
-                  </SelectContent>
-                </Select>
-                {addMemberErrors.role && <p className="text-xs text-destructive">{addMemberErrors.role}</p>}
-              </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="message">Invitation Message (Optional)</Label>
-                <Textarea
-                  id="message"
-                  placeholder="Enter a personal message to include in the invitation email"
-                  rows={3}
-                />
-              </div>
-            </div>
-          </TabsContent>
-        </Tabs>
-
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+        <DialogFooter className="flex-shrink-0 border-t pt-4">
+          <Button variant="outline" onClick={handleDialogClose}>
             Cancel
           </Button>
-          <Button onClick={handleAddMembers}>
-            {addMemberTab === "existing" ? "Add Selected Users" : "Send Invitation"}
+          <Button onClick={handleAddMembers} disabled={selectedUsers.length === 0}>
+            Add Selected Users ({selectedUsers.length})
           </Button>
         </DialogFooter>
       </DialogContent>

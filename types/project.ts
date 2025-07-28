@@ -104,7 +104,7 @@ export interface ProjectUser {
   lastname: string;
   username?: string | null;
   password?: string | null;
-  systemRoles?: string[] | null;
+  projectSystemRole?: string[] | null;
   name?: string | null;
   initials?: string | null;
   teamRole?: string | null;

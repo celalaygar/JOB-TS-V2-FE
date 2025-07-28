@@ -41,7 +41,6 @@ export function ProjectUsersTab({
   inviteDialogOpen = false,
   setInviteDialogOpen = () => { },
 }: ProjectUsersTabProps) {
-  const [projectUsers, setprojectUsers] = useState<ProjectUser[]>()
 
   const [searchQuery, setSearchQuery] = useState("")
   const [roleFilter, setRoleFilter] = useState("all")
@@ -49,6 +48,7 @@ export function ProjectUsersTab({
   const [departmentFilter, setDepartmentFilter] = useState("all")
 
   const [loading, setLoading] = useState(false);
+  const [projectUsers, setprojectUsers] = useState<ProjectUser[]>()
 
   const fetchProjectUsers = useCallback(async () => {
     const usersData = await getProjectUsersHelper(project.id, { setLoading });
@@ -237,7 +237,7 @@ export function ProjectUsersTab({
                     </div>
                     <div className="flex items-center text-sm">
                       <Shield className="mr-2 h-4 w-4 text-muted-foreground" />
-                      <span className="text-muted-foreground">{user.systemRoles}</span>
+                      <span className="text-muted-foreground">{user.projectSystemRole}</span>
                     </div>
                     {user.department && (
                       <div className="flex items-center text-sm">

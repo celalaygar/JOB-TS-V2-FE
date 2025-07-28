@@ -242,7 +242,7 @@ export default function TeamDetailPage({ projectId, teamId }: { projectId: strin
         {project && <ProjectDetailsDialog isOpen={isProjectDetailsOpen} onOpenChange={setIsProjectDetailsOpen} project={project} />}
 
         {/* Add Member Dialog */}
-        <AddMemberDialog isOpen={isAddMemberOpen} onOpenChange={setIsAddMemberOpen} availableUsers={availableUsers} />
+        <AddMemberDialog projectId={projectId} isOpen={isAddMemberOpen} onOpenChange={setIsAddMemberOpen} availableUsers={availableUsers} />
 
         {/* Edit Role Dialog */}
         <EditRoleDialog
