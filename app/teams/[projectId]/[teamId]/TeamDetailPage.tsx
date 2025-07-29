@@ -3,8 +3,6 @@
 import { useCallback, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { teams, type TeamMember, type TeamMemberStatus } from "@/data/teams"
-import { projects } from "@/data/projects"
-import { users } from "@/data/users"
 import { Card, CardContent } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
 
@@ -15,11 +13,11 @@ import { ProjectDetailsDialog } from "@/components/teams/team-detail/project-det
 import { AddMemberDialog } from "@/components/teams/team-detail/add-member-dialog"
 import { EditRoleDialog } from "@/components/teams/team-detail/edit-role-dialog"
 import { ConfirmationDialog } from "@/components/teams/team-detail/confirmation-dialog"
-import { Project, ProjectTeam } from "@/types/project"
+import { Project, ProjectTeam, ProjectUser } from "@/types/project"
 import { useDispatch } from "react-redux"
 import { selectProject } from "@/lib/redux/features/projects-slice"
 import { Loader2 } from "lucide-react"
-import { getProjectHelper, getProjectTeamDetailHelper } from "@/lib/service/api-helpers" // Import the new helpers
+import { getProjectHelper, getProjectTeamDetailHelper, getProjectTeamUsersInTeamHelper } from "@/lib/service/api-helpers" // Import the new helpers
 
 
 export default function TeamDetailPage({ projectId, teamId }: { projectId: string; teamId: string }) {
@@ -57,6 +55,24 @@ export default function TeamDetailPage({ projectId, teamId }: { projectId: strin
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch()
 
+
+  const [projectUsers, setprojectUsers] = useState<ProjectUser[]>()
+
+  const fetchProjectUsers = useCallback(async () => {
+    let body = {
+      projectId: projectId,
+      teamId: teamId,
+    }
+    const usersData = await getProjectTeamUsersInTeamHelper(body, { setLoading });
+    if (usersData) {
+      setprojectUsers(usersData);
+      console.log("Project users fetched:", usersData);
+    } else {
+      setprojectUsers([]);
+    }
+  }, []);
+
+
   const fetchProject = useCallback(async () => {
     if (!projectId) {
       setLoading(false);
@@ -84,7 +100,8 @@ export default function TeamDetailPage({ projectId, teamId }: { projectId: strin
   useEffect(() => {
     fetchProject()
     fetchProjectTeamDetail()
-  }, [fetchProject, fetchProjectTeamDetail])
+    fetchProjectUsers();
+  }, [fetchProject, fetchProjectTeamDetail, fetchProjectUsers]);
 
   // If team or project not found, show error
   if (!teamData || !project) {
@@ -111,25 +128,7 @@ export default function TeamDetailPage({ projectId, teamId }: { projectId: strin
   // Get unique roles for filter
   const uniqueRoles = Array.from(new Set(teamData.members && teamData.members.map((member) => member.role)))
 
-  // Filter members based on search and filters
-  const filteredMembers = teamData.members && teamData.members.filter((member) => {
-    // Apply search filter
-    const matchesSearch =
-      member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      member.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      member.role.toLowerCase().includes(searchQuery.toLowerCase())
 
-    // Apply status filter
-    const matchesStatus = statusFilter === "All" || member.status === statusFilter
-
-    // Apply role filter
-    const matchesRole = roleFilter === "All" || member.role === roleFilter
-
-    return matchesSearch && matchesStatus && matchesRole
-  })
-
-  // Get available users (not already in the team)
-  const availableUsers = users.filter((user) => teamData.members && !teamData.members.some((member) => member.email === user.email))
 
   // Handle member actions
   const handleEditRole = (member: TeamMember) => {
@@ -230,8 +229,8 @@ export default function TeamDetailPage({ projectId, teamId }: { projectId: strin
         />
 
         {/* Team Members Table */}
-        {filteredMembers && <TeamMembersTable
-          members={filteredMembers}
+        {projectUsers && <TeamMembersTable
+          members={projectUsers}
           onEditRole={handleEditRole}
           onBanMember={(member) => setConfirmAction({ type: "ban", member })}
           onDeactivateMember={(member) => setConfirmAction({ type: "deactivate", member })}
@@ -242,7 +241,12 @@ export default function TeamDetailPage({ projectId, teamId }: { projectId: strin
         {project && <ProjectDetailsDialog isOpen={isProjectDetailsOpen} onOpenChange={setIsProjectDetailsOpen} project={project} />}
 
         {/* Add Member Dialog */}
-        <AddMemberDialog projectId={projectId} isOpen={isAddMemberOpen} onOpenChange={setIsAddMemberOpen} availableUsers={availableUsers} />
+        <AddMemberDialog
+          fetchProjectUsers={fetchProjectUsers}
+          teamId={teamId}
+          projectId={projectId}
+          isOpen={isAddMemberOpen}
+          onOpenChange={setIsAddMemberOpen} />
 
         {/* Edit Role Dialog */}
         <EditRoleDialog

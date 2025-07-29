@@ -7,9 +7,10 @@ import { Badge } from "@/components/ui/badge"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import type { TeamMember, TeamMemberStatus } from "@/data/teams"
 import { UserActionDialog } from "./user-action-dialog"
+import { ProjectUser } from "@/types/project"
 
 interface TeamMembersTableProps {
-  members: TeamMember[]
+  members: ProjectUser[]
   onEditRole: (member: TeamMember) => void
   onBanMember: (member: TeamMember) => void
   onDeactivateMember: (member: TeamMember) => void
@@ -58,29 +59,23 @@ export function TeamMembersTable({
             </tr>
           </thead>
           <tbody className="[&_tr:last-child]:border-0">
-            {members.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="p-4 text-center text-muted-foreground">
-                  No team members found matching your filters
-                </td>
-              </tr>
-            ) : (
-              members.map((member) => (
+            {
+              !!members ? members.map((member: ProjectUser) => (
                 <tr key={member.id} className="border-b transition-colors hover:bg-muted/50">
                   <td className="p-4 align-middle">
                     <div className="flex items-center gap-3">
                       <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                        {member.initials}
+                        {member.firstname.charAt(0) + " " + member.lastname.charAt(0)}
                       </div>
                       <div>
-                        <div className="font-medium">{member.name}</div>
+                        <div className="font-medium">{member.firstname + " " + member.lastname}</div>
                         <div className="text-xs text-muted-foreground md:hidden">{member.email}</div>
                       </div>
                     </div>
                   </td>
                   <td className="p-4 align-middle hidden md:table-cell">{member.email}</td>
-                  <td className="p-4 align-middle">{member.role}</td>
-                  <td className="p-4 align-middle">{getStatusBadge(member.status)}</td>
+                  <td className="p-4 align-middle">{member.projectSystemRole}</td>
+                  <td className="p-4 align-middle">{getStatusBadge("Active")}</td>
                   <td className="p-4 align-middle text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -116,7 +111,14 @@ export function TeamMembersTable({
                   </td>
                 </tr>
               ))
-            )}
+                :
+                <tr>
+                  <td colSpan={5} className="p-4 text-center text-muted-foreground">
+                    No team members found matching your filters
+                  </td>
+                </tr>
+
+            }
           </tbody>
         </table>
       </div>

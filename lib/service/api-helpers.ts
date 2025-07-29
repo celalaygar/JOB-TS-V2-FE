@@ -29,7 +29,11 @@ import {
   INVITATION_BY_PENDING,
   INVITATION_PROJECT,
   INVITATION_ACCEPT,
-  INVITATION_DECLINE
+  INVITATION_DECLINE,
+  TEAM_USER_URL,
+  TEAM_USER_REMOVE_URL,
+  TEAM_USER_NOT_IN_URL,
+  TEAM_USER_IN_URL
 } from "@/lib/service/BasePath";
 import { ProjectTask, ProjectTaskFilterRequest, TaskResponse } from "@/types/task";
 
@@ -626,5 +630,59 @@ export const invitationDeclineHelper = async (invitationId: string, options: Fet
     errorMessagePrefix: "Failed to decline invitation",
     successToastTitle: "Invitation Declined",
     errorToastTitle: "Error Declining Invitation",
+  });
+}
+
+
+
+export const addProjectTeamUserHelper = async (projectTeamUserData: any, options: FetchEntitiesOptions): Promise<ProjectUser[] | null> => {
+  return apiCall<ProjectUser[]>({
+    url: `${TEAM_USER_URL}`,
+    method: httpMethods.POST,
+    body: projectTeamUserData,
+    setLoading: options.setLoading,
+    successMessage: "Project Team User has been successfully added.",
+    errorMessagePrefix: "Failed to add Project Team User",
+    successToastTitle: "Project Team User Added",
+    errorToastTitle: "Error Adding Project Team User",
+  });
+}
+
+export const removeProjectTeamUserHelper = async (projectTeamUserData: any, options: FetchEntitiesOptions): Promise<ProjectUser[] | null> => {
+  return apiCall<ProjectUser[]>({
+    url: `${TEAM_USER_REMOVE_URL}`,
+    method: httpMethods.POST,
+    body: projectTeamUserData,
+    setLoading: options.setLoading,
+    successMessage: "Project Team User has been successfully removed.",
+    errorMessagePrefix: "Failed to remove Project Team User",
+    successToastTitle: "Project Team User Removed",
+    errorToastTitle: "Error Removing Project Team User",
+  });
+}
+
+export const getProjectTeamUsersNotInTeamHelper = async (projectTeamUserData: any, options: FetchEntitiesOptions): Promise<ProjectUser[] | null> => {
+  return apiCall<ProjectUser[]>({
+    url: `${TEAM_USER_NOT_IN_URL}`,
+    method: httpMethods.POST,
+    body: projectTeamUserData,
+    setLoading: options.setLoading,
+    successMessage: "Project Team Users not in team have been successfully retrieved.",
+    errorMessagePrefix: "Failed to load Project Team Users not in team",
+    successToastTitle: "Project Team Users Not In Team Loaded",
+    errorToastTitle: "Error Loading Project Team Users Not In Team",
+  });
+}
+
+export const getProjectTeamUsersInTeamHelper = async (projectTeamUserData: any, options: FetchEntitiesOptions): Promise<ProjectUser[] | null> => {
+  return apiCall<ProjectUser[]>({
+    url: `${TEAM_USER_IN_URL}`,
+    method: httpMethods.POST,
+    body: projectTeamUserData,
+    setLoading: options.setLoading,
+    successMessage: "Project Team Users in team have been successfully retrieved.",
+    errorMessagePrefix: "Failed to load Project Team Users in team",
+    successToastTitle: "Project Team Users In Team Loaded",
+    errorToastTitle: "Error Loading Project Team Users In Team",
   });
 }

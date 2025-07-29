@@ -15,6 +15,15 @@ export const PROJECT_TEAM_URL = BASE_PATH_V2 + "project-team";
 export const TEAM_DETAIL_URL = PROJECT_TEAM_URL + "/get-team-detail";
 
 
+export const TEAM_USER_URL = BASE_PATH_V2 + "/project-team-user";
+
+export const TEAM_USER_NOT_IN_URL = TEAM_USER_URL + "/not-in-team"
+
+export const TEAM_USER_IN_URL = TEAM_USER_URL + "/in-team"
+
+export const TEAM_USER_REMOVE_URL = TEAM_USER_URL + "/remove"
+
+
 export const INVITATION_PROJECT = BASE_PATH_V2 + "invitation/project";
 export const INVITATION_ACCEPT = INVITATION_PROJECT + "/accept";
 export const INVITATION_DECLINE = INVITATION_PROJECT + "/decline";
