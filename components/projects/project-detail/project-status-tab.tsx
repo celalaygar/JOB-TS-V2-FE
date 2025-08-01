@@ -88,9 +88,10 @@ export function ProjectStatusTab({ project, projectId }: ProjectStatusTabProps) 
     const newStatusData = { ...updatedStatus, projectId: project.id };
     const response = await saveTaskStatusHelper(newStatusData, { setLoading: setLoadingDialog });
     if (response) {
-      setStatuses((prevStatuses) =>
-        prevStatuses.map((status) => (status.id === response.id ? response : status))
-      );
+      // setStatuses((prevStatuses) =>
+      //   prevStatuses.map((status) => (status.id === response.id ? response : status))
+      // );
+      fetchAllProjectTaskStatus();
     }
   };
 
@@ -174,7 +175,7 @@ export function ProjectStatusTab({ project, projectId }: ProjectStatusTabProps) 
     <>
       <div className="space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <h2 className="text-2xl font-bold tracking-tight">Status Management</h2>
+          <h2 className="text-2xl font-bold tracking-tight">Task Status Management</h2>
 
           <Button
             className="bg-[var(--fixed-primary)] text-white"

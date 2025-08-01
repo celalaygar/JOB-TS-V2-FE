@@ -11,7 +11,7 @@ export function ProjectTabNavigation({ activeTab, onTabChange }: ProjectTabNavig
     { id: "users", label: "Users" },
     { id: "team", label: "Team" },
     { id: "roles", label: "User Roles" },
-    { id: "status", label: "Status Management" },
+    { id: "status", label: "Task Status Management" },
     { id: "sent-invitations", label: "Sent Invitations" },
   ]
 
