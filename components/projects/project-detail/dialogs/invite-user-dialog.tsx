@@ -11,28 +11,45 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { toast } from "@/hooks/use-toast"
 import { Loader2 } from "lucide-react"
 import { Project } from "@/types/project"
-import { inviteUserToProjectHelper } from "@/lib/service/api-helpers" // Import the new helper
+import { getAllProjectsRolesHelper, inviteUserToProjectHelper } from "@/lib/service/api-helpers" // Import the new helper
+import { ProjectRole } from "@/types/project-role"
+
+interface InviteUserRequest { // Renamed to avoid conflict if already defined elsewhere
+  projectId: string
+  email: string
+  userProjectRoleId: string
+}
 
 interface InviteUserDialogProps {
   project: Project
   open: boolean
   onOpenChange: (open: boolean) => void
 }
-interface InviteUserRequest { // Renamed to avoid conflict if already defined elsewhere
-  projectId: string
-  email: string
-  userProjectRole: string
-}
-
 export function InviteUserDialog({ project, open, onOpenChange }: InviteUserDialogProps) {
 
-  const [formData, setFormData] = useState<InviteUserRequest>({ projectId: project.id, email: "", userProjectRole: "" })
+  const [formData, setFormData] = useState<InviteUserRequest>({ projectId: project.id, email: "", userProjectRoleId: "" })
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [projectRoleList, setProjectRoleList] = useState<ProjectRole[] | null>(null)
+
+
+  const fetchProjectsRoles = useCallback(async () => {
+    const rolesData = await getAllProjectsRolesHelper(project.id, { setLoading });
+    if (rolesData) {
+      setProjectRoleList(rolesData);
+    } else {
+      setProjectRoleList([]);
+    }
+  }, [project.id]);
+
+  useEffect(() => {
+    fetchProjectsRoles();
+  }, [fetchProjectsRoles]);
+
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -46,7 +63,7 @@ export function InviteUserDialog({ project, open, onOpenChange }: InviteUserDial
     }
   }
   const handleChangeRole = (role: string) => {
-    setFormData((prev) => ({ ...prev, ["userProjectRole"]: role }))
+    setFormData((prev) => ({ ...prev, ["userProjectRoleId"]: role }))
   }
 
   const handleInviteUser = async (e: React.FormEvent) => {
@@ -61,7 +78,7 @@ export function InviteUserDialog({ project, open, onOpenChange }: InviteUserDial
   }
 
   const resetForm = () => {
-    setFormData({ projectId: project.id, email: "", userProjectRole: "" })
+    setFormData({ projectId: project.id, email: "", userProjectRoleId: "" })
     setErrors({}); // Also clear errors on form reset
   }
 
@@ -96,16 +113,21 @@ export function InviteUserDialog({ project, open, onOpenChange }: InviteUserDial
                   <div className="grid gap-2">
                     <Label htmlFor="role">Role</Label>
                     <select
-                      value={formData.userProjectRole}
+                      value={formData.userProjectRoleId}
                       onChange={(e) => handleChangeRole(e.target.value)}
-                      id="userProjectRole"
+                      id="userProjectRoleId"
                       className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       <option value="">Select a role</option> {/* Added a default empty option */}
-                      <option value="developer">Developer</option>
-                      <option value="designer">Designer</option>
-                      <option value="product-manager">Product Manager</option>
-                      <option value="tester">Tester</option>
+                      {projectRoleList && projectRoleList.length > 0 ? (
+                        projectRoleList.map((role: ProjectRole) => (
+                          <option key={role.id} value={role.id}>
+                            {role.name}
+                          </option>
+                        ))
+                      ) : (
+                        <option value="">No roles available</option>
+                      )}
                     </select>
                   </div>
                 </div>

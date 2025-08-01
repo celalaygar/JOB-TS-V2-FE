@@ -124,10 +124,6 @@ export function ProjectsList() {
                   </DropdownMenu>
                 </div>
                 <p className="text-sm text-[var(--fixed-sidebar-muted)] mt-1">{project.description}</p>
-                <p className="text-sm text-[var(--fixed-sidebar-muted)] mt-1">
-                  <b>Created by: </b>{project.createdBy?.firstname + " " + project.createdBy?.lastname || "Unknown"} <br />
-                  <b> Email: </b>{project.createdBy?.email || "N/A"}
-                </p>
               </div>
               <div className="p-4 pt-2 space-y-4">
                 <div className="space-y-2">
@@ -159,6 +155,12 @@ export function ProjectsList() {
                   <div className="flex -space-x-2">
                   </div>
                 </div>
+              </div>
+              <div className="p-4 pt-0">
+                <p className="text-sm text-[var(--fixed-sidebar-muted)] mt-1">
+                  <b>Created by: </b>{project.createdBy?.firstname + " " + project.createdBy?.lastname || "Unknown"} <br />
+                  <b> Email: </b>{project.createdBy?.email || "N/A"}
+                </p>
               </div>
               <div className="p-4 pt-0 flex gap-2">
                 <Button

@@ -16,16 +16,22 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { signOut } from "next-auth/react"
 
 export function UserProfileDropdown() {
   const router = useRouter()
   const dispatch = useDispatch()
   const currentUser = useSelector((state: RootState) => state.auth.currentUser)
 
-  const handleLogout = () => {
-    dispatch(logout())
-    router.push("/login")
-  }
+  const handleLogout = async () => {
+    try {
+      const currentOrigin = window.location.origin;
+      await fetch("/api/auth/logout");
+      await signOut({ callbackUrl: currentOrigin + "/" });
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  };
 
   return (
     <DropdownMenu>
