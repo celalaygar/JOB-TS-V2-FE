@@ -113,14 +113,14 @@ export function ProjectsList() {
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => setProjectToEdit(project)}>
                         <Pencil className="mr-2 h-4 w-4" />
-                        Edit
+                        {translations.projects.editProject}
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         className="text-[var(--fixed-danger)]"
                         onClick={() => setProjectToDelete(project.id)}
                       >
                         <Trash2 className="mr-2 h-4 w-4" />
-                        Delete
+                        {translations.projects.deleteProject}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -192,15 +192,15 @@ export function ProjectsList() {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the project and all associated issues.
+              {translations.projects.deleteDescription}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel className="border-[var(--fixed-card-border)] text-[var(--fixed-sidebar-fg)]">
-              Cancel
+              {translations.projects.cancel}
             </AlertDialogCancel>
             <AlertDialogAction className="bg-[var(--fixed-danger)] text-white" onClick={handleDeleteProject}>
-              Delete
+              {translations.projects.deleteProject}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

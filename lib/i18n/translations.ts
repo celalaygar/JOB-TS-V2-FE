@@ -1027,6 +1027,8 @@ export const en = {
     resetFilter: "Reset Filter",
     sort: "Sort Projects",
     status: "Status",
+    deleteDescription: "Are you sure you want to delete this project? This action cannot be undone.",
+    cancel: "Cancel",
     statusOptions: {
       allStatus: "All Statuses",
       active: "Active",
@@ -2055,6 +2057,7 @@ export const tr = {
     selectProjectManager: "Proje yöneticisi seçin",
     projectStatus: "Proje Durumu",
     deleteProject: "Projeyi Sil",
+    cancel: "İptal Et",
     deleteProjectConfirm: "Bu projeyi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
     projectCreated: "Proje başarıyla oluşturuldu",
     projectUpdated: "Proje başarıyla güncellendi",
