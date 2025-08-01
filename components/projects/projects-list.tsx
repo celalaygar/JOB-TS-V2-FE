@@ -180,7 +180,7 @@ export function ProjectsList() {
               onClick={() => setIsCreateDialogOpen(true)}
             >
               <PlusCircle className="mr-2 h-4 w-4" />
-              New Project
+              {translations.projects.newProject}
             </button>
             <CreateProjectDialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen} />
           </div>
