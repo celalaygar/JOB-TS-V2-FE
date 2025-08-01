@@ -95,75 +95,80 @@ export function ProjectsList() {
   ) : (
     <>
       <div className="topdiv grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {(allProjects && (allProjects.length > 0)) ? allProjects.map((project) => (
-          <div key={project.id} className="fixed-card rounded-lg overflow-hidden">
-            <div className="p-4 pb-2">
-              <div className="flex items-start justify-between">
-                <h3 className="text-lg font-semibold">{project.name}</h3>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="text-[var(--fixed-sidebar-fg)]">
-                      <MoreHorizontal className="h-4 w-4" />
-                      <span className="sr-only">Menu</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => setProjectToEdit(project)}>
-                      <Pencil className="mr-2 h-4 w-4" />
-                      Edit
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="text-[var(--fixed-danger)]"
-                      onClick={() => setProjectToDelete(project.id)}
-                    >
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+        {(allProjects && (allProjects.length > 0)) ?
+          allProjects.map((project: Project) => (
+            <div key={project.id} className="fixed-card rounded-lg overflow-hidden">
+              <div className="p-4 pb-2">
+                <div className="flex items-start justify-between">
+                  <h3 className="text-lg font-semibold">{project.name}</h3>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="text-[var(--fixed-sidebar-fg)]">
+                        <MoreHorizontal className="h-4 w-4" />
+                        <span className="sr-only">Menu</span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => setProjectToEdit(project)}>
+                        <Pencil className="mr-2 h-4 w-4" />
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="text-[var(--fixed-danger)]"
+                        onClick={() => setProjectToDelete(project.id)}
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+                <p className="text-sm text-[var(--fixed-sidebar-muted)] mt-1">{project.description}</p>
+                <p className="text-sm text-[var(--fixed-sidebar-muted)] mt-1">
+                  <b>Created by: </b>{project.createdBy?.firstname + " " + project.createdBy?.lastname || "Unknown"} <br />
+                  <b> Email: </b>{project.createdBy?.email || "N/A"}
+                </p>
               </div>
-              <p className="text-sm text-[var(--fixed-sidebar-muted)] mt-1">{project.description}</p>
-            </div>
-            <div className="p-4 pt-2 space-y-4">
-              <div className="space-y-2">
+              <div className="p-4 pt-2 space-y-4">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <div>Progress</div>
+                    <div className="font-medium">{project.progress}%</div>
+                  </div>
+                  <div className="h-2 w-full rounded-full bg-[var(--fixed-secondary)]">
+                    <div
+                      className="h-full rounded-full bg-[var(--fixed-primary)]"
+                      style={{ width: `${project.progress}%` }}
+                    />
+                  </div>
+                </div>
                 <div className="flex items-center justify-between text-sm">
-                  <div>Progress</div>
-                  <div className="font-medium">{project.progress}%</div>
-                </div>
-                <div className="h-2 w-full rounded-full bg-[var(--fixed-secondary)]">
-                  <div
-                    className="h-full rounded-full bg-[var(--fixed-primary)]"
-                    style={{ width: `${project.progress}%` }}
-                  />
-                </div>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <div className="flex items-center">
-                  <Badge
-                    className={`mr-2 ${project.status === "Completed"
-                      ? "bg-[var(--fixed-success)] text-white"
-                      : project.status === "In Progress"
-                        ? "bg-[var(--fixed-primary)] text-white"
-                        : "bg-[var(--fixed-secondary)] text-[var(--fixed-secondary-fg)]"
-                      }`}
-                  >
-                    {project.status}
-                  </Badge>
-                  <span className="text-[var(--fixed-sidebar-muted)]">{project.issueCount} issues</span>
-                </div>
-                <div className="flex -space-x-2">
+                  <div className="flex items-center">
+                    <Badge
+                      className={`mr-2 ${project.status === "Completed"
+                        ? "bg-[var(--fixed-success)] text-white"
+                        : project.status === "In Progress"
+                          ? "bg-[var(--fixed-primary)] text-white"
+                          : "bg-[var(--fixed-secondary)] text-[var(--fixed-secondary-fg)]"
+                        }`}
+                    >
+                      {project.status}
+                    </Badge>
+                    <span className="text-[var(--fixed-sidebar-muted)]">{0} Tasks</span>
+                  </div>
+                  <div className="flex -space-x-2">
+                  </div>
                 </div>
               </div>
+              <div className="p-4 pt-0 flex gap-2">
+                <Button
+                  className="flex-1 bg-[var(--fixed-primary)] text-white"
+                  asChild>
+                  <Link href={`/projects/${project.id}`}>Details</Link>
+                </Button>
+              </div>
             </div>
-            <div className="p-4 pt-0 flex gap-2">
-              <Button
-                className="flex-1 bg-[var(--fixed-primary)] text-white"
-                asChild>
-                <Link href={`/projects/${project.id}`}>Details</Link>
-              </Button>
-            </div>
-          </div>
-        )) :
+          )) :
           <div className="noProjectDiv w-full flex flex-col items-center justify-center col-span-full min-h-[300px]">
             <h1 className="text-2xl font-bold mb-4">Project not found</h1>
             <button

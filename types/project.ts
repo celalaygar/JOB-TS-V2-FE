@@ -12,9 +12,13 @@ export interface ProjectTeamMember {
   status?: string
   email?: string
 }
+
 export interface CreatedUser {
   id: string
-  name: string
+  userId: string
+  firstname: string
+  lastname: string
+  username: string
   email: string
   role?: string
   avatar?: string
@@ -51,7 +55,7 @@ export interface Project {
   progress: number
   issueCount: number
   openIssues?: number
-  team?: ProjectTeamMember[]
+  //team: ProjectTeamMember[] | null
   leadId?: string
   startDate?: string
   endDate?: string
@@ -61,7 +65,6 @@ export interface Project {
   sprintCount?: number
   milestoneCount?: number
   recentSprints?: ProjectSprint[]
-
   backlog?: Backlog | null
   createdBy?: CreatedUser | null
   projectTeams?: ProjectTeam[] | null

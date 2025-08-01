@@ -178,21 +178,21 @@ export function ProjectUsersTab({
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-4">
                       <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
-                        {user.avatar ? (
+                        {user.firstname && user.lastname ? (
                           <img
-                            src={user.avatar || "/placeholder.svg"}
+                            src={"/placeholder.svg"}
                             alt={user.firstname + " " + user.lastname}
                             className="h-full w-full object-cover"
                           />
                         ) : (
                           <span className="text-lg font-medium text-primary">
-                            {user.firstname.charAt(0) + " " + user.lastname.charAt(0) || "?"}
+                            {user.firstname?.charAt(0) + " " + user.lastname?.charAt(0) || "?"}
                           </span>
                         )}
                       </div>
                       <div>
                         <h3 className="font-medium">{user.firstname + " " + user.lastname}</h3>
-                        <p className="text-sm text-muted-foreground">{user.title || "Team Member"}</p>
+                        <p className="text-sm text-muted-foreground">{user.projectSystemRole || "Team Member"}</p>
                       </div>
                     </div>
                     <DropdownMenu>
@@ -332,15 +332,15 @@ export function ProjectUsersTab({
                       <td className="p-3">
                         <div className="flex items-center gap-3">
                           <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
-                            {user.avatar ? (
+                            {user.firstname && user.lastname ? (
                               <img
-                                src={user.avatar || "/placeholder.svg"}
+                                src={"/placeholder.svg"}
                                 alt={user.firstname + " " + user.lastname}
                                 className="h-full w-full object-cover"
                               />
                             ) : (
                               <span className="text-sm font-medium text-primary">
-                                {user.initials || user.firstname.charAt(0) + " " + user.lastname.charAt(0) || "?"}
+                                {user.initials || user.firstname?.charAt(0) + " " + user.lastname?.charAt(0) || "?"}
                               </span>
                             )}
                           </div>
@@ -351,8 +351,8 @@ export function ProjectUsersTab({
                         </div>
                       </td>
                       <td className="p-3">
-                        <div className="font-medium">{user.systemRoles}</div>
-                        <div className="text-sm text-muted-foreground">{user.title}</div>
+                        <div className="font-medium">{user.projectSystemRole}</div>
+                        <div className="text-sm text-muted-foreground">{user.projectSystemRole}</div>
                       </td>
                       <td className="p-3 hidden md:table-cell">{user.department || "—"}</td>
                       <td className="p-3 hidden lg:table-cell">
