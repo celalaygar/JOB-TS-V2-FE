@@ -279,8 +279,8 @@ export function AddMemberDialog({ fetchProjectUsers, isOpen, onOpenChange, proje
           <Button variant="outline" onClick={handleDialogClose}>
             Cancel
           </Button>
-          <Button onClick={handleAddMembers} disabled={selectedUsers.length === 0}>
-            Add Selected Users ({selectedUsers.length})
+          <Button onClick={handleAddMembers} disabled={selectedUsers.length === 0 || isComboboxOpen}>
+            Add Selected Users ({selectedUsers.length + " " + isComboboxOpen})
           </Button>
         </DialogFooter>
       </DialogContent>
