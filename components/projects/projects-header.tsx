@@ -6,8 +6,10 @@ import { Input } from "@/components/ui/input"
 import { Filter, PlusCircle, Search, SortAsc } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { CreateProjectDialog } from "@/components/projects/create-project-dialog"
+import { useLanguage } from "@/lib/i18n/context"
 
 export function ProjectsHeader() {
+  const { translations } = useLanguage()
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [showFilters, setShowFilters] = useState(false)
@@ -16,15 +18,15 @@ export function ProjectsHeader() {
     <div className="space-y-4">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Projects</h1>
-          <p className="text-[var(--fixed-sidebar-muted)]">Manage and track all your projects in one place.</p>
+          <h1 className="text-3xl font-bold tracking-tight">{translations.projects.title}</h1>
+          <p className="text-[var(--fixed-sidebar-muted)]">{translations.projects.description}</p>
         </div>
         <button
           className="fixed-primary-button h-10 px-4 py-2 rounded-md flex items-center text-sm font-medium"
           onClick={() => setIsCreateDialogOpen(true)}
         >
           <PlusCircle className="mr-2 h-4 w-4" />
-          New Project
+          {translations.projects.newProject}
         </button>
       </div>
 
@@ -33,7 +35,7 @@ export function ProjectsHeader() {
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-[var(--fixed-sidebar-muted)]" />
           <Input
             type="search"
-            placeholder="Search projects..."
+            placeholder={translations.projects.searchProjects}
             className="w-full pl-8 border-[var(--fixed-card-border)]"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -47,7 +49,7 @@ export function ProjectsHeader() {
             onClick={() => setShowFilters(!showFilters)}
           >
             <Filter className="h-4 w-4" />
-            <span className="sr-only">Filter</span>
+            <span className="sr-only">{translations.projects.filter}</span>
           </Button>
           <Button
             variant="outline"
@@ -55,7 +57,7 @@ export function ProjectsHeader() {
             className="border-[var(--fixed-card-border)] text-[var(--fixed-sidebar-fg)]"
           >
             <SortAsc className="h-4 w-4" />
-            <span className="sr-only">Sort</span>
+            <span className="sr-only">{translations.projects.sort}</span>
           </Button>
         </div>
       </div>
@@ -63,17 +65,17 @@ export function ProjectsHeader() {
       {showFilters && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-4 rounded-md bg-[var(--fixed-secondary)] border border-[var(--fixed-card-border)]">
           <div>
-            <label className="text-xs font-medium mb-1 block">Status</label>
+            <label className="text-xs font-medium mb-1 block">{translations.projects.status}</label>
             <Select defaultValue="all">
               <SelectTrigger className="w-full border-[var(--fixed-card-border)]">
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="planning">Planning</SelectItem>
-                <SelectItem value="in-progress">In Progress</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="on-hold">On Hold</SelectItem>
+                <SelectItem value="all">{translations.projects.statusOptions.allStatus}</SelectItem>
+                <SelectItem value="planning">{translations.projects.statusOptions.planned}</SelectItem>
+                <SelectItem value="in-progress">{translations.projects.statusOptions.inProgress}</SelectItem>
+                <SelectItem value="completed">{translations.projects.statusOptions.completed}</SelectItem>
+                <SelectItem value="on-hold">{translations.projects.statusOptions.onHold}</SelectItem>
               </SelectContent>
             </Select>
           </div>

@@ -23,8 +23,10 @@ import { EditProjectDialog } from "@/components/projects/edit-project-dialog"
 import { Project } from "@/types/project"
 import { CreateProjectDialog } from "./create-project-dialog"
 import { getAllProjectsHelper } from "@/lib/service/api-helpers" // Import the new helper
+import { useLanguage } from "@/lib/i18n/context"
 
 export function ProjectsList() {
+  const { translations } = useLanguage()
   const dispatch = useDispatch()
   const allProjects = useSelector((state: RootState) => state.projects.projects)
   const [searchQuery, setSearchQuery] = useState("")
@@ -166,13 +168,13 @@ export function ProjectsList() {
                 <Button
                   className="flex-1 bg-[var(--fixed-primary)] text-white"
                   asChild>
-                  <Link href={`/projects/${project.id}`}>Details</Link>
+                  <Link href={`/projects/${project.id}`}>{translations.projects.details}</Link>
                 </Button>
               </div>
             </div>
           )) :
           <div className="noProjectDiv w-full flex flex-col items-center justify-center col-span-full min-h-[300px]">
-            <h1 className="text-2xl font-bold mb-4">Project not found</h1>
+            <h1 className="text-2xl font-bold mb-4">{translations.projects.notFound}</h1>
             <button
               className="fixed-primary-button h-10 px-4 py-2 rounded-md flex items-center text-sm font-medium"
               onClick={() => setIsCreateDialogOpen(true)}

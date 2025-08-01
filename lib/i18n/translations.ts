@@ -2,6 +2,9 @@ import { sprints } from "@/data/sprints"
 import { resetFilters } from "../redux/features/filters-slice"
 import { teams } from "@/data/teams"
 import { add } from "date-fns"
+import { projects } from "@/data/projects"
+import { notFound } from "next/navigation"
+import { Sora } from "next/font/google"
 
 // English translations
 export const en = {
@@ -998,7 +1001,43 @@ export const en = {
         actions: "Actions",
       }
     }
-  }
+  },
+  projects: {
+    title: "Projects",
+    description: "Manage your projects",
+    newProject: "New Project",
+    editProject: "Edit Project",
+    createProject: "Create Project",
+    updateProject: "Update Project",
+    projectName: "Project Name",
+    projectDescription: "Project Description",
+    projectManager: "Project Manager",
+    selectProjectManager: "Select project manager",
+    projectStatus: "Project Status",
+    deleteProject: "Delete Project",
+    deleteProjectConfirm: "Are you sure you want to delete this project? This action cannot be undone.",
+    projectCreated: "Project created successfully",
+    projectUpdated: "Project updated successfully",
+    projectDeleted: "Project deleted successfully",
+    noProjects: "No projects found",
+    searchProjects: "Search projects...",
+    details: "Project Details",
+    notFound: "Project not found",
+    filter: "Filter Projects",
+    resetFilter: "Reset Filter",
+    sort: "Sort Projects",
+    status: "Status",
+    statusOptions: {
+      allStatus: "All Statuses",
+      active: "Active",
+      completed: "Completed",
+      onHold: "On Hold",
+      cancelled: "Cancelled",
+      planned: "Planned",
+      inProgress: "In Progress",
+      archived: "Archived",
+    }
+  },
 }
 
 // Turkish translations
@@ -2001,6 +2040,42 @@ export const tr = {
         teamMembers: "Üyeler",
         actions: "Eylemler",
       }
+    }
+  },
+  projects: {
+    title: "Projeler",
+    description: "Projelerinizi yönetin",
+    newProject: "Yeni Proje",
+    editProject: "Projeyi Düzenle",
+    createProject: "Proje Oluştur",
+    updateProject: "Projeyi Güncelle",
+    projectName: "Proje Adı",
+    projectDescription: "Proje Açıklaması",
+    projectManager: "Proje Yöneticisi",
+    selectProjectManager: "Proje yöneticisi seçin",
+    projectStatus: "Proje Durumu",
+    deleteProject: "Projeyi Sil",
+    deleteProjectConfirm: "Bu projeyi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
+    projectCreated: "Proje başarıyla oluşturuldu",
+    projectUpdated: "Proje başarıyla güncellendi",
+    projectDeleted: "Proje başarıyla silindi",
+    noProjects: "Proje bulunamadı",
+    searchProjects: "Projelerde ara...",
+    details: "Proje Detayları",
+    notFound: "Proje bulunamadı",
+    filter: "Projeleri Filtrele",
+    resetFilter: "Filtreyi Sıfırla",
+    sort: "Projeleri Sırala",
+    status: "Durum",
+    statusOptions: {
+      allStatus: "Tüm Durumlar",
+      active: "Aktif",
+      completed: "Tamamlandı",
+      onHold: "Beklemede",
+      cancelled: "İptal Edildi",
+      planned: "Planlandı",
+      inProgress: "Devam Ediyor",
+      archived: "Arşivlendi",
     }
   }
 }
