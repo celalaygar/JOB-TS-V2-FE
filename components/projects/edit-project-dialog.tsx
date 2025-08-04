@@ -18,10 +18,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
-import { Check, ChevronsUpDown, X } from "lucide-react"
+import { X } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Project } from "@/types/project"
 import Select from 'react-select'; // Import react-select
+import { useLanguage } from "@/lib/i18n/context"
 
 interface EditProjectDialogProps {
   project: Project
@@ -30,6 +31,7 @@ interface EditProjectDialogProps {
 }
 
 export function EditProjectDialog({ project, open, onOpenChange }: EditProjectDialogProps) {
+  const { translations } = useLanguage()
   const dispatch = useDispatch()
   const users = useSelector((state: RootState) => state.users.users)
 
@@ -197,14 +199,14 @@ export function EditProjectDialog({ project, open, onOpenChange }: EditProjectDi
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Edit Project</DialogTitle>
-            <DialogDescription>Update the details of your project.</DialogDescription>
+            <DialogTitle>{translations.projects.editProject}</DialogTitle>
+            <DialogDescription>{translations.projects.editProjectDescription}</DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
               <Label htmlFor="name" className={errors.name ? "text-[var(--fixed-danger)]" : ""}>
-                Project Name
+                {translations.projects.projectName}
               </Label>
               <Input
                 id="name"
@@ -217,7 +219,7 @@ export function EditProjectDialog({ project, open, onOpenChange }: EditProjectDi
 
             <div className="grid gap-2">
               <Label htmlFor="description" className={errors.description ? "text-[var(--fixed-danger)]" : ""}>
-                Description
+                {translations.projects.projectDescription}
               </Label>
               <Textarea
                 id="description"
@@ -231,7 +233,7 @@ export function EditProjectDialog({ project, open, onOpenChange }: EditProjectDi
 
             {/* Status Select with react-select */}
             <div className="grid gap-2">
-              <Label htmlFor="status">Status</Label>
+              <Label htmlFor="status">{translations.projects.projectStatus}</Label>
               <Select
                 id="status"
                 options={statusOptions}
@@ -244,7 +246,7 @@ export function EditProjectDialog({ project, open, onOpenChange }: EditProjectDi
             {/* Add the new form fields in the dialog content */}
             {/* Add this after the progress field in the form */}
             <div className="grid gap-2">
-              <Label htmlFor="startDate">Start Date</Label>
+              <Label htmlFor="startDate">{translations.projects.projectStartDate}</Label>
               <Input
                 id="startDate"
                 type="date"
@@ -256,7 +258,7 @@ export function EditProjectDialog({ project, open, onOpenChange }: EditProjectDi
 
             <div className="grid gap-2">
               <Label htmlFor="endDate" className={errors.endDate ? "text-[var(--fixed-danger)]" : ""}>
-                End Date
+                {translations.projects.projectEndDate}
               </Label>
               <Input
                 id="endDate"
@@ -269,7 +271,7 @@ export function EditProjectDialog({ project, open, onOpenChange }: EditProjectDi
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="repository">Repository URL</Label>
+              <Label htmlFor="repository">{translations.projects.projectRepositoryUrl}</Label>
               <Input
                 id="repository"
                 value={formData.repository}
@@ -280,7 +282,7 @@ export function EditProjectDialog({ project, open, onOpenChange }: EditProjectDi
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="tags">Tags</Label>
+              <Label htmlFor="tags">{translations.projects.projectTags}</Label>
               <div className="flex flex-wrap gap-2 mb-2">
                 {formData.tags.map((tag) => (
                   <Badge
@@ -296,7 +298,7 @@ export function EditProjectDialog({ project, open, onOpenChange }: EditProjectDi
                       onClick={() => handleRemoveTag(tag)}
                     >
                       <X className="h-3 w-3" />
-                      <span className="sr-only">Remove</span>
+                      <span className="sr-only">{translations.projects.remove}</span>
                     </Button>
                   </Badge>
                 ))}
@@ -320,10 +322,10 @@ export function EditProjectDialog({ project, open, onOpenChange }: EditProjectDi
               onClick={() => onOpenChange(false)}
               className="border-[var(--fixed-card-border)] text-[var(--fixed-sidebar-fg)]"
             >
-              Cancel
+              {translations.projects.cancel}
             </Button>
             <Button type="submit" className="bg-[var(--fixed-primary)] text-white">
-              Save Changes
+              {translations.projects.updateProject}
             </Button>
           </DialogFooter>
         </form>

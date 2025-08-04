@@ -29,9 +29,6 @@ export function ProjectsList() {
   const { translations } = useLanguage()
   const dispatch = useDispatch()
   const allProjects = useSelector((state: RootState) => state.projects.projects)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all")
-  const [progressFilter, setProgressFilter] = useState("all")
   const [sortOption, setSortOption] = useState("name-asc")
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
 
@@ -43,9 +40,9 @@ export function ProjectsList() {
 
   const fetchAllProjects = useCallback(async () => {
     setProjectList([]);
-    const projectsData = await getAllProjectsHelper({ setLoading });
+    const projectsData: Project = await getAllProjectsHelper({ setLoading });
     if (projectsData) {
-      setProjectList(projectsData);
+      //setProjectList(projectsData);
       dispatch(setProjects(projectsData));
     }
   }, [dispatch]);

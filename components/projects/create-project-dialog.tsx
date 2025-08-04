@@ -17,16 +17,12 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 // import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select" // Removed shadcn/ui Select
 import { Button } from "@/components/ui/button"
-import { Check, ChevronsUpDown, Loader2, X } from "lucide-react"
+import { Loader2, X } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
-import { cn } from "@/lib/utils"
-import { toast } from "@/hooks/use-toast"
-import { PROJECT_URL } from "@/lib/service/BasePath"
 import { Project, ProjectUser } from "@/types/project"
-import BaseService from "@/lib/service/BaseService"
-import { httpMethods } from "@/lib/service/HttpService"
 import { createProjectHelper } from "@/lib/service/api-helpers"
 import Select from 'react-select'; // Import react-select
+import { useLanguage } from "@/lib/i18n/context"
 
 interface CreateProjectDialogProps {
   open: boolean
@@ -34,6 +30,7 @@ interface CreateProjectDialogProps {
 }
 
 export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogProps) {
+  const { translations } = useLanguage()
   const dispatch = useDispatch()
   const users = useSelector((state: RootState) => state.users.users)
   const [loading, setLoading] = useState(false);
@@ -132,6 +129,7 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
         progress: 0,
         issueCount: 0,
         tags: formData.tags,
+        createdBy: responseProject.createdBy,
         startDate: formData.startDate,
         endDate: formData.endDate,
         repository: formData.repository,
@@ -174,8 +172,8 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
         <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <form onSubmit={handleSubmit}>
             <DialogHeader>
-              <DialogTitle>Create New Project</DialogTitle>
-              <DialogDescription>Add a new project to your workspace. Fill out the details below.</DialogDescription>
+              <DialogTitle>{translations.projects.createProject}</DialogTitle>
+              <DialogDescription>{translations.projects.createProjectDescription}</DialogDescription>
             </DialogHeader>
             {
               loading ?
@@ -189,7 +187,7 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
                   <div className="grid gap-4 py-4">
                     <div className="grid gap-2">
                       <Label htmlFor="name" className={errors.name ? "text-[var(--fixed-danger)]" : ""}>
-                        Project Name
+                        {translations.projects.projectName}
                       </Label>
                       <Input
                         id="name"
@@ -202,7 +200,7 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
 
                     <div className="grid gap-2">
                       <Label htmlFor="description" className={errors.description ? "text-[var(--fixed-danger)]" : ""}>
-                        Description
+                        {translations.projects.projectDescription}
                       </Label>
                       <Textarea
                         id="description"
@@ -216,7 +214,7 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
 
                     {/* Status Select with react-select */}
                     <div className="grid gap-2">
-                      <Label htmlFor="status">Status</Label>
+                      <Label htmlFor="status">{translations.projects.projectStatus}</Label>
                       <Select
                         id="status"
                         options={statusOptions}
@@ -226,67 +224,8 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
                       />
                     </div>
 
-                    {/* Team Multi-select with react-select */}
                     <div className="grid gap-2">
-                      <Label htmlFor="team">Team Members</Label>
-                      <Select
-                        id="team"
-                        isMulti
-                        options={userOptions}
-                        value={userOptions.filter(option => formData.team.includes(option.value))}
-                        onChange={handleTeamChange}
-                        classNamePrefix="react-select"
-                        styles={{
-                          control: (baseStyles, state) => ({
-                            ...baseStyles,
-                            borderColor: 'var(--fixed-card-border)',
-                            '&:hover': {
-                              borderColor: 'var(--fixed-card-border)',
-                            },
-                            boxShadow: state.isFocused ? '0 0 0 1px var(--fixed-primary)' : 'none',
-                          }),
-                          multiValue: (baseStyles) => ({
-                            ...baseStyles,
-                            backgroundColor: 'var(--fixed-secondary)', // Background for selected tags
-                          }),
-                          multiValueLabel: (baseStyles) => ({
-                            ...baseStyles,
-                            color: 'var(--fixed-secondary-fg)', // Text color for selected tags
-                          }),
-                          multiValueRemove: (baseStyles) => ({
-                            ...baseStyles,
-                            color: 'var(--fixed-secondary-fg)', // Close icon color
-                            '&:hover': {
-                              backgroundColor: 'var(--fixed-destructive)', // Hover background for close icon
-                              color: 'white', // Hover color for close icon
-                            },
-                          }),
-                          option: (baseStyles, state) => ({
-                            ...baseStyles,
-                            backgroundColor: state.isSelected ? 'var(--fixed-primary)' : 'white',
-                            color: state.isSelected ? 'white' : 'black',
-                            '&:active': {
-                              backgroundColor: 'var(--fixed-primary-active)',
-                            },
-                            '&:hover': {
-                              backgroundColor: state.isSelected ? 'var(--fixed-primary)' : 'var(--fixed-muted)',
-                              color: state.isSelected ? 'white' : 'black',
-                            },
-                          }),
-                          placeholder: (baseStyles) => ({
-                            ...baseStyles,
-                            color: 'var(--fixed-muted-foreground)', // Placeholder color
-                          }),
-                          input: (baseStyles) => ({
-                            ...baseStyles,
-                            color: 'var(--fixed-foreground)', // Text color for input
-                          }),
-                        }}
-                      />
-                    </div>
-
-                    <div className="grid gap-2">
-                      <Label htmlFor="startDate">Start Date</Label>
+                      <Label htmlFor="startDate">{translations.projects.projectStartDate}</Label>
                       <Input
                         id="startDate"
                         type="date"
@@ -298,7 +237,7 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
 
                     <div className="grid gap-2">
                       <Label htmlFor="endDate" className={errors.endDate ? "text-[var(--fixed-danger)]" : ""}>
-                        End Date
+                        {translations.projects.projectEndDate}
                       </Label>
                       <Input
                         id="endDate"
@@ -311,7 +250,7 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
                     </div>
 
                     <div className="grid gap-2">
-                      <Label htmlFor="repository">Repository URL</Label>
+                      <Label htmlFor="repository">{translations.projects.projectRepositoryUrl}</Label>
                       <Input
                         id="repository"
                         value={formData.repository}
@@ -322,7 +261,7 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
                     </div>
 
                     <div className="grid gap-2">
-                      <Label htmlFor="tags">Tags</Label>
+                      <Label htmlFor="tags">{translations.projects.projectTags}</Label>
                       <div className="flex flex-wrap gap-2 mb-2">
                         {formData.tags.map((tag) => (
                           <Badge
@@ -338,7 +277,7 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
                               onClick={() => handleRemoveTag(tag)}
                             >
                               <X className="h-3 w-3" />
-                              <span className="sr-only">Remove</span>
+                              <span className="sr-only">{translations.projects.remove}</span>
                             </Button>
                           </Badge>
                         ))}
@@ -351,7 +290,7 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
                         placeholder="Type a tag and press Enter"
                         className="border-[var(--fixed-card-border)]"
                       />
-                      <p className="text-xs text-[var(--fixed-sidebar-muted)]">Press Enter to add a tag</p>
+                      <p className="text-xs text-[var(--fixed-sidebar-muted)]">{translations.projects.projectTagsDescription}</p>
                     </div>
                   </div>
 
@@ -362,10 +301,10 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
                       onClick={() => onOpenChange(false)}
                       className="border-[var(--fixed-card-border)] text-[var(--fixed-sidebar-fg)]"
                     >
-                      Cancel
+                      {translations.projects.cancel}
                     </Button>
                     <Button type="submit" className="bg-[var(--fixed-primary)] text-white">
-                      Create Project
+                      {translations.projects.createProject}
                     </Button>
                   </DialogFooter>
                 </>
