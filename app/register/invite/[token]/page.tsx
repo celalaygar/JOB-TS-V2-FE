@@ -30,6 +30,7 @@ export default function RegisterPage() {
   const dispatch = useDispatch()
   const { loading, error } = useSelector((state: any) => state.auth)
   const [open, setOpen] = useState(false); // Popover açık/kapalı durumu
+  const [loadingForm, setLoadingForm] = useState(false)
   const [formData, setFormData] = useState({
     firstname: "",
     lastname: "",
@@ -131,7 +132,7 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
+    setLoadingForm(true)
     if (validateForm()) {
       formData["token"] = token;
       try {
@@ -158,6 +159,7 @@ export default function RegisterPage() {
         }
       }
     }
+    setLoadingForm(false)
   }
 
   const resetInputs = () => {
@@ -171,7 +173,8 @@ export default function RegisterPage() {
       phone: "",
       dateOfBirth: undefined,
       gender: "male",
-    });
+      token: token,
+    })
     setFormErrors({});
   }
   return (
@@ -358,8 +361,8 @@ export default function RegisterPage() {
                   </div>
                 )}
 
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? (
+                <Button type="submit" className="w-full" disabled={loadingForm}>
+                  {loadingForm ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       {translations.register.processingButton}
