@@ -16,7 +16,7 @@ import { useLanguage } from "@/lib/i18n/context"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar as CalendarComponent } from "@/components/ui/calendar"
-import { format } from "date-fns"
+import { format, set } from "date-fns"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import BaseService from "@/lib/service/BaseService"
 import { toast } from "@/hooks/use-toast"
@@ -27,6 +27,7 @@ export default function RegisterPage() {
   const router = useRouter()
   const dispatch = useDispatch()
   const { loading, error } = useSelector((state: any) => state.auth)
+  const [loadingForm, setLoadingForm] = useState(false)
   const [open, setOpen] = useState(false); // Popover açık/kapalı durumu
   const [formData, setFormData] = useState({
     firstname: "",
@@ -128,7 +129,7 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
+    setLoadingForm(true)
     if (validateForm()) {
       try {
         const response = await BaseService.request(REGISTER, {
@@ -154,6 +155,7 @@ export default function RegisterPage() {
         }
       }
     }
+    setLoadingForm(false)
   }
 
   const resetInputs = () => {
@@ -290,37 +292,14 @@ export default function RegisterPage() {
 
                 <div className="grid gap-2">
                   <Label htmlFor="dateOfBirth">{translations.register.dateOfBirthLabel}</Label>
-                  <Popover open={open} onOpenChange={openPopover}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={`w-full justify-start text-left font-normal ${formErrors.dateOfBirth ? "border-red-500" : ""}`}
-                      >
-                        <Calendar className="mr-2 h-4 w-4" />
-                        {formData.dateOfBirth ? (
-                          format(formData.dateOfBirth, "PPP")
-                        ) : (
-                          <span>{translations.register.pickDate}</span>
-                        )}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
-                      <CalendarComponent
-                        mode="single"
-                        selected={formData.dateOfBirth}
-                        onSelect={(date) => {
-                          // Set the selected date without showing today's date
-                          if (date) {
-                            handleDateChange(date);
-                            setOpen(false); // Close popover after selecting a date
-                          }
-                        }}
-                        initialFocus
-                        disabled={(date) => date > new Date()} // Disable future dates
-                      />
-                    </PopoverContent>
-                  </Popover>
 
+                  <Input
+                    id="endDate"
+                    type="date"
+                    value={formData.dateOfBirth ? format(formData.dateOfBirth, "yyyy-MM-dd") : ""}
+                    onChange={(e) => handleDateChange(e.target.value ? new Date(e.target.value) : undefined)}
+                    className={formErrors.dateOfBirth ? "border-[var(--fixed-danger)]" : "border-[var(--fixed-card-border)]"}
+                  />
                   {formErrors.dateOfBirth && <p className="text-red-500 text-xs mt-1">{formErrors.dateOfBirth}</p>}
                 </div>
 
@@ -382,8 +361,8 @@ export default function RegisterPage() {
                   </div>
                 )}
 
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? (
+                <Button type="submit" className="w-full" disabled={loadingForm}>
+                  {loadingForm ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       {translations.register.processingButton}

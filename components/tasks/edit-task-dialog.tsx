@@ -79,7 +79,7 @@ export function EditTaskDialog({ projectTask, open, onOpenChange, projectList, f
   );
 
   const assigneeOptions: SelectOption[] = useMemo(() =>
-    (projectUsers || []).map(user => ({ value: user.id, label: user.email })),
+    (projectUsers || []).map(user => ({ value: user.userId, label: user.email })),
     [projectUsers]
   );
   const projectTaskStatusList: SelectOption[] = useMemo(() =>
@@ -134,7 +134,7 @@ export function EditTaskDialog({ projectTask, open, onOpenChange, projectList, f
             assigneeId: projectTask.assignee.id || null,
             priority: projectTask.priority || "Medium",
             taskType: projectTask.taskType || "feature",
-            sprint: projectTask.sprint.id || null,
+            sprint: projectTask.sprint?.id || null,
             parentTask: projectTask.parentTaskId || null,
           });
           if (projectTask.createdProject.id) {
@@ -245,8 +245,11 @@ export function EditTaskDialog({ projectTask, open, onOpenChange, projectList, f
     const response = await updateProjectTaskHelper(projectTask?.id, updatedTask, { setLoading: setLoadingUpdate });
 
     if (response) {
-
-      fetchData(); // Refresh data in parent component
+      if (fetchData) {
+        fetchData(); // Refresh task list in parent component
+      } else {
+        dispatch(updateTask(response)); // Update Redux state if fetchData is not provided
+      }
       onOpenChange(false);
     } else {
       toast({

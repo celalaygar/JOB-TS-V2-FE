@@ -102,6 +102,8 @@ export interface ProjectTeam {
 
 export interface ProjectUser {
   id: string;
+  userId: string;
+  projectId: string;
   email: string;
   firstname: string;
   lastname: string;

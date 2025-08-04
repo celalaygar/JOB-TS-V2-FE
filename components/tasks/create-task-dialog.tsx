@@ -72,7 +72,7 @@ export function CreateTaskDialog({ open, onOpenChange, parentTask, projectList, 
   );
 
   const assigneeOptions: SelectOption[] = useMemo(() =>
-    (projectUsers || []).map(user => ({ value: user.id, label: user.email })),
+    (projectUsers || []).map(user => ({ value: user.userId, label: user.email })),
     [projectUsers]
   );
 
@@ -172,8 +172,7 @@ export function CreateTaskDialog({ open, onOpenChange, parentTask, projectList, 
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
+    e.preventDefault() 
     if (!formData.title || !formData.project || !formData.assignee || !formData.taskType ||
       (formData.taskType === "subtask" && !formData.parentTask)) {
       toast({

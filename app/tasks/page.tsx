@@ -96,7 +96,9 @@ export default function TasksPage() {
         projectList={projectList}
         filters={filters}
         taskResponse={taskResponse}
-        loading={loading} />
+        loading={loading}
+        fetchData={fetchData}
+      />
     </div>
   )
 }

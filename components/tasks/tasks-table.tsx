@@ -49,12 +49,13 @@ interface TasksTableProps {
   loading: boolean
   projectList?: Project[] | []
   loadingTaskTable?: boolean
+  fetchData?: () => void
 }
 
 type SortField = "title" | "status" | "priority" | "project" | "assignee" | "taskType"
 type SortDirection = "asc" | "desc"
 
-export function TasksTable({ filters, taskResponse, loading, projectList, loadingTaskTable }: TasksTableProps) {
+export function TasksTable({ filters, taskResponse, loading, projectList, loadingTaskTable, fetchData }: TasksTableProps) {
   const dispatch = useDispatch()
   const allTasks = useSelector((state: RootState) => state.tasks.tasks)
   const projects = useSelector((state: RootState) => state.projects.projects)
@@ -405,7 +406,9 @@ export function TasksTable({ filters, taskResponse, loading, projectList, loadin
         <EditTaskDialog
           projectTask={selecteddTask}
           projectList={projectList}
-          open={editDialogOpen} onOpenChange={setEditDialogOpen} />
+          open={editDialogOpen} onOpenChange={setEditDialogOpen}
+          fetchData={fetchData}
+        />
       }
 
       {/* Delete Confirmation Dialog */}

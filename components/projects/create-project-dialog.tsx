@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { addProject } from "@/lib/redux/features/projects-slice"
 import type { RootState } from "@/lib/redux/store"
@@ -60,6 +60,25 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
       })
     }
   }
+
+  const resetForm = useCallback(() => {
+    setFormData({
+      name: "",
+      description: "",
+      status: "Planning",
+      team: [],
+      tags: [],
+      startDate: "",
+      endDate: "",
+      repository: "",
+    })
+    setErrors({})
+    setTagInput("")
+  }, [])
+
+  useEffect(() => {
+    resetForm()
+  }, [open, resetForm])
 
   // Handle team change for react-select (multi-select)
   const handleTeamChange = (selectedOptions: any) => {
@@ -136,16 +155,7 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
       }),
     )
 
-    setFormData({
-      name: "",
-      description: "",
-      status: "Planning",
-      team: [],
-      tags: [],
-      startDate: "",
-      endDate: "",
-      repository: "",
-    })
+    resetForm();
     onOpenChange(false)
   }
 
