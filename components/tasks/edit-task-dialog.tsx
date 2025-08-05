@@ -34,10 +34,10 @@ import {
 import type { Task } from "@/types/task" // Import Task type if not already
 
 interface EditTaskDialogProps {
-  projectTask: ProjectTask | null // Optional, can be used to pre-fill form if needed
+  projectTask: ProjectTask | null
   open: boolean
-  onOpenChange: (open: boolean) => VideoFacingModeEnum
-  fetchData: () => void // Function to refresh task list after edit
+  onOpenChange: (shouldOpen: boolean) => void
+  fetchData?: () => void
   projectList?: Project[] | []
 }
 
