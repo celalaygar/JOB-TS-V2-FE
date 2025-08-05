@@ -22,6 +22,7 @@ import {
   SPRINT_TASK_URL,
   SPRINT_TASK_ADD_URL,
   SPRINT_TASK_REMOVE_URL,
+  BACKLOG_URL,
   SPRINT_URL, // Import SPRINT_URL
   TEAM_DETAIL_URL,
   PROJECT_TASK,
@@ -507,8 +508,8 @@ export const updateProjectTaskHelper = async (taskId: string, projectTaskData: a
   });
 };
 
-export const getAllProjectTaskHelper = async (page: number, size: number, filter: ProjectTaskFilterRequest, options: FetchEntitiesOptions): Promise<TaskResponse[] | null> => {
-  return apiCall<TaskResponse[]>({
+export const getAllProjectTaskHelper = async (page: number, size: number, filter: ProjectTaskFilterRequest, options: FetchEntitiesOptions): Promise<TaskResponse | null> => {
+  return apiCall<TaskResponse>({
     url: PROJECT_TASK + "/filter/" + page + "/" + size,
     method: httpMethods.POST,
     body: filter,
@@ -519,6 +520,21 @@ export const getAllProjectTaskHelper = async (page: number, size: number, filter
     errorToastTitle: "Error Creating Project Task",
   });
 };
+
+
+export const getAllBacklogTaskHelper = async (page: number, size: number, filter: ProjectTaskFilterRequest, options: FetchEntitiesOptions): Promise<TaskResponse | null> => {
+  return apiCall<TaskResponse>({
+    url: BACKLOG_URL + "/filter/" + page + "/" + size,
+    method: httpMethods.POST,
+    body: filter,
+    setLoading: options.setLoading,
+    successMessage: "Backlog Task has been successfully retrieved.",
+    errorMessagePrefix: "Failed to retrieve Backlog Task",
+    successToastTitle: "Backlog Task Retrieved",
+    errorToastTitle: "Error Retrieving Backlog Task",
+  });
+};
+
 
 export const getProjectTaskByProjectTaskIdkHelper = async (taskId: string, options: FetchEntitiesOptions): Promise<ProjectTask | null> => {
   return apiCall<ProjectTask>({

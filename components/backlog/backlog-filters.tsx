@@ -1,94 +1,192 @@
 "use client"
 
+import { CommandEmpty } from "@/components/ui/command"
+
 import { Search } from "lucide-react"
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Command, CommandList, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command"
+import { Check, ChevronsUpDown } from "lucide-react"
+import { cn } from "@/lib/utils"
 import type { Project } from "@/lib/redux/features/projects-slice"
 import type { User } from "@/lib/redux/features/users-slice"
 import { useLanguage } from "@/lib/i18n/context"
+import { useCallback, useState } from "react"
+import { ProjectTaskFilterRequest, ProjectTaskType } from "@/types/task"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
+import { ProjectTaskStatus, ProjectUser } from "@/types/project"
+import { getAllProjectTaskStatusHelper, getProjectUsersHelper } from "@/lib/service/api-helpers"
 
 interface BacklogFiltersProps {
-  filters: {
-    search: string
-    project: string
-    priority: string
-    assignee: string
-    taskType: string
-  }
-  onFilterChange: (name: string, value: string) => void
-  projects: Project[]
-  users: User[]
+  filters: ProjectTaskFilterRequest
+  handleChange: (name: string, value: string) => void
+  projects: Project[] | []
+  loadingFilter?: boolean
+  fetchData: () => void
 }
 
-export function BacklogFilters({ filters, onFilterChange, projects, users }: BacklogFiltersProps) {
+export function BacklogFilters({
+  filters,
+  handleChange,
+  projects,
+  loadingFilter = false,
+  fetchData
+}: BacklogFiltersProps) {
+
   const { translations } = useLanguage()
   const t = translations.backlog.filters
+  const [loading, setLoading] = useState(loadingFilter || false);
+
+  const taskTypes = [
+    { value: ProjectTaskType.BUG, label: t.bug },
+    { value: ProjectTaskType.FEATURE, label: t.feature },
+    { value: ProjectTaskType.STORY, label: t.story },
+    { value: ProjectTaskType.SUBTASK, label: t.subtask },
+  ]
+
+  const [projectTaskStatus, setProjectTaskStatus] = useState<ProjectTaskStatus[]>([])
+  const [projectUsers, setProjectUsers] = useState<ProjectUser[] | []>([])
+
+
+
+  const fetchAllProjectTaskStatus = useCallback(async (projectId: string) => {
+    setProjectTaskStatus([]);
+    const statusesData = await getAllProjectTaskStatusHelper(projectId, { setLoading });
+    if (statusesData) {
+      setProjectTaskStatus(statusesData);
+    } else {
+      setProjectTaskStatus([]);
+    }
+  }, []);
+
+  const fetchProjectUsers = useCallback(async (projectId: string) => {
+    setProjectUsers([]);
+    const usersData = await getProjectUsersHelper(projectId, { setLoading });
+    if (usersData) {
+      setProjectUsers(usersData);
+    } else {
+      setProjectUsers([]);
+    }
+  }, []);
+
+  const handleFilterChange = (key: string, value: string) => {
+    handleChange(key, value);
+
+    if (key === "projectId") {
+      if (value && value !== "" && value !== "all") {
+        fetchAllProjectTaskStatus(value);
+        fetchProjectUsers(value);
+      } else {
+        setProjectTaskStatus([]);
+        setProjectUsers([]);
+      }
+    }
+  }
+  const selectedTaskType = taskTypes.find((type) => type.value === filters.taskType)
 
   return (
-    <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
-      <div className="relative w-full md:w-80">
-        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-        <Input
-          type="search"
-          placeholder={t.search}
-          className="pl-8 w-full"
-          value={filters.search}
-          onChange={(e) => onFilterChange("search", e.target.value)}
-        />
-      </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full md:w-auto">
-        <Select value={filters.project} onValueChange={(value) => onFilterChange("project", value)}>
-          <SelectTrigger className="w-full md:w-[180px]">
-            <SelectValue placeholder={t.project} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t.all}</SelectItem>
-            {projects.map((project) => (
-              <SelectItem key={project.id} value={project.id}>
-                {project.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        {/* Search Input */}
+        <div className="space-y-2">
+          <Label htmlFor="search-input" className="text-sm font-medium">
+            Search Task No or Title
+          </Label>
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              disabled={loading}
+              id="search-input"
+              type="search"
+              placeholder="Search by task number or title..."
+              className="pl-8"
+              value={filters.search}
+              onChange={(e) => handleFilterChange("search", e.target.value)}
+            />
+          </div>
+        </div>
 
-        <Select value={filters.priority} onValueChange={(value) => onFilterChange("priority", value)}>
-          <SelectTrigger className="w-full md:w-[180px]">
-            <SelectValue placeholder={t.priority} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t.all}</SelectItem>
-            <SelectItem value="High">{t.high}</SelectItem>
-            <SelectItem value="Medium">{t.medium}</SelectItem>
-            <SelectItem value="Low">{t.low}</SelectItem>
-          </SelectContent>
-        </Select>
+        {/* Project Combobox */}
+        <div className="space-y-2">
+          <Label className="text-sm font-medium">Project</Label>
+          <Select
+            disabled={loading}
+            value={filters.projectId}
+            onValueChange={(value) => handleFilterChange("projectId", value)}>
+            <SelectTrigger className="border-[var(--fixed-card-border)]">
+              <SelectValue placeholder="All Projects" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Projects</SelectItem>
+              {projects.map((project: Project) => (
+                <SelectItem key={project.id} value={project.id || ""}>
+                  {project.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-        <Select value={filters.assignee} onValueChange={(value) => onFilterChange("assignee", value)}>
-          <SelectTrigger className="w-full md:w-[180px]">
-            <SelectValue placeholder={t.assignee} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t.all}</SelectItem>
-            {users.map((user) => (
-              <SelectItem key={user.id} value={user.id}>
-                {user.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {/* Assignee Combobox */}
+        <div className="space-y-2">
+          <Label className="text-sm font-medium">Assignee</Label>
+          <Select
+            disabled={loading}
+            value={filters.assigneeId}
+            onValueChange={(value) => handleFilterChange("assigneeId", value)}>
+            <SelectTrigger className="border-[var(--fixed-card-border)]">
+              <SelectValue placeholder="All Assignees" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Assignees</SelectItem>
+              {projectUsers.map((user: ProjectUser) => (
+                <SelectItem key={user.id} value={user.id || ""}>
+                  {user.email}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-        <Select value={filters.taskType} onValueChange={(value) => onFilterChange("taskType", value)}>
-          <SelectTrigger className="w-full md:w-[180px]">
-            <SelectValue placeholder={t.taskType} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t.all}</SelectItem>
-            <SelectItem value="bug">{t.bug}</SelectItem>
-            <SelectItem value="feature">{t.feature}</SelectItem>
-            <SelectItem value="story">{t.story}</SelectItem>
-            <SelectItem value="subtask">{t.subtask}</SelectItem>
-          </SelectContent>
-        </Select>
+        {/* Task Type Combobox */}
+        <div className="space-y-2">
+          <Label className="text-sm font-medium">Task Type</Label>
+
+          <Select
+            disabled={loading}
+            value={filters.assigneeId}
+            onValueChange={(value) => handleFilterChange("taskType", value)}>
+            <SelectTrigger className="border-[var(--fixed-card-border)]">
+              <SelectValue placeholder="All Assignees" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Task Type</SelectItem>
+              {taskTypes.map((type) => (
+                <SelectItem key={type.value} value={type.value}>
+                  {type.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label className="text-sm font-medium">Search</Label>
+          <Button
+            variant="outline"
+            className="w-full border-[var(--fixed-card-border)]"
+            onClick={() => {
+              fetchData();
+            }}
+            disabled={loading}
+          >
+            Search
+            <Search className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
+
       </div>
     </div>
   )

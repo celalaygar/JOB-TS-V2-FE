@@ -33,6 +33,11 @@ export const INVITATION_BY_PENDING = INVITATION_PROJECT + "/pending";
 export const INVITATION_BY_PROJECTID = INVITATION_PROJECT + "/all-by-projectId";
 
 
+
+export const BACKLOG_URL = BASE_PATH_V2 + "backlog";
+
+
+
 export const SPRINT_URL = BASE_PATH_V2 + "sprint";
 export const SPRINT_GET_ALL_URL = SPRINT_URL + "/getAll";
 export const SPRINT_NON_COMPLETED_GET_ALL_URL = SPRINT_URL + "/non-completed/project";

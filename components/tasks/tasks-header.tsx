@@ -31,7 +31,7 @@ export function TasksHeader({ filters, setFilters, handleChange, fetchData, proj
 
   const users = useSelector((state: RootState) => state.users.users)
 
-  const [loading, setLoading] = useState(loadingTaskTable | false);
+  const [loading, setLoading] = useState(loadingTaskTable || false);
   const [projectTaskStatus, setProjectTaskStatus] = useState<ProjectTaskStatus[]>([])
   const [projectUsers, setProjectUsers] = useState<ProjectUser[] | []>([])
 

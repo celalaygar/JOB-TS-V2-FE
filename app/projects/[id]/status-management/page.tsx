@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { ArrowLeft, Plus, Search, Trash2, Edit, ArrowUpDown, ChevronUp, ChevronDown } from "lucide-react"
 import Link from "next/link"
-import { ProjectIssueStatusDialog } from "@/components/projects/project-task-status-dialog"
+import { ProjectTaskStatusDialog } from "@/components/projects/project-task-status-dialog"
 import { Badge } from "@/components/ui/badge"
 import {
   AlertDialog,
@@ -390,7 +390,7 @@ export default function StatusManagementPage() {
       </Card>
 
       {/* Status Dialog */}
-      <ProjectIssueStatusDialog
+      <ProjectTaskStatusDialog
         open={statusDialogOpen}
         onOpenChange={setStatusDialogOpen}
         status={selectedStatus}
