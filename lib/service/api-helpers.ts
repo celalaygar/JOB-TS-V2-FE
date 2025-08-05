@@ -37,6 +37,7 @@ import {
   TEAM_USER_IN_URL
 } from "@/lib/service/BasePath";
 import { ProjectTask, ProjectTaskFilterRequest, TaskResponse } from "@/types/task";
+import { BacklogFilterRequest } from "@/types/backlog";
 
 interface ApiOperationConfig<T> {
   url: string;
@@ -522,7 +523,7 @@ export const getAllProjectTaskHelper = async (page: number, size: number, filter
 };
 
 
-export const getAllBacklogTaskHelper = async (page: number, size: number, filter: ProjectTaskFilterRequest, options: FetchEntitiesOptions): Promise<TaskResponse | null> => {
+export const getAllBacklogTaskHelper = async (page: number, size: number, filter: BacklogFilterRequest, options: FetchEntitiesOptions): Promise<TaskResponse | null> => {
   return apiCall<TaskResponse>({
     url: BACKLOG_URL + "/filter/" + page + "/" + size,
     method: httpMethods.POST,

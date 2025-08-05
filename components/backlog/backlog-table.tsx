@@ -12,9 +12,10 @@ import { useLanguage } from "@/lib/i18n/context"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { ProjectTaskFilterRequest, ProjectTaskPriority, ProjectTaskType, Task, TaskResponse } from "@/types/task"
 import { Project } from "@/types/project"
+import { BacklogFilterRequest } from "@/types/backlog"
 
 interface BacklogTableProps {
-  filters: ProjectTaskFilterRequest
+  filters: BacklogFilterRequest
   loadingTaskTable: boolean
   projectList: Project[]
   taskResponse: TaskResponse | null

@@ -14,13 +14,14 @@ import type { Project } from "@/lib/redux/features/projects-slice"
 import type { User } from "@/lib/redux/features/users-slice"
 import { useLanguage } from "@/lib/i18n/context"
 import { useCallback, useState } from "react"
-import { ProjectTaskFilterRequest, ProjectTaskType } from "@/types/task"
+import { ProjectTaskPriority, ProjectTaskType } from "@/types/task"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { ProjectTaskStatus, ProjectUser } from "@/types/project"
 import { getAllProjectTaskStatusHelper, getProjectUsersHelper } from "@/lib/service/api-helpers"
+import { BacklogFilterRequest } from "@/types/backlog"
 
 interface BacklogFiltersProps {
-  filters: ProjectTaskFilterRequest
+  filters: BacklogFilterRequest
   handleChange: (name: string, value: string) => void
   projects: Project[] | []
   loadingFilter?: boolean
@@ -84,7 +85,6 @@ export function BacklogFilters({
       }
     }
   }
-  const selectedTaskType = taskTypes.find((type) => type.value === filters.taskType)
 
   return (
     <div className="space-y-6">
@@ -99,11 +99,11 @@ export function BacklogFilters({
             <Input
               disabled={loading}
               id="search-input"
-              type="search"
+              type="text"
               placeholder="Search by task number or title..."
               className="pl-8"
-              value={filters.search}
-              onChange={(e) => handleFilterChange("search", e.target.value)}
+              value={filters.searchText}
+              onChange={(e) => handleFilterChange("searchText", e.target.value)}
             />
           </div>
         </div>
@@ -142,7 +142,7 @@ export function BacklogFilters({
             <SelectContent>
               <SelectItem value="all">All Assignees</SelectItem>
               {projectUsers.map((user: ProjectUser) => (
-                <SelectItem key={user.id} value={user.id || ""}>
+                <SelectItem key={user.id} value={user.userId || ""}>
                   {user.email}
                 </SelectItem>
               ))}
@@ -175,7 +175,6 @@ export function BacklogFilters({
         <div className="space-y-2">
           <Label className="text-sm font-medium">Search</Label>
           <Button
-            variant="outline"
             className="w-full border-[var(--fixed-card-border)]"
             onClick={() => {
               fetchData();

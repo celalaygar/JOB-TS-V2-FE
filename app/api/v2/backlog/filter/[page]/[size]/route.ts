@@ -4,7 +4,7 @@ import { NextRequest } from 'next/server';
 import RouteBaseService from '@/lib/service/RouteBaseService';
 
 const URL = process.env.BASE_V2_URL
-const PROJECTS_TASK = "project-task"
+const BACKLOG = "backlog";
 
 
 export async function POST(req: NextRequest,
@@ -15,7 +15,7 @@ export async function POST(req: NextRequest,
     const body = await req.json();
     const p = await (await params).page;
     const s = await (await params).size;
-    return RouteBaseService.request(URL + PROJECTS_TASK + "/filter?page=" + p + "&size=" + s, {
+    return RouteBaseService.request(URL + BACKLOG + "/filter?page=" + p + "&size=" + s, {
         method: 'POST',
         body: body,
         clientIp: clientIp, // ✅ IP'yi servise ilet

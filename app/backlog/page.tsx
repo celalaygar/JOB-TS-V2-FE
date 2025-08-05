@@ -7,10 +7,11 @@ import { BacklogHeader } from "@/components/backlog/backlog-header"
 import { BacklogTable } from "@/components/backlog/backlog-table"
 import { BacklogFilters } from "@/components/backlog/backlog-filters"
 import { Project } from "@/types/project"
-import { ProjectTaskFilterRequest, Task, TaskResponse } from "@/types/task"
+import { Task, TaskResponse } from "@/types/task"
 import { getAllBacklogTaskHelper, getAllProjectsHelper } from "@/lib/service/api-helpers"
 import { setTasks } from "@/lib/redux/features/tasks-slice"
 import { Loader2 } from "lucide-react"
+import { BacklogFilterRequest } from "@/types/backlog"
 
 export default function BacklogPage() {
   const projects = useSelector((state: RootState) => state.projects.projects)
@@ -32,8 +33,8 @@ export default function BacklogPage() {
   const [taskResponse, setTaskResponse] = useState<TaskResponse | null>(null)
   const [taskList, setTaskList] = useState<Task[]>([])
   const [projectList, setProjectList] = useState<Project[] | []>([]);
-  const [filters, setFilters] = useState<ProjectTaskFilterRequest>({
-    search: "",
+  const [filters, setFilters] = useState<BacklogFilterRequest>({
+    searchText: "",
     projectId: "all",
     projectTaskStatusId: "all",
     priority: "all",
@@ -42,7 +43,7 @@ export default function BacklogPage() {
   })
 
   const fetchAllProjects = useCallback(async () => {
-    const projectsData = await getAllProjectsHelper({ setLoading: setLoading });
+    const projectsData: Project[] | null = await getAllProjectsHelper({ setLoading: setLoading });
     if (projectsData) {
       setProjectList(projectsData);
     } else {
@@ -55,7 +56,7 @@ export default function BacklogPage() {
   }, [fetchAllProjects])
 
 
-  const fetchAllProjectTasks = useCallback(async (filters: ProjectTaskFilterRequest) => {
+  const fetchAllProjectTasks = useCallback(async (filters: BacklogFilterRequest) => {
     setTaskList([]) // Clear previous tasks
     const response: TaskResponse | null = await getAllBacklogTaskHelper(0, 1000, filters, { setLoading: setLoadingTaskTable });
     if (response !== null) {
@@ -66,15 +67,16 @@ export default function BacklogPage() {
     }
   }, []);
 
-  const fetchData = useCallback(() => {
+  const fetchData = () => {
+    console.log("Fetching data with filters:", filters);
     let filter = Object.fromEntries(
       Object.entries(filters).map(([key, value]) => [
         key,
         value === "all" || value === "" ? null : value,
       ])
-    ) as unknown as ProjectTaskFilterRequest;
+    ) as unknown as BacklogFilterRequest;
     fetchAllProjectTasks(filter);
-  }, []);
+  }
 
   useEffect(() => {
     fetchData();
@@ -83,7 +85,8 @@ export default function BacklogPage() {
 
 
 
-  const handleFilterChange = (name: string, value: string) => {
+  const handleChange = (name: string, value: string) => {
+    console.log("handleChange", name, value)
     setFilters((prev) => ({
       ...prev,
       [name]: value,
@@ -96,7 +99,7 @@ export default function BacklogPage() {
       <div className="p-6 space-y-6 flex-1 overflow-auto">
         <BacklogFilters
           filters={filters}
-          handleChange={handleFilterChange}
+          handleChange={handleChange}
           projects={projectList}
           fetchData={fetchData}
           loadingFilter={loading}
