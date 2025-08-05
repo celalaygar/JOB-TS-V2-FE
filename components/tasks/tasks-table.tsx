@@ -401,12 +401,12 @@ export function TasksTable({ filters, taskResponse, loading, projectList, loadin
         </div>
       </div>
 
-      {
-        selecteddTask &&
+      {selecteddTask &&
         <EditTaskDialog
           projectTask={selecteddTask}
           projectList={projectList}
-          open={editDialogOpen} onOpenChange={setEditDialogOpen}
+          open={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
           fetchData={fetchData}
         />
       }

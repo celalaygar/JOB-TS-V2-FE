@@ -10,9 +10,11 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { useLanguage } from "@/lib/i18n/context"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { ProjectTaskFilterRequest, ProjectTaskPriority, ProjectTaskType, Task, TaskResponse } from "@/types/task"
+import { ProjectTask, ProjectTaskFilterRequest, ProjectTaskPriority, ProjectTaskType, Task, TaskResponse } from "@/types/task"
 import { Project } from "@/types/project"
 import { BacklogFilterRequest } from "@/types/backlog"
+import { useState } from "react"
+import { EditTaskDialog } from "../tasks/edit-task-dialog"
 
 interface BacklogTableProps {
   filters: BacklogFilterRequest
@@ -32,9 +34,10 @@ interface BacklogTableProps {
 }
 
 export function BacklogTable({ filters, loadingTaskTable, projectList, taskResponse, loading, fetchData }: BacklogTableProps) {
-  const tasks = useSelector((state: RootState) => state.tasks.tasks)
   const projects = useSelector((state: RootState) => state.projects.projects)
   const { translations } = useLanguage()
+  const [selecteddTask, setSelecteddTask] = useState<ProjectTask | null>(null)
+  const [editDialogOpen, setEditDialogOpen] = useState(false)
   const t = translations.backlog.table
 
   // Get type badge color
@@ -116,69 +119,82 @@ export function BacklogTable({ filters, loadingTaskTable, projectList, taskRespo
               </TableRow>
             </TableHeader>
             <TableBody>
-              {taskResponse?.content && taskResponse.content.length > 0 && taskResponse.content.map((task: Task) => {
-                const project = projects.find((p) => p.id === task.createdProject.id)
-                return (
-                  <TableRow key={task.id}>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
-                        {getTaskTypeIcon(task.taskType)}
-                        <span>{task.taskNumber}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>{task.title}</TableCell>
-                    <TableCell>
-                      <Badge className={`${getPriorityColor(task.priority)} text-white`}>
-                        {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
-                      </Badge>
-                    </TableCell>
+              {taskResponse?.content && taskResponse.content.length > 0 && taskResponse.content.map((task: ProjectTask) => (
+                <TableRow key={task.id}>
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-2">
+                      {getTaskTypeIcon(task.taskType)}
+                      <span>{task.taskNumber}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>{task.title}</TableCell>
+                  <TableCell>
+                    <Badge className={`${getPriorityColor(task.priority)} text-white`}>
+                      {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+                    </Badge>
+                  </TableCell>
 
-                    {/* <TableCell className="capitalize">{task.projectTaskStatus.label.replace("-", " ")}</TableCell> */}
+                  {/* <TableCell className="capitalize">{task.projectTaskStatus.label.replace("-", " ")}</TableCell> */}
 
-                    <TableCell>
-                      <Badge className={`${getTypeColor(task.taskType)} text-white`}>
-                        {task.taskType.charAt(0).toUpperCase() + task.taskType.slice(1)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Avatar className="h-6 w-6">
-                          <AvatarImage src={"/placeholder.svg"} alt={task.assignee.email} />
-                          <AvatarFallback>{task.assignee.email}</AvatarFallback>
-                        </Avatar>
-                        <span className="truncate max-w-[100px]">{task.assignee.email}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>{task.createdProject.name}</TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                            <span className="sr-only">Open menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem asChild>
-                            <Link href={`/tasks/${task.id}`} className="flex items-center">
-                              <Eye className="mr-2 h-4 w-4" />
-                              <span>{t.viewDetails}</span>
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem asChild>
-                            <Link href={`/tasks/${task.id}/edit`} className="flex items-center">
-                              <Edit className="mr-2 h-4 w-4" />
-                              <span>{t.edit}</span>
-                            </Link>
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
+                  <TableCell>
+                    <Badge className={`${getTypeColor(task.taskType)} text-white`}>
+                      {task.taskType.charAt(0).toUpperCase() + task.taskType.slice(1)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <Avatar className="h-6 w-6">
+                        <AvatarImage src={"/placeholder.svg"} alt={task.assignee.email} />
+                        <AvatarFallback>{task.assignee.email}</AvatarFallback>
+                      </Avatar>
+                      <span className="truncate max-w-[100px]">{task.assignee.email}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>{task.createdProject.name}</TableCell>
+                  <TableCell className="text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <span className="sr-only">Open menu</span>
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem asChild>
+                          <Link href={`/tasks/${task.id}`} className="flex items-center">
+                            <Eye className="mr-2 h-4 w-4" />
+                            <span>{t.viewDetails}</span>
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="flex items-center cursor-pointer"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setSelecteddTask(task)
+                            setEditDialogOpen(true)
+                          }}
+                        >
+                          <Edit className="mr-2 h-4 w-4" />
+                          {t.edit}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
+      }
+
+
+      {selecteddTask &&
+        <EditTaskDialog
+          projectTask={selecteddTask}
+          projectList={projectList}
+          open={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
+          fetchData={fetchData}
+        />
       }
     </div>
   )
