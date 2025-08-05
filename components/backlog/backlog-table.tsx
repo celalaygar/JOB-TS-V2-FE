@@ -107,7 +107,7 @@ export function BacklogTable({ filters, loadingTaskTable, projectList, taskRespo
                 <TableHead className="w-[120px] bg-white">{t.taskNumber}</TableHead>
                 <TableHead className="w-[100px] bg-white">{t.title}</TableHead>
                 <TableHead className="w-[100px] bg-white">{t.priority}</TableHead>
-                <TableHead className="w-[100px] bg-white">{t.status}</TableHead>
+                {/* <TableHead className="w-[100px] bg-white">{t.status}</TableHead> */}
                 <TableHead className="w-[100px] bg-white">{t.taskType}</TableHead>
                 <TableHead className="w-[150px] bg-white">{t.assignee}</TableHead>
                 <TableHead className="w-[150px] bg-white">{t.project}</TableHead>
@@ -131,7 +131,8 @@ export function BacklogTable({ filters, loadingTaskTable, projectList, taskRespo
                         {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
                       </Badge>
                     </TableCell>
-                    <TableCell className="capitalize">{task.projectTaskStatus.label.replace("-", " ")}</TableCell>
+
+                    {/* <TableCell className="capitalize">{task.projectTaskStatus.label.replace("-", " ")}</TableCell> */}
 
                     <TableCell>
                       <Badge className={`${getTypeColor(task.taskType)} text-white`}>
