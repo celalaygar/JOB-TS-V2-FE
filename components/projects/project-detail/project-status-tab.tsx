@@ -81,6 +81,7 @@ export function ProjectStatusTab({ project, projectId }: ProjectStatusTabProps) 
     const response = await saveTaskStatusHelper(newStatusData, { setLoading: setLoadingDialog });
     if (response) {
       setStatuses((prevStatuses) => [...prevStatuses, response]);
+      setStatusDialogOpen(false);
     }
   };
 
@@ -92,6 +93,8 @@ export function ProjectStatusTab({ project, projectId }: ProjectStatusTabProps) 
       //   prevStatuses.map((status) => (status.id === response.id ? response : status))
       // );
       fetchAllProjectTaskStatus();
+      setStatusDialogOpen(false);
+      setSelectedStatus(null);
     }
   };
 
@@ -255,28 +258,6 @@ export function ProjectStatusTab({ project, projectId }: ProjectStatusTabProps) 
                       >
                         <div className="col-span-1 flex items-center gap-2">
                           <span className="font-medium">{status.order}</span>
-                          {/* <div className="flex flex-col">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-5 w-5 p-0"
-                              onClick={() => status.id && handleMoveStatus(status.id, "up")}
-                              disabled={index === 0}
-                            >
-                              <ChevronUp className="h-3 w-3" />
-                              <span className="sr-only">Move up</span>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-5 w-5 p-0"
-                              onClick={() => status.id && handleMoveStatus(status.id, "down")}
-                              disabled={index === filteredAndSortedStatuses.length - 1}
-                            >
-                              <ChevronDown className="h-3 w-3" />
-                              <span className="sr-only">Move down</span>
-                            </Button>
-                          </div> */}
                         </div>
                         <div className="col-span-2 flex items-center">
                           <span className="font-medium text-[var(--fixed-sidebar-fg)]">{status.name}</span>

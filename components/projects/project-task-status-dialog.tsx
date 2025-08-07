@@ -51,7 +51,7 @@ export function ProjectTaskStatusDialog({ open, onOpenChange, status, onSave, lo
 
   const [activeTab, setActiveTab] = useState("general")
   const [errors, setErrors] = useState<ValidationErrors>({})
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(loading || false)
 
   useEffect(() => {
     if (status) {
@@ -150,12 +150,11 @@ export function ProjectTaskStatusDialog({ open, onOpenChange, status, onSave, lo
     }
 
     try {
-      onSave(formData)
+      await onSave(formData)
     } catch (error) {
       console.error("Error saving status:", error)
     } finally {
       setIsSubmitting(false)
-      onOpenChange(false)
     }
   }
 
