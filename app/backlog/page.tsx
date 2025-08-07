@@ -83,6 +83,27 @@ export default function BacklogPage() {
   }, [fetchAllProjectTasks])
 
 
+  const clearFilters = () => {
+    console.log("Clearing filters");
+    let newFilters: BacklogFilterRequest = {
+      searchText: "",
+      projectId: "all",
+      projectTaskStatusId: "all",
+      priority: "all",
+      assigneeId: "all",
+      taskType: "all",
+    }
+
+    setFilters(newFilters);
+
+    let filter = Object.fromEntries(
+      Object.entries(newFilters).map(([key, value]) => [
+        key,
+        value === "all" || value === "" ? null : value,
+      ])
+    ) as unknown as BacklogFilterRequest;
+    fetchAllProjectTasks(filter);
+  }
 
 
   const handleChange = (name: string, value: string) => {
@@ -103,6 +124,7 @@ export default function BacklogPage() {
           projects={projectList}
           fetchData={fetchData}
           loadingFilter={loading}
+          clearFilters={clearFilters}
         />
         {
           loading || loadingTaskTable

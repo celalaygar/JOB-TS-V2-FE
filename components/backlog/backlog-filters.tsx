@@ -2,7 +2,7 @@
 
 import { CommandEmpty } from "@/components/ui/command"
 
-import { Search } from "lucide-react"
+import { Search, X } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
@@ -26,6 +26,7 @@ interface BacklogFiltersProps {
   projects: Project[] | []
   loadingFilter?: boolean
   fetchData: () => void
+  clearFilters: () => void
 }
 
 export function BacklogFilters({
@@ -33,7 +34,8 @@ export function BacklogFilters({
   handleChange,
   projects,
   loadingFilter = false,
-  fetchData
+  fetchData,
+  clearFilters
 }: BacklogFiltersProps) {
 
   const { translations } = useLanguage()
@@ -53,7 +55,7 @@ export function BacklogFilters({
 
 
   const fetchAllProjectTaskStatus = useCallback(async (projectId: string) => {
-    setProjectTaskStatus([]);
+    setProjectTaskStatus(null);
     const statusesData = await getAllProjectTaskStatusHelper(projectId, { setLoading });
     if (statusesData) {
       setProjectTaskStatus(statusesData);
@@ -63,7 +65,7 @@ export function BacklogFilters({
   }, []);
 
   const fetchProjectUsers = useCallback(async (projectId: string) => {
-    setProjectUsers([]);
+    setProjectUsers(null);
     const usersData = await getProjectUsersHelper(projectId, { setLoading });
     if (usersData) {
       setProjectUsers(usersData);
@@ -79,16 +81,18 @@ export function BacklogFilters({
       if (value && value !== "" && value !== "all") {
         fetchAllProjectTaskStatus(value);
         fetchProjectUsers(value);
-      } else {
-        setProjectTaskStatus([]);
-        setProjectUsers([]);
       }
     }
+  }
+  const clearInputs = () => {
+    clearFilters();
+    setProjectTaskStatus([]);
+    setProjectUsers([]);
   }
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
         {/* Search Input */}
         <div className="space-y-2">
           <Label htmlFor="search-input" className="text-sm font-medium">
@@ -141,7 +145,7 @@ export function BacklogFilters({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Assignees</SelectItem>
-              {projectUsers.map((user: ProjectUser) => (
+              {projectUsers?.map((user: ProjectUser) => (
                 <SelectItem key={user.id} value={user.userId || ""}>
                   {user.email}
                 </SelectItem>
@@ -173,9 +177,8 @@ export function BacklogFilters({
         </div>
 
         <div className="space-y-2">
-          <Label className="text-sm font-medium">Search</Label>
           <Button
-            className="w-full border-[var(--fixed-card-border)]"
+            className="w-full lg:mt-8 h-9 border-[var(--fixed-card-border)]"
             onClick={() => {
               fetchData();
             }}
@@ -186,6 +189,19 @@ export function BacklogFilters({
           </Button>
         </div>
 
+        <div className="space-y-2">
+          <Button
+            variant="outline"
+            className="w-full lg:mt-8 h-9 border-[var(--fixed-card-border)]"
+            onClick={() => {
+              clearInputs();
+            }}
+            disabled={loading}
+          >
+            Clear Filters
+            <X className="ml-2 MT- h-4 w-4" />
+          </Button>
+        </div>
       </div>
     </div>
   )
