@@ -156,7 +156,7 @@ export function BacklogFilters({
 
           <Select
             disabled={loading}
-            value={filters.assigneeId}
+            value={filters.taskType}
             onValueChange={(value) => handleFilterChange("taskType", value)}>
             <SelectTrigger className="border-[var(--fixed-card-border)]">
               <SelectValue placeholder="All Assignees" />

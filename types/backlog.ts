@@ -9,5 +9,5 @@ export interface BacklogFilterRequest {
     projectId?: string;
     assigneeId?: string;
     priority?: ProjectTaskPriority;
-    taskType?: ProjectTaskType;
+    taskType?: string;
 }
