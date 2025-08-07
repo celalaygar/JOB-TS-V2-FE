@@ -162,7 +162,7 @@ export function BacklogFilters({
               <SelectValue placeholder="All Assignees" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Task Type</SelectItem>
+              <SelectItem value="all">All Task Types</SelectItem>
               {taskTypes.map((type) => (
                 <SelectItem key={type.value} value={type.value}>
                   {type.label}
