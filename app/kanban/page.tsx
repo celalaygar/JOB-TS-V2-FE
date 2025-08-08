@@ -10,7 +10,7 @@ import { Project, ProjectTaskStatus } from "@/types/project";
 import { Loader2 } from "lucide-react";
 import { KanbanFilters } from "@/components/kanban/kanban-filters";
 import { ProjectTask, TaskResponse } from "@/types/task";
-import { Label } from "recharts";
+
 
 export default function KanbanPage() {
 
@@ -122,9 +122,6 @@ export default function KanbanPage() {
         </div>
       ) : (
         <>
-          <div className="p-6 space-y-6">
-            <span className="text-lg font-semibold">Kanban Board {taskList?.length} / {projectTaskStatus?.length} </span>
-          </div>
           <KanbanFilters
             fetchData={fetchData}
             handleChange={handleChange}
