@@ -8,5 +8,6 @@ export interface KanbanFilterRequest {
     projectTaskStatusId?: string;
     projectId?: string;
     assigneeId?: string;
+    sprintId?: string;
     taskType?: string;
 }

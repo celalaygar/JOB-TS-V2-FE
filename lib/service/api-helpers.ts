@@ -427,6 +427,23 @@ export const getSprintHelper = async (sprintId: string, options: FetchEntitiesOp
   });
 };
 
+export const getSprintListByProjectIdHelper = async (projectId: string, options: FetchEntitiesOptions): Promise<Sprint[] | null> => {
+  if (!projectId) {
+    options.setLoading(false);
+    return null;
+  }
+
+  return apiCall<Sprint[]>({
+    url: `${SPRINT_URL}/project/${projectId}`,
+    method: httpMethods.GET,
+    setLoading: options.setLoading,
+    successMessage: `Sprints for project ${projectId} have been retrieved.`,
+    errorMessagePrefix: "Failed to load sprints for project",
+    successToastTitle: "Sprints Loaded",
+    errorToastTitle: "Error Loading Sprints",
+  });
+};
+
 export const getProjectHelper = async (projectId: string, options: FetchEntitiesOptions): Promise<Project | null> => {
   if (!projectId) {
     options.setLoading(false);

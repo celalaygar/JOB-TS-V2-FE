@@ -1,16 +1,17 @@
 "use client"
 
+import { useCallback, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { KanbanFilterRequest } from "@/types/kanban"
-import { Project, ProjectTaskStatus, ProjectUser } from "@/types/project"
-import { FilterIcon, Search, SearchIcon, X, XIcon } from "lucide-react"
-import { useCallback, useState } from "react"
+import { Project, ProjectUser } from "@/types/project"
+import { Search, X } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { useLanguage } from "@/lib/i18n/context"
-import { getAllProjectTaskStatusHelper, getProjectUsersHelper } from "@/lib/service/api-helpers"
+
 import { Label } from "../ui/label"
 import { ProjectTaskType } from "@/types/task"
+import { Sprint } from "@/types/sprint"
 
 
 interface KanbanFiltersProps {
@@ -21,6 +22,8 @@ interface KanbanFiltersProps {
   handleChange: (name: string, value: string) => void
   clearFilters: () => void
   fetchData: () => void
+  sprintList: Sprint[] | null
+  projectUsers?: ProjectUser[] | null
 }
 
 export function KanbanFilters({
@@ -30,11 +33,12 @@ export function KanbanFilters({
   loadingFilter = false,
   setFilters,
   clearFilters,
-  fetchData
+  fetchData,
+  sprintList,
+  projectUsers = []
 }: KanbanFiltersProps) {
 
   const { translations } = useLanguage()
-  const [loading, setLoading] = useState(loadingFilter || false);
   const t = translations.backlog.filters
   const taskTypes = [
     { value: ProjectTaskType.BUG, label: t.bug },
@@ -43,34 +47,14 @@ export function KanbanFilters({
     { value: ProjectTaskType.SUBTASK, label: t.subtask },
   ]
 
-  const [projectUsers, setProjectUsers] = useState<ProjectUser[] | null>([])
-
-  const fetchProjectUsers = useCallback(async (projectId: string) => {
-    setProjectUsers(null);
-    const usersData = await getProjectUsersHelper(projectId, { setLoading });
-    if (usersData) {
-      setProjectUsers(usersData);
-    } else {
-      setProjectUsers([]);
-    }
-  }, []);
-
-
 
   const handleFilterChange = (key: string, value: string) => {
     handleChange(key, value);
 
-
-    if (key === "projectId") {
-      if (value && value !== "" && value !== "all") {
-        fetchProjectUsers(value);
-      }
-    }
   }
 
   const clearInputs = () => {
     clearFilters();
-    setProjectUsers([]);
   }
 
 
@@ -86,7 +70,7 @@ export function KanbanFilters({
             <div className="relative">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
-                disabled={loading}
+                disabled={loadingFilter}
                 id="search-input"
                 type="text"
                 placeholder="Search by task number or title..."
@@ -99,9 +83,9 @@ export function KanbanFilters({
 
           {/* Project Combobox */}
           <div className="space-y-2">
-            <Label className="text-sm font-medium">Project</Label>
+            <Label className="text-sm font-medium">Project  </Label>
             <Select
-              disabled={loading}
+              disabled={loadingFilter}
               value={filters.projectId}
               onValueChange={(value) => handleFilterChange("projectId", value)}>
               <SelectTrigger className="border-[var(--fixed-card-border)]">
@@ -118,11 +102,32 @@ export function KanbanFilters({
             </Select>
           </div>
 
+          {/* Sprints Combobox */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Sprints  </Label>
+            <Select
+              disabled={loadingFilter}
+              value={filters.sprintId}
+              onValueChange={(value) => handleFilterChange("sprintId", value)}>
+              <SelectTrigger className="border-[var(--fixed-card-border)]">
+                <SelectValue placeholder="All Sprints" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Sprints </SelectItem>
+                {!!sprintList && sprintList.map((sp: Sprint) => (
+                  <SelectItem key={sp.id} value={sp.id}>
+                    {sp.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           {/* Assignee Combobox */}
           <div className="space-y-2">
-            <Label className="text-sm font-medium">Assignee</Label>
+            <Label className="text-sm font-medium">Assignee </Label>
             <Select
-              disabled={loading}
+              disabled={loadingFilter}
               value={filters.assigneeId}
               onValueChange={(value) => handleFilterChange("assigneeId", value)}>
               <SelectTrigger className="border-[var(--fixed-card-border)]">
@@ -139,35 +144,13 @@ export function KanbanFilters({
             </Select>
           </div>
 
-          {/* Task Type Combobox */}
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">Task Type</Label>
-
-            <Select
-              disabled={loading}
-              value={filters.taskType}
-              onValueChange={(value) => handleFilterChange("taskType", value)}>
-              <SelectTrigger className="border-[var(--fixed-card-border)]">
-                <SelectValue placeholder="All Assignees" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Task Types</SelectItem>
-                {taskTypes.map((type) => (
-                  <SelectItem key={type.value} value={type.value}>
-                    {type.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
           <div className="space-y-1">
             <Button
               className="w-full lg:mt-8 h-9 border-[var(--fixed-card-border)]"
               onClick={() => {
                 fetchData();
               }}
-              disabled={loading}
+              disabled={loadingFilter}
             >
               Search
               <Search className="ml-2 h-4 w-4" />
@@ -181,7 +164,7 @@ export function KanbanFilters({
               onClick={() => {
                 clearInputs();
               }}
-              disabled={loading}
+              disabled={loadingFilter}
             >
               Clear Filters
               <X className="ml-2 MT- h-4 w-4" />
