@@ -1,191 +1,197 @@
 "use client"
 
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
-import { projects } from "@/data/projects"
-import { users } from "@/data/users"
-import { FilterIcon, SearchIcon, XIcon } from "lucide-react"
-import { useState } from "react"
+import { KanbanFilterRequest } from "@/types/kanban"
+import { Project, ProjectTaskStatus, ProjectUser } from "@/types/project"
+import { FilterIcon, Search, SearchIcon, X, XIcon } from "lucide-react"
+import { useCallback, useState } from "react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
+import { useLanguage } from "@/lib/i18n/context"
+import { getAllProjectTaskStatusHelper, getProjectUsersHelper } from "@/lib/service/api-helpers"
+import { Label } from "../ui/label"
+import { ProjectTaskType } from "@/types/task"
 
-export default function KanbanFilters() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedProjects, setSelectedProjects] = useState<string[]>([])
-  const [selectedUsers, setSelectedUsers] = useState<string[]>([])
-  const [selectedTypes, setSelectedTypes] = useState<string[]>([])
 
-  const taskTypes = ["bug", "feature", "story", "subtask"]
+interface KanbanFiltersProps {
+  filters: KanbanFilterRequest
+  setFilters: (filters: KanbanFilterRequest) => void
+  projects: Project[] | []
+  loadingFilter?: boolean
+  handleChange: (name: string, value: string) => void
+  clearFilters: () => void
+  fetchData: () => void
+}
 
-  const toggleProject = (projectId: string) => {
-    setSelectedProjects((prev) =>
-      prev.includes(projectId) ? prev.filter((id) => id !== projectId) : [...prev, projectId],
-    )
+export function KanbanFilters({
+  handleChange,
+  filters,
+  projects,
+  loadingFilter = false,
+  setFilters,
+  clearFilters,
+  fetchData
+}: KanbanFiltersProps) {
+
+  const { translations } = useLanguage()
+  const [loading, setLoading] = useState(loadingFilter || false);
+  const t = translations.backlog.filters
+  const taskTypes = [
+    { value: ProjectTaskType.BUG, label: t.bug },
+    { value: ProjectTaskType.FEATURE, label: t.feature },
+    { value: ProjectTaskType.STORY, label: t.story },
+    { value: ProjectTaskType.SUBTASK, label: t.subtask },
+  ]
+
+  const [projectUsers, setProjectUsers] = useState<ProjectUser[] | null>([])
+
+  const fetchProjectUsers = useCallback(async (projectId: string) => {
+    setProjectUsers(null);
+    const usersData = await getProjectUsersHelper(projectId, { setLoading });
+    if (usersData) {
+      setProjectUsers(usersData);
+    } else {
+      setProjectUsers([]);
+    }
+  }, []);
+
+
+
+  const handleFilterChange = (key: string, value: string) => {
+    handleChange(key, value);
+
+
+    if (key === "projectId") {
+      if (value && value !== "" && value !== "all") {
+        fetchProjectUsers(value);
+      }
+    }
   }
 
-  const toggleUser = (userId: string) => {
-    setSelectedUsers((prev) => (prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]))
+  const clearInputs = () => {
+    clearFilters();
+    setProjectUsers([]);
   }
 
-  const toggleType = (type: string) => {
-    setSelectedTypes((prev) => (prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]))
-  }
-
-  const clearFilters = () => {
-    setSearchTerm("")
-    setSelectedProjects([])
-    setSelectedUsers([])
-    setSelectedTypes([])
-  }
 
   return (
     <div className="p-4 border-b">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center">
-        <div className="relative flex-1">
-          <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Search issues..."
-            className="pl-9"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          {searchTerm && (
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+          {/* Search Input */}
+          <div className="space-y-2">
+            <Label htmlFor="search-input" className="text-sm font-medium">
+              Search Task No or Title
+            </Label>
+            <div className="relative">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                disabled={loading}
+                id="search-input"
+                type="text"
+                placeholder="Search by task number or title..."
+                className="pl-8"
+                value={filters.searchText}
+                onChange={(e) => handleFilterChange("searchText", e.target.value)}
+              />
+            </div>
+          </div>
+
+          {/* Project Combobox */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Project</Label>
+            <Select
+              disabled={loading}
+              value={filters.projectId}
+              onValueChange={(value) => handleFilterChange("projectId", value)}>
+              <SelectTrigger className="border-[var(--fixed-card-border)]">
+                <SelectValue placeholder="All Projects" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Projects</SelectItem>
+                {projects.map((project: Project) => (
+                  <SelectItem key={project.id} value={project.id || ""}>
+                    {project.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Assignee Combobox */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Assignee</Label>
+            <Select
+              disabled={loading}
+              value={filters.assigneeId}
+              onValueChange={(value) => handleFilterChange("assigneeId", value)}>
+              <SelectTrigger className="border-[var(--fixed-card-border)]">
+                <SelectValue placeholder="All Assignees" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Assignees</SelectItem>
+                {projectUsers?.map((user: ProjectUser) => (
+                  <SelectItem key={user.id} value={user.userId || ""}>
+                    {user.email}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Task Type Combobox */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Task Type</Label>
+
+            <Select
+              disabled={loading}
+              value={filters.taskType}
+              onValueChange={(value) => handleFilterChange("taskType", value)}>
+              <SelectTrigger className="border-[var(--fixed-card-border)]">
+                <SelectValue placeholder="All Assignees" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Task Types</SelectItem>
+                {taskTypes.map((type) => (
+                  <SelectItem key={type.value} value={type.value}>
+                    {type.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1">
             <Button
-              variant="ghost"
-              size="icon"
-              className="absolute right-1 top-1/2 h-6 w-6 -translate-y-1/2"
-              onClick={() => setSearchTerm("")}
+              className="w-full lg:mt-8 h-9 border-[var(--fixed-card-border)]"
+              onClick={() => {
+                fetchData();
+              }}
+              disabled={loading}
             >
-              <XIcon className="h-4 w-4" />
+              Search
+              <Search className="ml-2 h-4 w-4" />
             </Button>
-          )}
-        </div>
+          </div>
 
-        <div className="flex flex-wrap gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-9">
-                <FilterIcon className="h-4 w-4 mr-2" />
-                Projects {selectedProjects.length > 0 && `(${selectedProjects.length})`}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>Filter by Project</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {projects.map((project) => (
-                <DropdownMenuCheckboxItem
-                  key={project.id}
-                  checked={selectedProjects.includes(project.id)}
-                  onCheckedChange={() => toggleProject(project.id)}
-                >
-                  {project.name}
-                </DropdownMenuCheckboxItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-9">
-                <FilterIcon className="h-4 w-4 mr-2" />
-                Assignees {selectedUsers.length > 0 && `(${selectedUsers.length})`}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>Filter by Assignee</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {users.map((user) => (
-                <DropdownMenuCheckboxItem
-                  key={user.id}
-                  checked={selectedUsers.includes(user.id)}
-                  onCheckedChange={() => toggleUser(user.id)}
-                >
-                  {user.name}
-                </DropdownMenuCheckboxItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-9">
-                <FilterIcon className="h-4 w-4 mr-2" />
-                Types {selectedTypes.length > 0 && `(${selectedTypes.length})`}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>Filter by Type</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {taskTypes.map((type) => (
-                <DropdownMenuCheckboxItem
-                  key={type}
-                  checked={selectedTypes.includes(type)}
-                  onCheckedChange={() => toggleType(type)}
-                >
-                  {type.charAt(0).toUpperCase() + type.slice(1)}
-                </DropdownMenuCheckboxItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          {(searchTerm || selectedProjects.length > 0 || selectedUsers.length > 0 || selectedTypes.length > 0) && (
-            <Button variant="ghost" size="sm" className="h-9" onClick={clearFilters}>
-              <XIcon className="h-4 w-4 mr-2" />
+          <div className="space-y-1">
+            <Button
+              variant="outline"
+              className="w-full lg:mt-8 h-9 border-[var(--fixed-card-border)]"
+              onClick={() => {
+                clearInputs();
+              }}
+              disabled={loading}
+            >
               Clear Filters
+              <X className="ml-2 MT- h-4 w-4" />
             </Button>
-          )}
+          </div>
         </div>
-      </div>
 
-      <div className="flex flex-wrap gap-2 mt-2">
-        {selectedProjects.map((projectId) => {
-          const project = projects.find((p) => p.id === projectId)
-          return (
-            project && (
-              <Badge key={projectId} variant="outline" className="flex items-center gap-1">
-                {project.name}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-4 w-4 p-0 ml-1"
-                  onClick={() => toggleProject(projectId)}
-                >
-                  <XIcon className="h-3 w-3" />
-                </Button>
-              </Badge>
-            )
-          )
-        })}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
 
-        {selectedUsers.map((userId) => {
-          const user = users.find((u) => u.id === userId)
-          return (
-            user && (
-              <Badge key={userId} variant="outline" className="flex items-center gap-1">
-                {user.name}
-                <Button variant="ghost" size="icon" className="h-4 w-4 p-0 ml-1" onClick={() => toggleUser(userId)}>
-                  <XIcon className="h-3 w-3" />
-                </Button>
-              </Badge>
-            )
-          )
-        })}
-
-        {selectedTypes.map((type) => (
-          <Badge key={type} variant="outline" className="flex items-center gap-1">
-            {type.charAt(0).toUpperCase() + type.slice(1)}
-            <Button variant="ghost" size="icon" className="h-4 w-4 p-0 ml-1" onClick={() => toggleType(type)}>
-              <XIcon className="h-3 w-3" />
-            </Button>
-          </Badge>
-        ))}
+        </div>
       </div>
     </div>
   )

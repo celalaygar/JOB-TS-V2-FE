@@ -29,10 +29,8 @@ export default function BacklogPage() {
 
   const dispatch = useDispatch()
   const [loadingTaskTable, setLoadingTaskTable] = useState(false)
-  const [loading, setLoading] = useState(false)
   const [taskResponse, setTaskResponse] = useState<TaskResponse | null>(null)
   const [taskList, setTaskList] = useState<Task[]>([])
-  const [projectList, setProjectList] = useState<Project[] | []>([]);
   const [filters, setFilters] = useState<BacklogFilterRequest>({
     searchText: "",
     projectId: "all",
@@ -41,6 +39,8 @@ export default function BacklogPage() {
     assigneeId: "all",
     taskType: "all",
   })
+  const [projectList, setProjectList] = useState<Project[] | []>([]);
+  const [loading, setLoading] = useState(false)
 
   const fetchAllProjects = useCallback(async () => {
     const projectsData: Project[] | null = await getAllProjectsHelper({ setLoading: setLoading });
@@ -107,7 +107,6 @@ export default function BacklogPage() {
 
 
   const handleChange = (name: string, value: string) => {
-    console.log("handleChange", name, value)
     setFilters((prev) => ({
       ...prev,
       [name]: value,
