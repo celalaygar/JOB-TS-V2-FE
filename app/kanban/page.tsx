@@ -113,7 +113,11 @@ export default function KanbanPage() {
       projectTaskStatusId: "all",
       assigneeId: "all",
       taskType: "all",
+      sprintId: "all", // Sprint ID added
     }
+    setSprintList([]); // Clear sprint list when filters are cleared
+    setProjectUsers([]); // Clear project users when filters are cleared
+    setProjectTaskStatus([]); // Clear project task status when filters are cleared
 
     setFilters(newFilters);
 
@@ -127,22 +131,22 @@ export default function KanbanPage() {
   }
 
   const handleChange = (name: string, value: string) => {
-    setFilters((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-
+    let updatedFilters = { ...filters, [name]: value };
     if (name === "projectId") {
+      updatedFilters.sprintId = "all";
+      updatedFilters.assigneeId = "all";
       if (value && value !== "" && value !== "all") {
         fetchAllProjectTaskStatus(value);
-        fetchSprintList(value); // Burayı ekledik!
+        fetchSprintList(value);
         fetchProjectUsers(value);
       } else {
-        setSprintList([]); // Proje seçimi temizlendiğinde sprint listesini de temizler
-        setProjectUsers([]); // Proje seçimi temizlendiğinde kullanıcı listesini de temizler
+        setSprintList([]);
+        setProjectUsers([]);
 
       }
     }
+    setFilters(updatedFilters);
+
   };
 
   return (
