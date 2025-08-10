@@ -10,11 +10,9 @@ export default function KanbanHeader() {
         <p className="text-muted-foreground">Manage your tasks with drag and drop</p>
       </div>
       <div className="flex items-center gap-2">
-        <Button asChild>
-          <Link href="/issues/new">
-            <PlusIcon className="h-4 w-4 mr-2" />
-            New Issue
-          </Link>
+        <Button >
+          <PlusIcon className="h-4 w-4 mr-2" />
+          New Task
         </Button>
       </div>
     </div>
