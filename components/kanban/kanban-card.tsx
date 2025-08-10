@@ -160,7 +160,7 @@ export default function KanbanCard({ task }: KanbanCardProps) {
           </div>
         </div>
 
-        <h4 className="font-medium mb-2 line-clamp-2">{task.title}</h4>
+        <h4 className="font-medium mb-2 line-clamp-2">{task.title + " " + task.id.slice(-4)}</h4>
         <div className="text-xs text-muted-foreground mb-3">
           {task.taskNumber} • {new Date(task.createdAt).toLocaleDateString()}
         </div>
@@ -186,7 +186,7 @@ export default function KanbanCard({ task }: KanbanCardProps) {
           projectList={projects}
           open={showEditDialog}
           onOpenChange={setShowEditDialog}
-          fetchData={null}
+          fetchData={undefined}
         />
       }
     </>

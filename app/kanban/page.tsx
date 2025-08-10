@@ -14,6 +14,7 @@ import { Sprint } from "@/types/sprint";
 import { toast } from "@/hooks/use-toast";
 import { useDispatch } from "react-redux";
 import { setProjects } from "@/lib/redux/features/projects-slice";
+import { setTasks } from "@/lib/redux/features/tasks-slice";
 
 
 export default function KanbanPage() {
@@ -88,6 +89,7 @@ export default function KanbanPage() {
     const response: TaskResponse | null = await getAllKanbanTaskHelper(0, 1000, filters, { setLoading: setLoadingTaskTable });
     if (response !== null) {
       setTaskResponse(response);
+      dispatch(setTasks(response.content))
     } else {
       setTaskResponse(null);
     }
@@ -168,10 +170,6 @@ export default function KanbanPage() {
         </div>
       ) : (
         <>
-          <div className="flex items-center justify-between mb-4">
-            {taskResponse && taskResponse.content?.length}
-            {projectTaskStatus && projectTaskStatus?.length}
-          </div>
           <KanbanFilters
             fetchData={fetchData}
             handleChange={handleChange}

@@ -16,11 +16,8 @@ export const TEAM_DETAIL_URL = PROJECT_TEAM_URL + "/get-team-detail";
 
 
 export const TEAM_USER_URL = BASE_PATH_V2 + "/project-team-user";
-
 export const TEAM_USER_NOT_IN_URL = TEAM_USER_URL + "/not-in-team"
-
 export const TEAM_USER_IN_URL = TEAM_USER_URL + "/in-team"
-
 export const TEAM_USER_REMOVE_URL = TEAM_USER_URL + "/remove"
 
 
@@ -55,6 +52,7 @@ export const GET_PROJECT_USERS = PROJECT_USERS + "/get-users/project";
 
 
 export const PROJECT_TASK = BASE_PATH_V2 + "project-task"
+export const UPDATE_PROJECT_TASK_STATUS_URL = PROJECT_TASK + "/update-status";
 
 
 export const PROJECT_TASK_SUBTASKS = PROJECT_TASK + "/subtasks";

@@ -17,6 +17,7 @@ import {
   PROJECT_USER_ROLES_URL,
   PERMISSIONS,
   PROJECT_TASK_STATUS_URL,
+  UPDATE_PROJECT_TASK_STATUS_URL,
   INVITATION_BY_PROJECTID,
   INVITE_TO_PROJECT,
   SPRINT_TASK_URL,
@@ -39,6 +40,7 @@ import {
 } from "@/lib/service/BasePath";
 import { ProjectTask, ProjectTaskFilterRequest, TaskResponse } from "@/types/task";
 import { BacklogFilterRequest } from "@/types/backlog";
+import { ProjectTaskStatusRequest } from "@/types/project-task-status";
 
 interface ApiOperationConfig<T> {
   url: string;
@@ -281,6 +283,19 @@ export const getAllProjectTaskStatusHelper = async (projectId: string, options: 
     errorToastTitle: "Error Loading Project Task Statuses",
   });
 };
+
+export const updateProjectTaskStatusHelper = async (request: ProjectTaskStatusRequest, options: FetchEntitiesOptions): Promise<ProjectTask | null> => {
+  return apiCall<ProjectTask>({
+    url: UPDATE_PROJECT_TASK_STATUS_URL,
+    method: httpMethods.POST,
+    body: request,
+    setLoading: options.setLoading,
+    successMessage: `Project task status "${request.projectTaskName}" has been updated.`,
+    errorMessagePrefix: "Failed to update project task status",
+    successToastTitle: "Project Task Status Updated",
+    errorToastTitle: "Error Updating Project Task Status",
+  });
+}
 
 export const saveTaskStatusHelper = async (statusData: ProjectTaskStatus, options: FetchEntitiesOptions): Promise<ProjectTaskStatus | null> => {
   const method = statusData.id ? httpMethods.PUT : httpMethods.POST;

@@ -6,6 +6,12 @@ import KanbanColumn from "./kanban-column"
 import type { ProjectTask, Task, TaskResponse } from "@/types/task"
 import { KanbanFilterRequest } from "@/types/kanban"
 import { Project, ProjectTaskStatus } from "@/types/project"
+import { updateProjectTaskStatusHelper } from "@/lib/service/api-helpers"
+import { ProjectTaskStatusRequest } from "@/types/project-task-status"
+import { useDispatch, useSelector } from "react-redux"
+import { updateProject } from "@/lib/redux/features/projects-slice"
+import { updateTask } from "@/lib/redux/features/tasks-slice"
+import { RootState } from "@/lib/redux/store"
 
 
 
@@ -26,64 +32,44 @@ export default function KanbanBoard({
   filters,
   projectTaskStatus
 }: KanbanBoardProps) {
-  const [todoTasks, setTodoTasks] = useState<Task[]>([])
-  const [inProgressTasks, setInProgressTasks] = useState<Task[]>([])
-  const [doneTasks, setDoneTasks] = useState<Task[]>([])
-  const [reviewTasks, setReviewTasks] = useState<Task[]>([])
+  const [loadingKanbanBoard, setLoadingKanbanBoard] = useState(false)
   const [statusTasks, setStatusTasks] = useState<{ [key: string]: Task[] }>({})
+  const dispatch = useDispatch()
+  const allTasks = useSelector((state: RootState) => state.tasks.tasks)
 
   useEffect(() => {
-    // Filter tasks by status
-    const todo = tasks.filter((task) => task.status === "to-do")
-    const inProgress = tasks.filter((task) => task.status === "in-progress")
-    const done = tasks.filter((task) => task.status === "done")
-    const review = tasks.filter((task) => task.status === "review")
+    if (allTasks.length > 0 && projectTaskStatus && projectTaskStatus.length > 0) {
+      const newStatusTasks: { [key: string]: ProjectTask[] } = {}
+      projectTaskStatus.forEach((status) => {
+        newStatusTasks[status.id] = allTasks.filter(
+          (task: ProjectTask) => task.projectTaskStatus.id === status.id
+        )
+      })
+      setStatusTasks(newStatusTasks)
+    }
+  }, [allTasks, projectTaskStatus])
+
+  const handleDragEnd = async (taskId: string, targetStatus: string) => {
+    // Find the task in all columns 
 
     const filteredTasks = taskResponse?.content || []
-    if (filteredTasks.length > 0 && projectTaskStatus && projectTaskStatus.length > 0) {
+    if (!taskId) return
+    const selectedTask: ProjectTask | null = filteredTasks.find((task: ProjectTask) => task.id === taskId) || null
 
-      projectTaskStatus && projectTaskStatus.length > 0 && projectTaskStatus.map((status: ProjectTaskStatus) => {
-        const tasksForStatus = filteredTasks.filter((task: ProjectTask) => task.projectTaskStatus.id === status.id)
-        setStatusTasks((prev) => ({ ...prev, [status.id]: tasksForStatus }))
-      }
-      )
+    if (!selectedTask) return
+    let body: ProjectTaskStatusRequest = {
+      projectTaskId: selectedTask.id,
+      projectTaskStatusId: targetStatus,
+      projectId: selectedTask.createdProject.id,
+      projectTaskStatusName: undefined,
+      projectTaskName: undefined
     }
-    setTodoTasks(todo)
-    setInProgressTasks(inProgress)
-    setDoneTasks(done)
-    setReviewTasks(review)
-  }, [])
-
-  const handleDragEnd = (taskId: string, targetStatus: string) => {
-    // Find the task in all columns
-    const task = [...todoTasks, ...inProgressTasks, ...doneTasks, ...reviewTasks].find((t) => t.id === taskId)
-
-    if (!task) return
-
-    // Create a copy of the task with updated status
-    const updatedTask = { ...task, status: targetStatus }
-
-    // Remove the task from its current column
-    setTodoTasks((prev) => prev.filter((t) => t.id !== taskId))
-    setInProgressTasks((prev) => prev.filter((t) => t.id !== taskId))
-    setDoneTasks((prev) => prev.filter((t) => t.id !== taskId))
-    setReviewTasks((prev) => prev.filter((t) => t.id !== taskId))
-
-    // Add the task to the target column
-    switch (targetStatus) {
-      case "to-do":
-        setTodoTasks((prev) => [...prev, updatedTask])
-        break
-      case "in-progress":
-        setInProgressTasks((prev) => [...prev, updatedTask])
-        break
-      case "done":
-        setDoneTasks((prev) => [...prev, updatedTask])
-        break
-      case "review":
-        setReviewTasks((prev) => [...prev, updatedTask])
-        break
+    const response: ProjectTask | null = await updateProjectTaskStatusHelper(body, { setLoading: setLoadingKanbanBoard })
+    if (response) {
+      dispatch(updateTask(response))
+      //fetchData()
     }
+    return;
   }
 
   const getKanbanColumnClassName = (index: number) => {
@@ -114,7 +100,7 @@ export default function KanbanBoard({
           return (
             <KanbanColumn
               key={status.id}
-              title={status.name}
+              title={status.name + " " + status.id.slice(-6)}
               tasks={tasksForStatus}
               status={status.id}
               onDragEnd={handleDragEnd}
@@ -124,35 +110,6 @@ export default function KanbanBoard({
           )
         }
         )}
-        {/*
-        <KanbanColumn
-          title="To Do"
-          tasks={todoTasks}
-          status="to-do"
-          onDragEnd={handleDragEnd}
-          className="bg-gray-50 dark:bg-gray-900"
-        />
-        <KanbanColumn
-          title="In Progress"
-          tasks={inProgressTasks}
-          status="in-progress"
-          onDragEnd={handleDragEnd}
-          className="bg-blue-50 dark:bg-blue-950"
-        />
-        <KanbanColumn
-          title="Review"
-          tasks={reviewTasks}
-          status="review"
-          onDragEnd={handleDragEnd}
-          className="bg-red-50 dark:bg-red-950"
-        />
-        <KanbanColumn
-          title="Done"
-          tasks={doneTasks}
-          status="done"
-          onDragEnd={handleDragEnd}
-          className="bg-green-50 dark:bg-green-950"
-        /> */}
       </>
     </div>
   )

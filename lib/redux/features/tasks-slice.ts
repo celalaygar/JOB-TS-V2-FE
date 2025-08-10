@@ -18,6 +18,7 @@ export const tasksSlice = createSlice({
   initialState,
   reducers: {
     setTasks: (state, action: PayloadAction<ProjectTask[]>) => {
+      console.log("setTasks ", action.payload)
       state.tasks = action.payload
     },
     selectTask: (state, action: PayloadAction<string>) => {
@@ -33,11 +34,18 @@ export const tasksSlice = createSlice({
 
       state.tasks.push(action.payload)
     },
-    updateTask: (state, action: PayloadAction<{ id: string; changes: Partial<Task> }>) => {
-      const task = state.tasks.find((task) => task.id === action.payload.id)
-      if (task) {
-        Object.assign(task, action.payload.changes)
+    updateTask: (state, action: PayloadAction<ProjectTask>) => {
+      console.log("updateTask action.payload ", action.payload)
+      console.log("updateTask state.tasks ", state.tasks)
+      console.log("updateTask state.tasks ", state.tasks.length)
+      const index = state.tasks.findIndex((task) => task.id === action.payload.id)
+      console.log("updateTask index ", index)
+      if (index !== -1) {
+        state.tasks[index] = action.payload
       }
+      state.tasks.forEach((task, i) => {
+        console.log(`Task ${i}:`, task)
+      })
     },
     removeTask: (state, action: PayloadAction<string>) => {
       state.tasks = state.tasks.filter((task) => task.id !== action.payload)
