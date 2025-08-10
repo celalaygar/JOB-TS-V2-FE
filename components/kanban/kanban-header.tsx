@@ -1,8 +1,15 @@
 import { Button } from "@/components/ui/button"
+import { Project } from "@/types/project"
 import { PlusIcon } from "lucide-react"
 import Link from "next/link"
 
-export default function KanbanHeader() {
+
+interface KanbanHeaderProps {
+  projectList: Project[] | []
+  loading: boolean
+}
+
+export default function KanbanHeader({ projectList, loading }: KanbanHeaderProps) {
   return (
     <div className="flex items-center justify-between p-4 border-b">
       <div>
