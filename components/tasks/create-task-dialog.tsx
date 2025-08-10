@@ -32,7 +32,7 @@ interface CreateTaskDialogProps {
   onOpenChange: (open: boolean) => void
   parentTask: ProjectTask | null
   projectList?: Project[] | []
-  fetchData: () => void
+  fetchData?: () => void
 }
 
 interface SelectOption {
@@ -172,7 +172,7 @@ export function CreateTaskDialog({ open, onOpenChange, parentTask, projectList, 
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault() 
+    e.preventDefault()
     if (!formData.title || !formData.project || !formData.assignee || !formData.taskType ||
       (formData.taskType === "subtask" && !formData.parentTask)) {
       toast({
@@ -207,7 +207,9 @@ export function CreateTaskDialog({ open, onOpenChange, parentTask, projectList, 
     if (response) {
       //dispatch(addTask(newTask))
 
-      fetchData()
+      if (fetchData) {
+        fetchData();
+      }
       onOpenChange(false)
       setFormData({
         title: "",

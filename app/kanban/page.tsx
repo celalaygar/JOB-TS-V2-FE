@@ -163,7 +163,10 @@ export default function KanbanPage() {
 
   return (
     <div className="flex flex-col h-full">
-      <KanbanHeader />
+      <KanbanHeader
+        projectList={projects}
+        loading={loading}
+      />
       {loadingTaskTable ? (
         <div className="flex items-center justify-center h-full">
           <Loader2 className="animate-spin h-6 w-6 text-gray-500" />
