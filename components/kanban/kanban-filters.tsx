@@ -64,9 +64,6 @@ export function KanbanFilters({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
           {/* Search Input */}
           <div className="space-y-2">
-            <Label htmlFor="search-input" className="text-sm font-medium">
-              Search Task No or Title
-            </Label>
             <div className="relative">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
@@ -83,7 +80,6 @@ export function KanbanFilters({
 
           {/* Project Combobox */}
           <div className="space-y-2">
-            <Label className="text-sm font-medium">Project  </Label>
             <Select
               disabled={loadingFilter}
               value={filters.projectId}
@@ -104,7 +100,6 @@ export function KanbanFilters({
 
           {/* Sprints Combobox */}
           <div className="space-y-2">
-            <Label className="text-sm font-medium">Sprints  </Label>
             <Select
               disabled={loadingFilter}
               value={filters.sprintId}
@@ -125,7 +120,6 @@ export function KanbanFilters({
 
           {/* Assignee Combobox */}
           <div className="space-y-2">
-            <Label className="text-sm font-medium">Assignee </Label>
             <Select
               disabled={loadingFilter}
               value={filters.assigneeId}
@@ -146,7 +140,7 @@ export function KanbanFilters({
 
           <div className="space-y-1">
             <Button
-              className="w-full lg:mt-8 h-9 border-[var(--fixed-card-border)]"
+              className="w-full  h-9 border-[var(--fixed-card-border)]"
               onClick={() => {
                 fetchData();
               }}
@@ -160,7 +154,7 @@ export function KanbanFilters({
           <div className="space-y-1">
             <Button
               variant="outline"
-              className="w-full lg:mt-8 h-9 border-[var(--fixed-card-border)]"
+              className="w-full  h-9 border-[var(--fixed-card-border)]"
               onClick={() => {
                 clearInputs();
               }}
