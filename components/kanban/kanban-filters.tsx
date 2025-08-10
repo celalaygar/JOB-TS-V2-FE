@@ -116,7 +116,7 @@ export function KanbanFilters({
                 <SelectItem value="all">All Sprints </SelectItem>
                 {!!sprintList && sprintList.map((sp: Sprint) => (
                   <SelectItem key={sp.id} value={sp.id}>
-                    {sp.name}
+                    {sp.name + " - " + sp.sprintStatus}
                   </SelectItem>
                 ))}
               </SelectContent>

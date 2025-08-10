@@ -14,8 +14,8 @@ import { Loader2 } from "lucide-react"
 import { BacklogFilterRequest } from "@/types/backlog"
 
 export default function BacklogPage() {
-  const projects = useSelector((state: RootState) => state.projects.projects)
-  const users = useSelector((state: RootState) => state.users.users)
+  // const projects = useSelector((state: RootState) => state.projects.projects)
+  // const users = useSelector((state: RootState) => state.users.users)
 
   /*
   const [filters, setFilters] = useState({

@@ -6,10 +6,14 @@ import { Avatar } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { ProjectTaskPriority, ProjectTaskType, type Task } from "@/types/task"
-import { AlertCircle, BookOpen, Bug, GitBranch, Lightbulb, MoreVertical } from "lucide-react"
+import { ProjectTask, ProjectTaskPriority, ProjectTaskType, type Task } from "@/types/task"
+import { AlertCircle, BookOpen, Bug, Edit, Eye, GitBranch, Lightbulb, MoreVertical } from "lucide-react"
 import { TaskDetailsDialog } from "@/components/tasks/task-details-dialog"
 import { EditTaskDialog } from "@/components/tasks/edit-task-dialog"
+import Link from "next/link"
+import { Project } from "@/types/project"
+import { useSelector } from "react-redux"
+import { RootState } from "@/lib/redux/store"
 
 interface KanbanCardProps {
   task: ProjectTask
@@ -19,7 +23,8 @@ export default function KanbanCard({ task }: KanbanCardProps) {
   const [isDragging, setIsDragging] = useState(false)
   const [showDetailsDialog, setShowDetailsDialog] = useState(false)
   const [showEditDialog, setShowEditDialog] = useState(false)
-
+  const [selecteddTask, setSelecteddTask] = useState<ProjectTask | null>(null)
+  const projects = useSelector((state: RootState) => state.projects.projects)
   const handleDragEnd = (e: React.DragEvent) => {
     setIsDragging(false)
     // Sürükleme bittiğinde oluşturduğumuz kopya elementi temizle
@@ -135,20 +140,19 @@ export default function KanbanCard({ task }: KanbanCardProps) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setShowDetailsDialog(true)
-                  }}
-                >
-                  Show Task
+                <DropdownMenuItem  >
+                  <Link href={`/tasks/${task.id}`} className="flex items-center cursor-pointer">
+                    <Eye className="mr-2 h-4 w-4" />
+                    View Details
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={(e) => {
                     e.stopPropagation()
                     setShowEditDialog(true)
+                    setSelecteddTask(task)
                   }}
-                >
+                ><Edit className="mr-2 h-4 w-4" />
                   Edit Task
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -161,11 +165,11 @@ export default function KanbanCard({ task }: KanbanCardProps) {
           {task.taskNumber} • {new Date(task.createdAt).toLocaleDateString()}
         </div>
         <div className="flex items-center justify-between">
-          <div className="text-xs">{task.projectName}</div>
+          <div className="text-xs">{task.createdProject?.name}</div>
           {task.assignee && (
             <Avatar className="h-6 w-6">
               <div className="flex h-full w-full items-center justify-center bg-muted text-xs font-medium">
-                {task.assignee.initials}
+                {task.assignee?.firstname?.charAt(0).toUpperCase() + " " + task.assignee?.lastname?.charAt(0).toUpperCase()}
               </div>
             </Avatar>
           )}
@@ -176,7 +180,15 @@ export default function KanbanCard({ task }: KanbanCardProps) {
       <TaskDetailsDialog taskId={task.id} open={showDetailsDialog} onOpenChange={setShowDetailsDialog} />
 
       {/* Edit Task Dialog */}
-      <EditTaskDialog taskId={task.id} open={showEditDialog} onOpenChange={setShowEditDialog} />
+      {selecteddTask &&
+        <EditTaskDialog
+          projectTask={selecteddTask}
+          projectList={projects}
+          open={showEditDialog}
+          onOpenChange={setShowEditDialog}
+          fetchData={null}
+        />
+      }
     </>
   )
 }

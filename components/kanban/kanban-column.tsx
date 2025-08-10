@@ -2,12 +2,13 @@
 
 import type React from "react"
 
-import type { Task } from "@/types/task"
+import type { ProjectTask, Task } from "@/types/task"
 import KanbanCard from "./kanban-card"
+import { Project } from "@/types/project"
 
 interface KanbanColumnProps {
   title: string
-  tasks: Task[]
+  tasks: ProjectTask[]
   status: string
   onDragEnd: (taskId: string, targetStatus: string) => void
   className?: string
@@ -52,7 +53,10 @@ export default function KanbanColumn({ title, tasks, status, onDragEnd, classNam
             No tasks
           </div>
         ) : (
-          tasks.map((task) => <KanbanCard key={task.id} task={task} />)
+          tasks.map((task) =>
+            <KanbanCard
+              key={task.id} task={task}
+            />)
         )}
       </div>
     </div>

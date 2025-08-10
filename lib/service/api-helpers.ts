@@ -34,7 +34,8 @@ import {
   TEAM_USER_URL,
   TEAM_USER_REMOVE_URL,
   TEAM_USER_NOT_IN_URL,
-  TEAM_USER_IN_URL
+  TEAM_USER_IN_URL,
+  KANBAN_URL
 } from "@/lib/service/BasePath";
 import { ProjectTask, ProjectTaskFilterRequest, TaskResponse } from "@/types/task";
 import { BacklogFilterRequest } from "@/types/backlog";
@@ -552,7 +553,18 @@ export const getAllBacklogTaskHelper = async (page: number, size: number, filter
     errorToastTitle: "Error Retrieving Backlog Task",
   });
 };
-
+export const getAllKanbanTaskHelper = async (page: number, size: number, filter: BacklogFilterRequest, options: FetchEntitiesOptions): Promise<TaskResponse | null> => {
+  return apiCall<TaskResponse>({
+    url: KANBAN_URL + "/filter/" + page + "/" + size,
+    method: httpMethods.POST,
+    body: filter,
+    setLoading: options.setLoading,
+    successMessage: "Kanban Task has been successfully retrieved.",
+    errorMessagePrefix: "Failed to retrieve Kanban Task",
+    successToastTitle: "Kanban Task Retrieved",
+    errorToastTitle: "Error Retrieving Kanban Task",
+  });
+};
 
 export const getProjectTaskByProjectTaskIdkHelper = async (taskId: string, options: FetchEntitiesOptions): Promise<ProjectTask | null> => {
   return apiCall<ProjectTask>({

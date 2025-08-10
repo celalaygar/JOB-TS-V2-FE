@@ -4,13 +4,16 @@
 import { useCallback, useEffect, useState } from "react";
 import KanbanBoard from "@/components/kanban/kanban-board"
 import KanbanHeader from "@/components/kanban/kanban-header"
-import { getAllBacklogTaskHelper, getAllProjectsHelper, getAllProjectTaskStatusHelper, getNonCompletedSprintsHelper, getProjectUsersHelper } from "@/lib/service/api-helpers";
+import { getAllBacklogTaskHelper, getAllKanbanTaskHelper, getAllProjectsHelper, getAllProjectTaskStatusHelper, getNonCompletedSprintsHelper, getProjectUsersHelper } from "@/lib/service/api-helpers";
 import { KanbanFilterRequest } from "@/types/kanban";
 import { Project, ProjectTaskStatus, ProjectUser } from "@/types/project";
 import { Loader2 } from "lucide-react";
 import { KanbanFilters } from "@/components/kanban/kanban-filters";
 import { ProjectTask, TaskResponse } from "@/types/task";
 import { Sprint } from "@/types/sprint";
+import { toast } from "@/hooks/use-toast";
+import { useDispatch } from "react-redux";
+import { setProjects } from "@/lib/redux/features/projects-slice";
 
 
 export default function KanbanPage() {
@@ -29,7 +32,7 @@ export default function KanbanPage() {
   const [projectTaskStatus, setProjectTaskStatus] = useState<ProjectTaskStatus[] | null>([])
   const [loadingTaskTable, setLoadingTaskTable] = useState(false)
   const [taskResponse, setTaskResponse] = useState<TaskResponse | null>(null)
-  const [taskList, setTaskList] = useState<ProjectTask[]>([])
+  const dispatch = useDispatch()
 
   const [projectUsers, setProjectUsers] = useState<ProjectUser[] | null>([])
 
@@ -38,6 +41,7 @@ export default function KanbanPage() {
     const projectsData: Project[] | null = await getAllProjectsHelper({ setLoading: setLoading });
     if (projectsData) {
       setProject(projectsData);
+      dispatch(setProjects(projectsData));
     } else {
       setProject([]);
     }
@@ -81,10 +85,9 @@ export default function KanbanPage() {
 
 
   const fetchAllProjectTasks = useCallback(async (filters: KanbanFilterRequest) => {
-    const response: TaskResponse | null = await getAllBacklogTaskHelper(0, 1000, filters, { setLoading: setLoadingTaskTable });
+    const response: TaskResponse | null = await getAllKanbanTaskHelper(0, 1000, filters, { setLoading: setLoadingTaskTable });
     if (response !== null) {
       setTaskResponse(response);
-      setTaskList(response.content);
     } else {
       setTaskResponse(null);
     }
@@ -98,7 +101,14 @@ export default function KanbanPage() {
         value === "all" || value === "" ? null : value,
       ])
     ) as unknown as KanbanFilterRequest;
-    fetchAllProjectTasks(filter);
+    if (filter.projectId) {
+      fetchAllProjectTasks(filter);
+    } else {
+      toast({
+        title: "Please select a project and sprint to filter tasks.",
+        variant: "destructive",
+      });
+    }
   }
 
   useEffect(() => {
@@ -158,6 +168,10 @@ export default function KanbanPage() {
         </div>
       ) : (
         <>
+          <div className="flex items-center justify-between mb-4">
+            {taskResponse && taskResponse.content?.length}
+            {projectTaskStatus && projectTaskStatus?.length}
+          </div>
           <KanbanFilters
             fetchData={fetchData}
             handleChange={handleChange}
@@ -170,7 +184,13 @@ export default function KanbanPage() {
             projectUsers={projectUsers} // Yeni prop
           />
           <div className="flex-1 overflow-hidden">
-            <KanbanBoard />
+            <KanbanBoard
+              projectTaskStatus={projectTaskStatus}
+              taskResponse={taskResponse}
+              loading={loadingTaskTable}
+              fetchData={fetchData}
+              filters={filters}
+            />
           </div>
         </>
       )}
