@@ -27,16 +27,16 @@ export default function KanbanPage() {
     taskType: "all",
     sprintId: "",
   })
-  const [projects, setProject] = useState<Project[] | []>([]);
-  const [loading, setLoading] = useState(false)
   const [sprintList, setSprintList] = useState<Sprint[] | null>([]);
   const [projectTaskStatus, setProjectTaskStatus] = useState<ProjectTaskStatus[] | null>([])
   const [loadingTaskTable, setLoadingTaskTable] = useState(false)
   const [taskResponse, setTaskResponse] = useState<TaskResponse | null>(null)
-  const dispatch = useDispatch()
 
   const [projectUsers, setProjectUsers] = useState<ProjectUser[] | null>([])
 
+  const [projects, setProject] = useState<Project[] | []>([]);
+  const [loading, setLoading] = useState(false)
+  const dispatch = useDispatch()
 
   const fetchAllProjects = useCallback(async () => {
     const projectsData: Project[] | null = await getAllProjectsHelper({ setLoading: setLoading });

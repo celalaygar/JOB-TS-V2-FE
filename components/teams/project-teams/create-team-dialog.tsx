@@ -18,6 +18,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
 import type { Project } from "@/data/projects"
+import { RootState } from "@/lib/redux/store"
+import { useSelector } from "react-redux"
 
 interface CreateTeamDialogProps {
   isOpen: boolean
@@ -28,6 +30,7 @@ interface CreateTeamDialogProps {
 export function CreateTeamDialog({ isOpen, onOpenChange, projects }: CreateTeamDialogProps) {
   const { toast } = useToast()
 
+  const allProjects = useSelector((state: RootState) => state.projects.projects)
   // Form state for creating a new team
   const [formData, setFormData] = useState({
     projectId: "",
@@ -109,7 +112,7 @@ export function CreateTeamDialog({ isOpen, onOpenChange, projects }: CreateTeamD
                   <SelectValue placeholder="Select a project" />
                 </SelectTrigger>
                 <SelectContent>
-                  {projects.map((project) => (
+                  {!!allProjects && allProjects.map((project: Project) => (
                     <SelectItem key={project.id} value={project.id}>
                       {project.name}
                     </SelectItem>
