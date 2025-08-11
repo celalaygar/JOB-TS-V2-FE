@@ -100,7 +100,7 @@ export default function KanbanBoard({
           return (
             <KanbanColumn
               key={status.id}
-              title={status.name + " " + status.id.slice(-6)}
+              title={status.name}
               tasks={tasksForStatus}
               status={status.id}
               onDragEnd={handleDragEnd}
