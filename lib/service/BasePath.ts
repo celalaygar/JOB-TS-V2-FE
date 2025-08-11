@@ -13,6 +13,7 @@ export const PERMISSIONS = BASE_PATH_V2 + "permissions";
 
 export const PROJECT_TEAM_URL = BASE_PATH_V2 + "project-team";
 export const TEAM_DETAIL_URL = PROJECT_TEAM_URL + "/get-team-detail";
+export const TEAM_ALL_URL = PROJECT_TEAM_URL + "/all";
 
 
 export const TEAM_USER_URL = BASE_PATH_V2 + "/project-team-user";

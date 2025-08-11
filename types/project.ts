@@ -92,11 +92,28 @@ export interface ProjectTaskStatus {
   turkish: string
   english: string
 }
+
+
 export interface ProjectTeam {
-  id: string | undefined | null
-  projectId: string | null
-  name: string
-  description: string
+  id: string;
+  name: string;
+  description: string;
+  createdProject: CreatedProject;
+  createdBy: CreatedBy;
+}
+
+export interface CreatedProject {
+  id: string;
+  name: string;
+}
+
+export interface CreatedBy {
+  id: string;
+  userId: string;
+  email: string;
+  firstname: string;
+  lastname: string;
+  username: string;
 }
 
 

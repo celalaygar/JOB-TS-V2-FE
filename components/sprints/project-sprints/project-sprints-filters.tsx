@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import type { DateRange } from "react-day-picker"
 import { Project, ProjectTeam } from "@/types/project"
-import { getAllProjectTeamsHelper } from "@/lib/service/api-helpers" // Import the new helper
+import { getAllProjectTeamsByProjectIdHelper } from "@/lib/service/api-helpers" // Import the new helper
 import { useLanguage } from "@/lib/i18n/context"
 
 interface ProjectSprintsFiltersProps {
@@ -37,7 +37,7 @@ export function ProjectSprintsFilters({ projectList, filters, onFilterChange, te
     onFilterChange({ ...filters, project: value });
     setProjectTeams([]); // Clear teams when project changes
     if (!!value && value !== "all") {
-      const teamsData = await getAllProjectTeamsHelper(value, { setLoading });
+      const teamsData = await getAllProjectTeamsByProjectIdHelper(value, { setLoading });
       if (teamsData) {
         setProjectTeams(teamsData);
       }

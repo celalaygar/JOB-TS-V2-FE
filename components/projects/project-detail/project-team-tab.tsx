@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Search, Users, Plus, LayoutGrid, MoreHorizontal, Pencil, Trash2, List, Calendar, Clock, CheckCircle2, AlertCircle, Eye, Loader2 } from "lucide-react"
 import type { Project, ProjectTeam } from "@/types/project"
 import { CreateTeamDialog } from "./create-team-dialog"
-import { getAllProjectTeamsHelper } from "@/lib/service/api-helpers"
+import { getAllProjectTeamsByProjectIdHelper } from "@/lib/service/api-helpers"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import Link from "next/link"
 
@@ -47,7 +47,7 @@ export function ProjectTeamTab({ project, onInviteClick, onCreateTeamClick, crea
 
   const fetchAllProjectTeams = useCallback(async () => {
     setProjectTeams([]);
-    const teamsData = await getAllProjectTeamsHelper(project.id, { setLoading });
+    const teamsData = await getAllProjectTeamsByProjectIdHelper(project.id, { setLoading });
     if (teamsData) {
       setProjectTeams(teamsData);
     }

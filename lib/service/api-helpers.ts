@@ -12,6 +12,7 @@ import {
   GET_PROJECT_USERS,
   SPRINT_NON_COMPLETED_GET_ALL_URL,
   PROJECT_TEAM_URL,
+  TEAM_ALL_URL,
   PROJECT_URL,
   SPRINT_GET_ALL_URL,
   PROJECT_USER_ROLES_URL,
@@ -158,7 +159,7 @@ export const getSprintsHelper = async (projectId: string, options: FetchEntities
   });
 };
 
-export const getAllProjectTeamsHelper = async (projectId: string, options: FetchEntitiesOptions): Promise<ProjectTeam[] | null> => {
+export const getAllProjectTeamsByProjectIdHelper = async (projectId: string, options: FetchEntitiesOptions): Promise<ProjectTeam[] | null> => {
   if (!projectId) {
     options.setLoading(false);
     return [];
@@ -174,6 +175,20 @@ export const getAllProjectTeamsHelper = async (projectId: string, options: Fetch
     errorToastTitle: "Error Loading Project Teams",
   });
 };
+
+
+export const getAllProjectTeamsHelper = async (options: FetchEntitiesOptions): Promise<ProjectTeam[] | null> => {
+  return apiCall<ProjectTeam[]>({
+    url: TEAM_ALL_URL,
+    method: httpMethods.GET,
+    setLoading: options.setLoading,
+    successMessage: "All project teams have been retrieved.",
+    errorMessagePrefix: "Failed to load all project teams",
+    successToastTitle: "All Project Teams Loaded",
+    errorToastTitle: "Error Loading All Project Teams",
+  });
+};
+
 
 export const getAllProjectsHelper = async (options: FetchEntitiesOptions): Promise<Project[] | null> => {
   return apiCall<Project[]>({
