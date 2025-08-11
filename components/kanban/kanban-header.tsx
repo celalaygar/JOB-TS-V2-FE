@@ -9,9 +9,10 @@ import { CreateTaskDialog } from "../tasks/create-task-dialog"
 interface KanbanHeaderProps {
   projectList: Project[] | []
   loading: boolean
+  fetchData?: () => void
 }
 
-export default function KanbanHeader({ projectList, loading }: KanbanHeaderProps) {
+export default function KanbanHeader({ projectList, loading, fetchData }: KanbanHeaderProps) {
 
   const [openDialog, setOpenDialog] = useState(false)
   return (
@@ -31,8 +32,8 @@ export default function KanbanHeader({ projectList, loading }: KanbanHeaderProps
       </div>
 
       <CreateTaskDialog
+        fetchData={fetchData}
         parentTask={null}
-        fetchData={undefined}
         open={openDialog}
         projectList={projectList}
         onOpenChange={setOpenDialog}

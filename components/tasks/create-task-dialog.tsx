@@ -207,9 +207,6 @@ export function CreateTaskDialog({ open, onOpenChange, parentTask, projectList, 
     if (response) {
       //dispatch(addTask(newTask))
 
-      if (fetchData) {
-        fetchData();
-      }
       onOpenChange(false)
       setFormData({
         title: "",
@@ -224,6 +221,9 @@ export function CreateTaskDialog({ open, onOpenChange, parentTask, projectList, 
       })
     }
 
+    if (fetchData !== undefined) {
+      fetchData();
+    }
   }
 
 

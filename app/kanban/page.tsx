@@ -164,6 +164,7 @@ export default function KanbanPage() {
   return (
     <div className="flex flex-col h-full">
       <KanbanHeader
+        fetchData={fetchData}
         projectList={projects}
         loading={loading}
       />

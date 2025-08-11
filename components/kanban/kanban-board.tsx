@@ -92,7 +92,7 @@ export default function KanbanBoard({
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 h-full overflow-auto">
+    <div className="grid grid-cols-1 md:grid-cols-5 gap-4 p-4 h-full overflow-auto">
 
       <>
         {projectTaskStatus && projectTaskStatus.length > 0 && projectTaskStatus.map((status: ProjectTaskStatus, index: number) => {
