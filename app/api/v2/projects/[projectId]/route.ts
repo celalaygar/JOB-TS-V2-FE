@@ -18,3 +18,16 @@ export async function GET(req: NextRequest,
     });
 }
 
+export async function PUT(req: NextRequest,
+    { params }: { params: Promise<{ projectId: string }> }
+) {
+    const clientIp = req.ip || req.headers.get('x-forwarded-for') || req.headers.get('remote-address');
+    const pId = await (await params).projectId;
+    const body = await req.json();
+    return RouteBaseService.request(URL + "projects/" + pId, {
+        method: 'PUT',
+        clientIp: clientIp, // ✅ IP'yi servise ilet
+        body: body,
+        // withAuth default: true
+    });
+}

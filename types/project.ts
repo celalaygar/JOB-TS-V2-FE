@@ -52,8 +52,8 @@ export interface Project {
   name: string
   description: string
   status: string
-  progress: number
-  issueCount: number
+  progress?: number
+  issueCount?: number
   openIssues?: number
   //team: ProjectTeamMember[] | null
   leadId?: string

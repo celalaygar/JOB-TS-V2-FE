@@ -226,6 +226,20 @@ export const createProjectHelper = async (projectData: any, options: FetchEntiti
     errorToastTitle: "Error Creating Project",
   });
 };
+export const updateProjectHelper = async (projectId: string, projectData: any, options: FetchEntitiesOptions): Promise<Project | null> => {
+  return apiCall<Project>({
+    url: `${PROJECT_URL}/${projectId}`,
+    method: httpMethods.PUT,
+    body: projectData,
+    setLoading: options.setLoading,
+    successMessage: "Project has been successfully updated.",
+    errorMessagePrefix: "Failed to update project",
+    successToastTitle: "Project Updated",
+    errorToastTitle: "Error Updating Project",
+  });
+}
+
+
 
 export const getAllProjectsRolesHelper = async (projectId: string, options: FetchEntitiesOptions): Promise<ProjectRole[] | null> => {
   if (!projectId) {
