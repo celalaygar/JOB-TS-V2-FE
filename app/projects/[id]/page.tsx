@@ -162,7 +162,10 @@ export default function ProjectDetails() {
           onDeleteTask={handleDeleteTask}
         />
 
-        {currentProject && <EditProjectDialog project={currentProject} open={editDialogOpen} onOpenChange={setEditDialogOpen} />}
+        {currentProject && <EditProjectDialog
+          fetchData={fetchProject}
+          project={currentProject}
+          open={editDialogOpen} onOpenChange={setEditDialogOpen} />}
       </div>
     </>
   )
