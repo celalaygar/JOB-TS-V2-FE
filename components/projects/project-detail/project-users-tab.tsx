@@ -24,9 +24,10 @@ import {
   Award,
   Loader2,
 } from "lucide-react"
-import type { Project, ProjectUser } from "@/types/project"
+import { ProjectSystemRole, type Project, type ProjectUser, type RemoveProjectUserRequest } from "@/types/project"
 import { InviteUserDialog } from "./dialogs/invite-user-dialog"
-import { getProjectUsersHelper } from "@/lib/service/api-helpers"
+import { getProjectUsersHelper, removeProjectUserHelper } from "@/lib/service/api-helpers"
+import { RemoveUserDialog } from "./dialogs/remove-user-dialog copy"
 
 interface ProjectUsersTabProps {
   project: Project
@@ -46,6 +47,8 @@ export function ProjectUsersTab({
   const [roleFilter, setRoleFilter] = useState("all")
   const [statusFilter, setStatusFilter] = useState("all")
   const [departmentFilter, setDepartmentFilter] = useState("all")
+  const [isOpenRemoveUserDialog, setIsOpenRemoveUserDialog] = useState(false)
+  const [selectedUser, setSelectedUser] = useState<ProjectUser | null>(null)
 
   const [loading, setLoading] = useState(false);
   const [projectUsers, setprojectUsers] = useState<ProjectUser[]>()
@@ -67,6 +70,35 @@ export function ProjectUsersTab({
   const uniqueDepartments = projectUsers && Array.from(new Set(projectUsers.map((user) => user.department).filter(Boolean)))
 
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
+
+
+  const openRemoveUserDialogForm = (user: ProjectUser) => {
+    setSelectedUser(user);
+    setIsOpenRemoveUserDialog(true);
+  }
+
+  const removeUserFromProject = async (projectUser: ProjectUser) => {
+    if (!project.id) return;
+    let body: RemoveProjectUserRequest = {
+      projectId: project.id,
+      projectUserId: projectUser.id,
+      userId: projectUser.userId,
+    }
+    const response = await removeProjectUserHelper(body, { setLoading });
+    if (response) {
+
+      let users = projectUsers?.map((user) => {
+        if (user.id === response.id) {
+          return { ...response }
+        }
+        return user;
+      });
+      setprojectUsers(users);
+      setSelectedUser(null);
+    }
+  }
+
+
 
   return loading ? (
     <>
@@ -192,7 +224,23 @@ export function ProjectUsersTab({
                       </div>
                       <div>
                         <h3 className="font-medium">{user.firstname + " " + user.lastname}</h3>
-                        <p className="text-sm text-muted-foreground">{user.projectSystemRole || "Team Member"}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {user.projectSystemRole === ProjectSystemRole.PROJECT_REMOVED_USER
+                            ? "Removed from project"
+                            : user.projectSystemRole === ProjectSystemRole.PROJECT_OWNER
+                              ? "Project Owner"
+                              : user.projectSystemRole === ProjectSystemRole.PROJECT_ADMIN
+                                ? "Project Admin"
+                                : user.projectSystemRole === ProjectSystemRole.PROJECT_DELETED_USER ?
+                                  "Deleted User"
+                                  : user.projectSystemRole === ProjectSystemRole.PROJECT_PASSIVE_USER ?
+                                    "Passive User"
+                                    : user.projectSystemRole === ProjectSystemRole.PROJECT_USER ?
+                                      "Project User"
+                                      : "Unknown Role"
+                          }
+
+                        </p>
                       </div>
                     </div>
                     <DropdownMenu>
@@ -210,7 +258,7 @@ export function ProjectUsersTab({
                           <Edit className="mr-2 h-4 w-4" />
                           Edit Role
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">
+                        <DropdownMenuItem className="text-destructive" onClick={() => openRemoveUserDialogForm(user)}>
                           <Trash2 className="mr-2 h-4 w-4" />
                           Remove from Project
                         </DropdownMenuItem>
@@ -237,7 +285,22 @@ export function ProjectUsersTab({
                     </div>
                     <div className="flex items-center text-sm">
                       <Shield className="mr-2 h-4 w-4 text-muted-foreground" />
-                      <span className="text-muted-foreground">{user.projectSystemRole}</span>
+                      <span className="text-muted-foreground">
+                        {user.projectSystemRole === ProjectSystemRole.PROJECT_REMOVED_USER
+                          ? "Removed from project"
+                          : user.projectSystemRole === ProjectSystemRole.PROJECT_OWNER
+                            ? "Project Owner"
+                            : user.projectSystemRole === ProjectSystemRole.PROJECT_ADMIN
+                              ? "Project Admin"
+                              : user.projectSystemRole === ProjectSystemRole.PROJECT_DELETED_USER ?
+                                "Deleted User"
+                                : user.projectSystemRole === ProjectSystemRole.PROJECT_PASSIVE_USER ?
+                                  "Passive User"
+                                  : user.projectSystemRole === ProjectSystemRole.PROJECT_USER ?
+                                    "Project User"
+                                    : "Unknown Role"
+                        }
+                      </span>
                     </div>
                     {user.department && (
                       <div className="flex items-center text-sm">
@@ -253,54 +316,7 @@ export function ProjectUsersTab({
                     )}
                   </div>
 
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    <Badge
-                      variant={
-                        user.status === "active" ? "default" : user.status === "inactive" ? "secondary" : "outline"
-                      }
-                    >
-                      {user.status === "active"
-                        ? "Active"
-                        : user.status === "inactive"
-                          ? "Inactive"
-                          : user.status === "pending"
-                            ? "Pending"
-                            : "Unknown"}
-                    </Badge>
-                    {user.workHours && <Badge variant="outline">{user.workHours}</Badge>}
-                    {user.skills?.slice(0, 2).map((skill, index) => (
-                      <Badge key={index} variant="outline">
-                        {skill}
-                      </Badge>
-                    ))}
-                    {user.skills && user.skills?.length > 2 && (
-                      <Badge variant="outline">+{user.skills?.length - 2} more</Badge>
-                    )}
-                  </div>
 
-                  {(user.certifications?.length > 0 || user.languages?.length > 0) && (
-                    <div className="mt-4 pt-4 border-t">
-                      {user.certifications?.length > 0 && (
-                        <div className="mb-2">
-                          <div className="flex items-center text-sm mb-1">
-                            <Award className="mr-2 h-4 w-4 text-muted-foreground" />
-                            <span className="font-medium">Certifications</span>
-                          </div>
-                          <div className="text-sm text-muted-foreground pl-6">{user.certifications?.join(", ")}</div>
-                        </div>
-                      )}
-
-                      {user.languages?.length && user.languages?.length > 0 && (
-                        <div>
-                          <div className="flex items-center text-sm mb-1">
-                            <GraduationCap className="mr-2 h-4 w-4 text-muted-foreground" />
-                            <span className="font-medium">Languages</span>
-                          </div>
-                          <div className="text-sm text-muted-foreground pl-6">{user.languages.join(", ")}</div>
-                        </div>
-                      )}
-                    </div>
-                  )}
 
                   <div className="mt-4 pt-4 border-t">
                     <Button variant="outline" size="sm" className="w-full" onClick={() => { }}>
@@ -352,7 +368,22 @@ export function ProjectUsersTab({
                       </td>
                       <td className="p-3">
                         <div className="font-medium">{user.projectSystemRole}</div>
-                        <div className="text-sm text-muted-foreground">{user.projectSystemRole}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {user.projectSystemRole === ProjectSystemRole.PROJECT_REMOVED_USER
+                            ? "Removed from project"
+                            : user.projectSystemRole === ProjectSystemRole.PROJECT_OWNER
+                              ? "Project Owner"
+                              : user.projectSystemRole === ProjectSystemRole.PROJECT_ADMIN
+                                ? "Project Admin"
+                                : user.projectSystemRole === ProjectSystemRole.PROJECT_DELETED_USER ?
+                                  "Deleted User"
+                                  : user.projectSystemRole === ProjectSystemRole.PROJECT_PASSIVE_USER ?
+                                    "Passive User"
+                                    : user.projectSystemRole === ProjectSystemRole.PROJECT_USER ?
+                                      "Project User"
+                                      : "Unknown Role"
+                          }
+                        </div>
                       </td>
                       <td className="p-3 hidden md:table-cell">{user.department || "—"}</td>
                       <td className="p-3 hidden lg:table-cell">
@@ -391,7 +422,7 @@ export function ProjectUsersTab({
                           <Button variant="ghost" size="icon">
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" className="text-destructive">
+                          <Button variant="ghost" size="icon" className="text-destructive" onClick={() => openRemoveUserDialogForm(user)}>
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
@@ -424,6 +455,16 @@ export function ProjectUsersTab({
 
 
         <InviteUserDialog project={project} open={inviteDialogOpen} onOpenChange={setInviteDialogOpen} />
+
+        <RemoveUserDialog
+          loading={loading}
+          project={project}
+          open={isOpenRemoveUserDialog}
+          onOpenChange={setIsOpenRemoveUserDialog}
+          projectUser={selectedUser!} // Ensure selectedUser is not null
+          removeUserFromProject={removeUserFromProject}
+        />
+
       </div>
     </>
   )

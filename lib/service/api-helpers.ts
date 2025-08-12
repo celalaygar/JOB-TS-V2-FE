@@ -3,13 +3,14 @@
 import BaseService from "@/lib/service/BaseService";
 import { httpMethods } from "@/lib/service/HttpService";
 import { toast } from "@/hooks/use-toast";
-import type { ProjectUser } from "@/types/project";
+import type { ProjectUser, RemoveProjectUserRequest } from "@/types/project";
 import type { Sprint, SprintTaskAddRequest, SprintTaskRemoveRequest } from "@/types/sprint";
 import type { ProjectTeam, Project, ProjectTaskStatus } from "@/types/project";
 import type { ProjectRole, ProjectRolePermission, ProjectRoleRequest } from "@/types/project-role";
 import type { Invitation } from "@/lib/redux/features/invitations-slice";
 import {
   GET_PROJECT_USERS,
+  REMOVE_PROJECT_USERS_URL,
   SPRINT_NON_COMPLETED_GET_ALL_URL,
   PROJECT_TEAM_URL,
   TEAM_ALL_URL,
@@ -122,6 +123,20 @@ interface InviteUserRequest {
   projectId: string;
   email: string;
   userProjectRole: string;
+}
+
+
+export const removeProjectUserHelper = async (body: RemoveProjectUserRequest, options: FetchEntitiesOptions): Promise<ProjectUser | null> => {
+  return apiCall<ProjectUser>({
+    url: REMOVE_PROJECT_USERS_URL,
+    method: httpMethods.POST,
+    body,
+    setLoading: options.setLoading,
+    successMessage: "Project user has been successfully removed.",
+    errorMessagePrefix: "Failed to remove project user",
+    successToastTitle: "Project User Removed",
+    errorToastTitle: "Error Removing Project User",
+  });
 }
 
 

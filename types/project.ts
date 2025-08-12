@@ -116,6 +116,20 @@ export interface CreatedBy {
   username: string;
 }
 
+export interface RemoveProjectUserRequest {
+  userId: string;
+  projectUserId: string;
+  projectId: string;
+}
+export enum ProjectSystemRole {
+  PROJECT_ADMIN = "PROJECT_ADMIN",
+  PROJECT_USER = "PROJECT_USER",
+  PROJECT_OWNER = "PROJECT_OWNER",
+  PROJECT_PASSIVE_USER = "PROJECT_PASSIVE_USER",
+  PROJECT_DELETED_USER = "PROJECT_DELETED_USER",
+  PROJECT_REMOVED_USER = "PROJECT_REMOVED_USER"
+}
+
 
 export interface ProjectUser {
   id: string;
@@ -126,7 +140,7 @@ export interface ProjectUser {
   lastname: string;
   username?: string | null;
   password?: string | null;
-  projectSystemRole?: string[] | null;
+  projectSystemRole?: string | null;
   name?: string | null;
   initials?: string | null;
   teamRole?: string | null;
