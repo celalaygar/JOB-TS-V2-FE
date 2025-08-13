@@ -60,10 +60,6 @@ export function SprintDetailHeader({ sprint, tasks, onEdit, onDelete }: SprintDe
             <Button
               variant="outline"
               size="sm"
-              disabled={
-                sprint.sprintStatus === SprintStatus.COMPLETED || sprint.sprintStatus === SprintStatus.ACTIVE ?
-                  true : false
-              }
               className="border-blue-500 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
               onClick={() => setChangeSprintStatusDialogOpen(true)}
             >
@@ -119,7 +115,6 @@ export function SprintDetailHeader({ sprint, tasks, onEdit, onDelete }: SprintDe
         </div>
       </div>
 
-      {/* Complete Sprint Dialog */}
       <CompleteSprintDialog
         sprint={sprint}
         open={isCompleteDialogOpen}

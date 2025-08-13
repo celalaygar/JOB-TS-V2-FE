@@ -101,7 +101,7 @@ export default function SprintDetailPage() {
             tasks={sprintTasks}
             onEdit={() => setIsEditDialogOpen(true)}
             onDelete={() => setIsDeleteDialogOpen(true)}
-          />}
+          />
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="md:col-span-2 space-y-6">
@@ -116,7 +116,6 @@ export default function SprintDetailPage() {
               </div>
             </div>
 
-            {/* Dialogs */}
             <EditSprintDialog
               projectList={projectList}
               sprint={sprint}
@@ -129,9 +128,7 @@ export default function SprintDetailPage() {
               onOpenChange={(open) => {
                 setIsDeleteDialogOpen(open)
                 // If dialog was closed and sprint was deleted, navigate back to sprints list
-                if (!open && !updatedSprint) {
-                  router.push("/project-sprints")
-                }
+                if (!open && !updatedSprint) { router.push("/project-sprints") }
               }}
             />
           </div>
