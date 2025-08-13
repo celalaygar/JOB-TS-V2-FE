@@ -41,7 +41,7 @@ export function SprintDetailInfo({ sprint, team }: SprintDetailInfoProps) {
                 <h3 className="text-sm font-medium mb-2">{translations.sprint.project}</h3>
                 {/* Uzun project isimlerinin satır sonuna geldiğinde kelime kırmasını sağlar */}
                 <p className="text-sm text-muted-foreground break-words">{sprint.createdProject.name}</p>
-                <h3 className="text-sm font-medium mb-2">Task Status on Completion</h3>
+                <h3 className="text-sm font-medium mb-2 mt-5">Task Status on Completion</h3>
                 <p className="text-sm text-muted-foreground break-words">{sprint.taskStatusOnCompletion.name}</p>
               </div>
             )}
