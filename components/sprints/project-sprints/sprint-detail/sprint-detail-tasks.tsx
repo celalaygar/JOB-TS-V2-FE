@@ -52,11 +52,6 @@ export function SprintDetailTasks({ sprintId, tasks, projectList }: SprintDetail
 
 
 
-  const handleViewTask = (task: ProjectTask) => {
-    setSelectedTask(task)
-    setViewTaskDialogOpen(true)
-  }
-
   const handleEditTask = (task: ProjectTask) => {
     setSelectedTask(task)
     setEditTaskDialogOpen(true)

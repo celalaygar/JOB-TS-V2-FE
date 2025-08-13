@@ -149,6 +149,7 @@ export default function TaskDetailPage() {
 
         {/* Edit Task Dialog */}
         <EditTaskDialog
+          fetchData={fetchProjectTaskDetail}
           projectList={projectList}
           projectTask={projectTask}
           open={editDialogOpen}
