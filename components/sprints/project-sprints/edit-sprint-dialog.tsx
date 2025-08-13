@@ -61,6 +61,7 @@ export function EditSprintDialog({ open, onOpenChange, sprint, projectList }: Ed
   const [taskStatuses, setTaskStatuses] = useState<ProjectTaskStatus[] | []>([])
   const [loading, setLoading] = useState(false);
   const [loadingTaskStatuses, setLoadingTaskStatuses] = useState(false);
+  const [completionStatusOptions, setCompletionStatusOptions] = useState<SelectOption[]>([]);
 
   // Memoized options for react-select, şimdi projectList prop'undan geliyor
   const projectOptions = useMemo(() => projectList.map(p => ({ value: p.id, label: p.name })), [projectList]);
@@ -71,14 +72,6 @@ export function EditSprintDialog({ open, onOpenChange, sprint, projectList }: Ed
   const projectTeams = useMemo(() => teams.filter((team) => team.projectId === selectedProjectId), [selectedProjectId]);
   const teamOptions = useMemo(() => projectTeams.map(team => ({ value: team.id, label: team.name })), [projectTeams]);
 
-  const sprintStatusOptions: SelectOption[] = useMemo(() => [
-    { value: "planning", label: "Planning" },
-    { value: "active", label: "Active" },
-    { value: "completed", label: "Completed" },
-    { value: "cancelled", label: "Cancelled" },
-  ], []);
-
-  const completionStatusOptions = useMemo(() => taskStatuses.map(statusItem => ({ value: statusItem.id, label: statusItem.name })), [taskStatuses]);
 
 
   useEffect(() => {
@@ -100,17 +93,23 @@ export function EditSprintDialog({ open, onOpenChange, sprint, projectList }: Ed
     const statusesData = await getAllProjectTaskStatusHelper(currentProjectId, { setLoading: setLoadingTaskStatuses });
     if (statusesData) {
       setTaskStatuses(statusesData);
-      // If a task status is already set from sprint data, ensure it's still valid, otherwise clear
-      if (sprint?.projectTaskStatusId && !statusesData.some(s => s.id === sprint.projectTaskStatusId)) {
-        setProjectTaskStatusId(null);
-      } else if (!projectTaskStatusId && statusesData.length > 0) {
-        // If no status is set and there are options, default to the first one
-        setProjectTaskStatusId(statusesData[0].id);
+      const options = statusesData.map(status => ({
+        value: status.id,
+        label: status.name,
+      }));
+      setCompletionStatusOptions(options);
+      if (sprint?.taskStatusOnCompletion?.id) {
+        const matched = options.find(opt => opt.value === sprint.taskStatusOnCompletion.id);
+        if (matched) {
+          setProjectTaskStatusId(matched.value);
+        } else {
+          setProjectTaskStatusId(null);
+        }
       }
     } else {
       setProjectTaskStatusId(null);
     }
-  }, [sprint?.projectTaskStatusId, projectTaskStatusId]);
+  }, [sprint?.taskStatusOnCompletion?.id]);
 
 
   useEffect(() => {
@@ -155,27 +154,19 @@ export function EditSprintDialog({ open, onOpenChange, sprint, projectList }: Ed
       teamId: sprintType === "project-team" ? selectedTeamId : undefined,
       updatedAt: new Date().toISOString(),
     }
-    const response = await saveUpdateSprintHelper(updatedSprint, { setLoading }); // Use saveUpdateSprintHelper for update
+    const response = await saveUpdateSprintHelper(updatedSprint, { setLoading });
     dispatch(updateSprint(response));
     onOpenChange(false)
   }
 
-
-  useEffect(() => {
-    if (!projectTaskStatusId && sprint?.taskStatusOnCompletion?.id && completionStatusOptions.length > 0) {
-      const matched = completionStatusOptions.find(opt => opt.value === sprint.taskStatusOnCompletion.id)
-      if (matched) {
-        setProjectTaskStatusId(matched.value)
-      }
+  const changeSprintProjectTaskStatus = (option: SelectOption | null) => {
+    if (option) {
+      console.log("Selected option:", option);
+      setProjectTaskStatusId(option.value);
+    } else {
+      setProjectTaskStatusId(null);
     }
-  }, [completionStatusOptions, sprint, projectTaskStatusId])
-
-  const selectedCompletionStatus = useMemo(() => {
-    const found = completionStatusOptions.find(option => option.value === projectTaskStatusId)
-
-    return found;
-  }, [completionStatusOptions, projectTaskStatusId])
-
+  }
 
 
   if (!sprint) {
@@ -222,6 +213,7 @@ export function EditSprintDialog({ open, onOpenChange, sprint, projectList }: Ed
                 <div className="col-span-3">
                   <Select
                     id="project"
+                    isDisabled={true}
                     options={projectOptions}
                     value={projectOptions.find(option => option.value === selectedProjectId)}
                     onChange={(option) => {
@@ -288,8 +280,8 @@ export function EditSprintDialog({ open, onOpenChange, sprint, projectList }: Ed
                         <Select
                           id="projectTaskStatusId"
                           options={completionStatusOptions}
-                          value={selectedCompletionStatus}
-                          onChange={(option) => setProjectTaskStatusId(option ? option.value : null)}
+                          value={completionStatusOptions.find(option => option.value === projectTaskStatusId) || null}
+                          onChange={changeSprintProjectTaskStatus}
                           placeholder="Select status for tasks"
                           isClearable
                           isDisabled={!selectedProjectId || taskStatuses.length === 0}
