@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
-import { updateSprint } from "@/lib/redux/features/sprints-slice"
+import { updateSingleSprint, updateSprint } from "@/lib/redux/features/sprints-slice"
 import { useDispatch } from "react-redux"
 import {
   Dialog,
@@ -25,9 +25,9 @@ import {
 } from "@/components/ui/select"
 import { Progress } from "@/components/ui/progress"
 import { CheckCircle, AlertCircle, Loader2 } from "lucide-react"
-import { Sprint, SprintStatus } from "@/types/sprint"
+import { Sprint, SprintStatus, UpdateSprintStatusRequest } from "@/types/sprint"
 import { toast } from "@/hooks/use-toast"
-import { getNonCompletedSprintsHelper } from "@/lib/service/api-helpers" // Import the new helper
+import { getNonCompletedSprintsHelper, updateSprintStatustHelper } from "@/lib/service/api-helpers" // Import the new helper
 import { saveUpdateSprintHelper } from "@/lib/service/api-helpers" // Import saveUpdateSprintHelper for dispatching updates
 import { useLanguage } from "@/lib/i18n/context"
 import { ProjectTask } from "@/types/task"
@@ -50,16 +50,15 @@ export function ChangeSprintStatusDailog({ sprint, open, onOpenChange }: ChangeS
 
   const handleCompleteSprint = async () => {
 
-    const updatedSprintData = {
-      ...sprint,
-      status: SprintStatus.ACTIVE,
+    const updatedSprintStatusRequest: UpdateSprintStatusRequest = {
+      sprintId: sprint.id,
+      newStatus: sprintStatus,
     };
 
-    const response = await saveUpdateSprintHelper(updatedSprintData, { setLoading });
+    const response: Sprint | null = await updateSprintStatustHelper(updatedSprintStatusRequest, { setLoading });
 
     if (response) {
-      dispatch(updateSprint(response));
-
+      dispatch(updateSingleSprint(response));
       onOpenChange(false);
     }
   }
@@ -90,31 +89,42 @@ export function ChangeSprintStatusDailog({ sprint, open, onOpenChange }: ChangeS
             </div>
           </div>
         </div>
-        <div className="mt-4">
-          <Label className="text-sm font-medium">
-            Sprint Status
-          </Label>
-          <Select value={sprintStatus} onValueChange={setSprintStatus}>
-            <SelectTrigger className="w-full mt-2">
-              <SelectValue placeholder="Select sprint status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectItem value={SprintStatus.ACTIVE}>
-                  {translations.sprint.statusOptions.active}
-                </SelectItem>
-                <SelectItem value={SprintStatus.PLANNED}>
-                  {translations.sprint.statusOptions.planned}
-                </SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </div>
+        {
+          loading ?
+            <div className="grid gap-4 py-4">
+              <div className="flex items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+              </div>
+            </div>
+            :
+            <>
+              <div className="mt-4">
+                <Label className="text-sm font-medium">
+                  Sprint Status
+                </Label>
+                <Select value={sprintStatus} onValueChange={setSprintStatus}>
+                  <SelectTrigger className="w-full mt-2">
+                    <SelectValue placeholder="Select sprint status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectItem value={SprintStatus.ACTIVE}>
+                        {translations.sprint.statusOptions.active}
+                      </SelectItem>
+                      <SelectItem value={SprintStatus.PLANNED}>
+                        {translations.sprint.statusOptions.planned}
+                      </SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
+            </>
+        }
         <DialogFooter>
           <Button
             variant="outline"
-            onClick={() => onOpenChange(false)}
             disabled={loading}
+            onClick={() => onOpenChange(false)}
             className="mr-2"
           >
             Cancel

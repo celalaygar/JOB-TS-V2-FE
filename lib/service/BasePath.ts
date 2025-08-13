@@ -41,6 +41,7 @@ export const KANBAN_URL = BASE_PATH_V2 + "kanban";
 export const SPRINT_URL = BASE_PATH_V2 + "sprint";
 export const SPRINT_GET_ALL_URL = SPRINT_URL + "/getAll";
 export const SPRINT_NON_COMPLETED_GET_ALL_URL = SPRINT_URL + "/non-completed/project";
+export const UPDATE_STATUS_URL = SPRINT_URL + "/status";
 
 
 export const SPRINT_TASK_URL = BASE_PATH_V2 + "sprint-task";

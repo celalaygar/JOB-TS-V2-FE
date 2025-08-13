@@ -4,7 +4,7 @@ import BaseService from "@/lib/service/BaseService";
 import { httpMethods } from "@/lib/service/HttpService";
 import { toast } from "@/hooks/use-toast";
 import type { ProjectUser, RemoveProjectUserRequest } from "@/types/project";
-import type { Sprint, SprintTaskAddRequest, SprintTaskRemoveRequest } from "@/types/sprint";
+import type { Sprint, SprintTaskAddRequest, SprintTaskRemoveRequest, UpdateSprintStatusRequest } from "@/types/sprint";
 import type { ProjectTeam, Project, ProjectTaskStatus } from "@/types/project";
 import type { ProjectRole, ProjectRolePermission, ProjectRoleRequest } from "@/types/project-role";
 import type { Invitation } from "@/lib/redux/features/invitations-slice";
@@ -16,6 +16,7 @@ import {
   TEAM_ALL_URL,
   PROJECT_URL,
   SPRINT_GET_ALL_URL,
+  UPDATE_STATUS_URL,
   PROJECT_USER_ROLES_URL,
   PERMISSIONS,
   PROJECT_TASK_STATUS_URL,
@@ -228,6 +229,22 @@ export const getAllSprintsGlobalHelper = async (options: FetchEntitiesOptions): 
     errorToastTitle: "Error Loading All Sprints",
   });
 };
+
+
+export const updateSprintStatustHelper = async (body: UpdateSprintStatusRequest, options: FetchEntitiesOptions): Promise<Sprint | null> => {
+  return apiCall<Sprint>({
+    url: UPDATE_STATUS_URL,
+    method: httpMethods.POST,
+    body: body,
+    setLoading: options.setLoading,
+    successMessage: "Sprint Status has been successfully updated.",
+    errorMessagePrefix: "Failed to updated Sprint Status",
+    successToastTitle: "Sprint Status updated",
+    errorToastTitle: "Error updating Sprint Status",
+  });
+};
+
+
 
 export const createProjectHelper = async (projectData: any, options: FetchEntitiesOptions): Promise<Project | null> => {
   return apiCall<Project>({

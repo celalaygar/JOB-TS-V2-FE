@@ -1,28 +1,18 @@
+import { Sprint } from "@/types/sprint"
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit"
 
-export interface Sprint {
-  id: string
-  name: string
-  startDate: string
-  endDate: string
-  status: "planned" | "active" | "completed"
-  totalIssues: number
-  completedIssues: number
-  team: {
-    name: string
-    avatar: string
-    initials: string
-  }[]
-}
+
 
 interface SprintsState {
   sprints: Sprint[]
   selectedSprint: Sprint | null
+  singleSprint: Sprint | null
 }
 
 const initialState: SprintsState = {
   sprints: [],
   selectedSprint: null,
+  singleSprint: null
 }
 
 export const sprintsSlice = createSlice({
@@ -35,11 +25,16 @@ export const sprintsSlice = createSlice({
     selectSprint: (state, action: PayloadAction<string>) => {
       state.selectedSprint = state.sprints.find((sprint) => sprint.id === action.payload) || null
     },
+    setSingleSprint: (state, action: PayloadAction<Sprint>) => {
+      state.singleSprint = action.payload
+    },
+    updateSingleSprint: (state, action: PayloadAction<Sprint>) => {
+      state.singleSprint = action.payload
+    },
     addSprint: (state, action: PayloadAction<Sprint>) => {
       state.sprints.push(action.payload)
     },
     updateSprint: (state, action: PayloadAction<string>) => {
-
       const sprint = state.sprints.find((sprint) => sprint.id === action.payload.id)
       if (sprint) {
         Object.assign(sprint, action.payload)
@@ -51,5 +46,5 @@ export const sprintsSlice = createSlice({
   },
 })
 
-export const { setSprints, selectSprint, addSprint, updateSprint, removeSprint } = sprintsSlice.actions
+export const { setSprints, selectSprint, setSingleSprint, updateSingleSprint, addSprint, updateSprint, removeSprint } = sprintsSlice.actions
 export default sprintsSlice.reducer

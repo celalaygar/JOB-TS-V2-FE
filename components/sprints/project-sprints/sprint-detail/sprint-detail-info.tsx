@@ -9,9 +9,10 @@ import { AddSprintMemberDialog } from "./add-sprint-member-dialog"
 import { useState } from "react"
 import { Sprint } from "@/types/sprint"
 import { useLanguage } from "@/lib/i18n/context"
+import { useSelector } from "react-redux"
+import { RootState } from "@/lib/redux/store"
 
 interface SprintDetailInfoProps {
-  sprint: Sprint
   team?: {
     id: string
     name: string
@@ -19,10 +20,12 @@ interface SprintDetailInfoProps {
   }
 }
 
-export function SprintDetailInfo({ sprint, team }: SprintDetailInfoProps) {
+export function SprintDetailInfo({ team }: SprintDetailInfoProps) {
   const [isAddMemberDialogOpen, setIsAddMemberDialogOpen] = useState(false)
   const { translations } = useLanguage()
 
+  const sprint: Sprint | null = useSelector((state: RootState) => state.sprints.singleSprint)
+  
   return (
     <>
       <Card>

@@ -10,18 +10,20 @@ import { CompleteSprintDialog } from "./complete-sprint-dialog"
 import { Sprint, SprintStatus } from "@/types/sprint"
 import { useLanguage } from "@/lib/i18n/context"
 import { ChangeSprintStatusDailog } from "./change-sprint-status-dialog"
+import { RootState } from "@/lib/redux/store"
+import { useSelector } from "react-redux"
 
 interface SprintDetailHeaderProps {
-  sprint: Sprint // Using any for simplicity, but should be properly typed
   tasks: any[] // Using any for simplicity, but should be properly typed
   onEdit: () => void
   onDelete: () => void
 }
 
-export function SprintDetailHeader({ sprint, tasks, onEdit, onDelete }: SprintDetailHeaderProps) {
+export function SprintDetailHeader({ tasks, onEdit, onDelete }: SprintDetailHeaderProps) {
   const [isCompleteDialogOpen, setIsCompleteDialogOpen] = useState(false)
   const [changeSprintStatusDialogOpen, setChangeSprintStatusDialogOpen] = useState(false)
   const { translations } = useLanguage()
+  const sprint: Sprint | null = useSelector((state: RootState) => state.sprints.singleSprint)
 
 
   // Helper function to get status badge
@@ -56,21 +58,19 @@ export function SprintDetailHeader({ sprint, tasks, onEdit, onDelete }: SprintDe
           </Link>
         </Button>
         <div className="flex items-center gap-2">
-          {sprint?.sprintStatus === SprintStatus.PLANNED && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-blue-500 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
-              onClick={() => setChangeSprintStatusDialogOpen(true)}
-            >
-              <CheckCircle className="h-4 w-4 mr-1" />
-              {sprint.sprintStatus === SprintStatus.PLANNED ?
-                translations.sprint.form.doActive :
-                sprint.sprintStatus === SprintStatus.ACTIVE ?
-                  translations.sprint.form.doComplete :
-                  translations.sprint.form.doPlan}
-            </Button>
-          )}
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-blue-500 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+            onClick={() => setChangeSprintStatusDialogOpen(true)}
+          >
+            <CheckCircle className="h-4 w-4 mr-1" />
+            {sprint?.sprintStatus === SprintStatus.PLANNED ?
+              translations.sprint.form.doActive :
+              sprint?.sprintStatus === SprintStatus.ACTIVE ?
+                translations.sprint.form.doPlan :
+                translations.sprint.form.doPlan}
+          </Button>
           {sprint?.sprintStatus === SprintStatus.ACTIVE && (
             <Button
               variant="outline"
@@ -115,6 +115,7 @@ export function SprintDetailHeader({ sprint, tasks, onEdit, onDelete }: SprintDe
         </div>
       </div>
 
+      {/* Complete Sprint Dialog */}
       <CompleteSprintDialog
         sprint={sprint}
         open={isCompleteDialogOpen}

@@ -74,6 +74,10 @@ export interface SprintTaskAddRequest {
   projectId: string;
 }
 
+export interface UpdateSprintStatusRequest {
+  sprintId: string;
+  newStatus: string;
+}
 export interface SprintTaskRemoveRequest {
   sprintId: string;
   taskId: string;
