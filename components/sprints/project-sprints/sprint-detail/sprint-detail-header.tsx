@@ -9,6 +9,7 @@ import { useState } from "react"
 import { CompleteSprintDialog } from "./complete-sprint-dialog"
 import { Sprint, SprintStatus } from "@/types/sprint"
 import { useLanguage } from "@/lib/i18n/context"
+import { ChangeSprintStatusDailog } from "./change-sprint-status-dialog"
 
 interface SprintDetailHeaderProps {
   sprint: Sprint // Using any for simplicity, but should be properly typed
@@ -19,6 +20,7 @@ interface SprintDetailHeaderProps {
 
 export function SprintDetailHeader({ sprint, tasks, onEdit, onDelete }: SprintDetailHeaderProps) {
   const [isCompleteDialogOpen, setIsCompleteDialogOpen] = useState(false)
+  const [changeSprintStatusDialogOpen, setChangeSprintStatusDialogOpen] = useState(false)
   const { translations } = useLanguage()
 
 
@@ -54,6 +56,25 @@ export function SprintDetailHeader({ sprint, tasks, onEdit, onDelete }: SprintDe
           </Link>
         </Button>
         <div className="flex items-center gap-2">
+          {sprint?.sprintStatus === SprintStatus.PLANNED && (
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={
+                sprint.sprintStatus === SprintStatus.COMPLETED || sprint.sprintStatus === SprintStatus.ACTIVE ?
+                  true : false
+              }
+              className="border-blue-500 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+              onClick={() => setChangeSprintStatusDialogOpen(true)}
+            >
+              <CheckCircle className="h-4 w-4 mr-1" />
+              {sprint.sprintStatus === SprintStatus.PLANNED ?
+                translations.sprint.form.doActive :
+                sprint.sprintStatus === SprintStatus.ACTIVE ?
+                  translations.sprint.form.doComplete :
+                  translations.sprint.form.doPlan}
+            </Button>
+          )}
           {sprint?.sprintStatus === SprintStatus.ACTIVE && (
             <Button
               variant="outline"
@@ -104,6 +125,11 @@ export function SprintDetailHeader({ sprint, tasks, onEdit, onDelete }: SprintDe
         open={isCompleteDialogOpen}
         onOpenChange={setIsCompleteDialogOpen}
         tasks={tasks}
+      />
+      <ChangeSprintStatusDailog
+        sprint={sprint}
+        open={changeSprintStatusDialogOpen}
+        onOpenChange={setChangeSprintStatusDialogOpen}
       />
     </div>
   )
