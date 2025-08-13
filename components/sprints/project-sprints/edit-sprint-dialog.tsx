@@ -39,6 +39,7 @@ interface EditSprintDialogProps {
   onOpenChange: (open: boolean) => void
   sprint: Sprint
   projectList: Project[] | [] // projectList prop'u burada kullanılacak
+  fetchData?: () => void
 }
 
 interface SelectOption {
@@ -46,7 +47,7 @@ interface SelectOption {
   label: string;
 }
 
-export function EditSprintDialog({ open, onOpenChange, sprint, projectList }: EditSprintDialogProps) {
+export function EditSprintDialog({ open, onOpenChange, sprint, projectList, fetchData }: EditSprintDialogProps) {
   const { translations } = useLanguage()
   const dispatch = useDispatch()
   const [name, setName] = useState("")
@@ -156,6 +157,9 @@ export function EditSprintDialog({ open, onOpenChange, sprint, projectList }: Ed
     }
     const response = await saveUpdateSprintHelper(updatedSprint, { setLoading });
     dispatch(updateSprint(response));
+    if (fetchData) {
+      fetchData()
+    }
     onOpenChange(false)
   }
 

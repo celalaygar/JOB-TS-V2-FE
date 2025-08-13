@@ -121,6 +121,7 @@ export default function SprintDetailPage() {
             </div>
 
             <EditSprintDialog
+              fetchData={fetchSprint}
               projectList={projectList}
               sprint={sprint}
               open={isEditDialogOpen}

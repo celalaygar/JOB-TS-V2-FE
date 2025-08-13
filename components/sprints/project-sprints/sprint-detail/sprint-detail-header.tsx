@@ -50,6 +50,7 @@ export function SprintDetailHeader({ tasks, onEdit, onDelete }: SprintDetailHead
 
   return (
     <div className="flex flex-col space-y-4">
+      {/* Back button always on top left */}
       <div className="flex items-center justify-between">
         <Button variant="outline" size="sm" asChild className="border-[var(--fixed-card-border)]">
           <Link href="/project-sprints">
@@ -57,7 +58,26 @@ export function SprintDetailHeader({ tasks, onEdit, onDelete }: SprintDetailHead
             Back to Sprints
           </Link>
         </Button>
-        <div className="flex items-center gap-2">
+      </div>
+
+      {/* Main content area: `nameDiv` and buttons. This div is responsive. */}
+      {/* On mobile: flex-col (vertical stack). On md screens and up: flex-row (horizontal alignment) and justify-between to push to ends. */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+        <div className="nameDiv">
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold">{sprint.name}</h1>
+            {getStatusBadge(sprint.sprintStatus)}
+          </div>
+          <div className="flex items-center text-[var(--fixed-sidebar-muted)] mt-1">
+            <Calendar className="h-4 w-4 mr-1" />
+            <span>
+              {format(new Date(sprint.startDate), "MMM d, yyyy")} - {format(new Date(sprint.endDate), "MMM d, yyyy")}
+            </span>
+          </div>
+        </div>
+
+        {/* Buttons Section - wraps on mobile and moves to the right on web */}
+        <div className="flex flex-wrap items-center gap-2 mt-4 md:mt-0">
           <Button
             variant="outline"
             size="sm"
@@ -99,19 +119,6 @@ export function SprintDetailHeader({ tasks, onEdit, onDelete }: SprintDetailHead
             <Trash2 className="h-4 w-4 mr-1" />
             {translations.sprint.form.delete}
           </Button>
-        </div>
-      </div>
-
-      <div>
-        <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold">{sprint.name}</h1>
-          {getStatusBadge(sprint.sprintStatus)}
-        </div>
-        <div className="flex items-center text-[var(--fixed-sidebar-muted)] mt-1">
-          <Calendar className="h-4 w-4 mr-1" />
-          <span>
-            {format(new Date(sprint.startDate), "MMM d, yyyy")} - {format(new Date(sprint.endDate), "MMM d, yyyy")}
-          </span>
         </div>
       </div>
 
