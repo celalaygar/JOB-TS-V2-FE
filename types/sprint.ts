@@ -1,3 +1,5 @@
+import { CreatedBy, CreatedProject } from "./project";
+
 //export type SprintStatus = "planned" | "active" | "completed" | "planning" | "cancelled"
 export type SprintType = "standard" | "project-team"
 
@@ -18,10 +20,6 @@ export interface SprintCreatedUser {
   username: string;
 }
 
-export interface CreatedProject {
-  id: string;
-  name: string;
-}
 
 export interface TaskStatusOnCompletion {
   id: string;
@@ -78,11 +76,33 @@ export interface UpdateSprintStatusRequest {
   sprintId: string;
   newStatus: string;
 }
+export interface SprintRequest {
+  sprintId: string;
+}
 export interface SprintTaskRemoveRequest {
   sprintId: string;
   taskId: string;
   projectId: string;
 }
 
-// Diğer tanımlamalarınız (SprintType, SprintTeamMember, CreatedProject, TaskStatusOnCompletion, SprintCreatedUser)
-// Bu örnekte yer almadığı için olduğu gibi bırakıldı.
+export interface SprintTaskGetAllRequest {
+  sprintId: string;
+  projectId: string;
+}
+
+
+
+export interface SprintUser {
+  id: string;
+  sprintId: string;
+  projectId: string;
+  user: CreatedBy;
+  createdProject: CreatedProject;
+  assignmentDate: string; // Instant → ISO date string format
+  roleInSprint: string;
+  statusInSprint: string;
+  estimatedEffort: number;
+  notes: string;
+  createdAt: string; // LocalDateTime → ISO date string
+  updatedAt: string; // LocalDateTime → ISO date string
+}

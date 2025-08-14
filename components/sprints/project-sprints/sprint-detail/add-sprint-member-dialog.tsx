@@ -18,38 +18,38 @@ import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent } from "@/components/ui/card"
 import { Search, Users, User, UserCheck, Plus, Loader2 } from "lucide-react"
-import { Project, ProjectUser } from "@/types/project"
+import { CreatedProject, Project, ProjectUser } from "@/types/project"
 import { getActiveProjectUsersHelper } from "@/lib/service/api-helpers"
-import { CreatedProject } from "@/types/sprint"
+import { SprintUser } from "@/types/sprint"
 
 interface AddSprintMemberDialogProps {
+  sprintUsers?: SprintUser[]
   project?: CreatedProject
   sprintId: string
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
-export function AddSprintMemberDialog({ project, sprintId, open, onOpenChange }: AddSprintMemberDialogProps) {
+export function AddSprintMemberDialog({ sprintUsers, project, sprintId, open, onOpenChange }: AddSprintMemberDialogProps) {
   const dispatch = useDispatch()
   const sprint = useSelector((state: RootState) => state.sprints.sprints.find((s) => s.id === sprintId))
 
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedUsers, setSelectedUsers] = useState<string[]>([])
   const [selectAll, setSelectAll] = useState(false)
-  const [activeTab, setActiveTab] = useState("users")
   const [isAdding, setIsAdding] = useState(false)
   const [projectUsers, setProjectUsers] = useState<ProjectUser[] | []>([])
   const [loading, setLoading] = useState(false)
 
   // Get current sprint team member IDs
-  const currentMemberIds = sprint?.team?.map((member) => member.id) || []
+  const currentMemberIds = sprintUsers?.map((member) => member.id) || []
 
   // Filter available users (not already in sprint)
   const availableUsers = projectUsers.filter((user) => !currentMemberIds.includes(user.id))
 
   const handleGetProjectUsers = useCallback(async (projectId: string) => {
     setLoading(true)
-    const usersData = await getActiveProjectUsersHelper(projectId, { setLoading: (isLoading) => setLoading(isLoading) })
+    const usersData = await getActiveProjectUsersHelper(projectId, { setLoading })
     if (usersData) {
       setProjectUsers(usersData)
     } else {

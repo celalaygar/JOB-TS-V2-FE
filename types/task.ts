@@ -1,4 +1,4 @@
-import { ProjectTaskStatus } from "./project"
+import { CreatedBy, CreatedProject, ProjectTaskStatus } from "./project"
 
 
 
@@ -54,14 +54,6 @@ export const ProjectTaskTypes: Record<ProjectTaskType, EnumValue> = {
 // Diğer arayüzler
 // ---
 
-export interface CreatedBy {
-  id: string;
-  userId: string;
-  email: string;
-  firstname: string;
-  lastname: string;
-  username: string;
-}
 
 export interface ProjectTaskStatusModel {
   id: string;
@@ -72,7 +64,6 @@ export interface ProjectTaskStatusModel {
   color: string;
 }
 
-export interface CreatedProject extends IdName { }
 
 export interface ParentTask {
   id: string;
@@ -200,19 +191,6 @@ export interface ProjectTaskStatusModel {
   turkish: string;
   english: string;
   color: string;
-}
-
-export interface CreatedBy {
-  id: string;
-  email: string;
-  firstname: string;
-  lastname: string;
-  username: string;
-}
-
-export interface CreatedProject {
-  id: string;
-  name: string;
 }
 
 

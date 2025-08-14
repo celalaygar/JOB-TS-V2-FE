@@ -4,7 +4,7 @@ import RouteBaseService from '@/lib/service/RouteBaseService';
 import { NextRequest } from 'next/server';
 
 const URL = process.env.BASE_V2_URL
-const PROJECT_USER = "project-users/get-users/project"
+const PROJECT_USER = "project-users/get-active-users/project"
 
 export async function GET(req: NextRequest,
     { params }: { params: Promise<{ projectId: string }> }

@@ -70,11 +70,16 @@ export const UPDATE_STATUS_URL = SPRINT_URL + "/status";
 
 
 
+// sprint
+export const SPRINT_USER_URL = BASE_PATH_V2 + "sprint-user";
+export const SPRINT_GET_ALL_USER_URL = SPRINT_USER_URL + "/users";
+
 
 // sprint-task
 export const SPRINT_TASK_URL = BASE_PATH_V2 + "sprint-task";
 export const SPRINT_TASK_ADD_URL = SPRINT_TASK_URL + "/add";
 export const SPRINT_TASK_REMOVE_URL = SPRINT_TASK_URL + "/remove";
+export const SPRINT_TASK_GET_ALL_URL = SPRINT_TASK_URL + "/get-all";
 
 
 

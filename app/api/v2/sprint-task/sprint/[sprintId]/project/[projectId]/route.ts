@@ -14,8 +14,6 @@ export async function GET(req: NextRequest,
 
     const sId = await (await params).sprintId;
     const pId = await (await params).projectId;
-    console.log("Fetching sprint tasks for sprintId:", sId, "and projectId:", pId);
-    console.log("Request URL:", URL + SPRINT_TASK + "/sprint/" + sId + "/project/" + pId);
     return RouteBaseService.request(URL + SPRINT_TASK + "/sprint/" + sId + "/project/" + pId, {
         method: 'GET',
         clientIp: clientIp, // ✅ IP'yi servise ilet

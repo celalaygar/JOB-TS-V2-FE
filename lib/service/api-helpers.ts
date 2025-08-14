@@ -4,7 +4,7 @@ import BaseService from "@/lib/service/BaseService";
 import { httpMethods } from "@/lib/service/HttpService";
 import { toast } from "@/hooks/use-toast";
 import type { ProjectUser, RemoveProjectUserRequest } from "@/types/project";
-import type { Sprint, SprintTaskAddRequest, SprintTaskRemoveRequest, UpdateSprintStatusRequest } from "@/types/sprint";
+import type { Sprint, SprintRequest, SprintTaskAddRequest, SprintTaskGetAllRequest, SprintTaskRemoveRequest, SprintUser, UpdateSprintStatusRequest } from "@/types/sprint";
 import type { ProjectTeam, Project, ProjectTaskStatus } from "@/types/project";
 import type { ProjectRole, ProjectRolePermission, ProjectRoleRequest } from "@/types/project-role";
 import type { Invitation } from "@/lib/redux/features/invitations-slice";
@@ -25,6 +25,7 @@ import {
   INVITATION_BY_PROJECTID,
   INVITE_TO_PROJECT,
   SPRINT_TASK_URL,
+  SPRINT_USER_URL,
   SPRINT_TASK_ADD_URL,
   SPRINT_TASK_REMOVE_URL,
   BACKLOG_URL,
@@ -40,7 +41,9 @@ import {
   TEAM_USER_REMOVE_URL,
   TEAM_USER_NOT_IN_URL,
   TEAM_USER_IN_URL,
-  KANBAN_URL
+  KANBAN_URL,
+  SPRINT_TASK_GET_ALL_URL,
+  SPRINT_GET_ALL_USER_URL
 } from "@/lib/service/BasePath";
 import { ProjectTask, ProjectTaskFilterRequest, TaskResponse, TaskUpdateRequest } from "@/types/task";
 import { BacklogFilterRequest } from "@/types/backlog";
@@ -78,14 +81,14 @@ export async function apiCall<T>(config: ApiOperationConfig<T>): Promise<T | nul
     // console.log(body)
     const response: T = await BaseService.request(url, { method, body });
 
-    if (successMessage) {
-      toast({
-        title: successToastTitle || "Success",
-        description: successMessage,
-        variant: "default",
-        duration: 200, // 2 seconds
-      });
-    }
+    // if (successMessage) {
+    //   toast({
+    //     title: successToastTitle || "Success",
+    //     description: successMessage,
+    //     variant: "default",
+    //     duration: 20000, // 2 seconds
+    //   });
+    // }
 
     return response;
   } catch (error: any) {
@@ -105,9 +108,10 @@ export async function apiCall<T>(config: ApiOperationConfig<T>): Promise<T | nul
     }
 
     toast({
-      title: displayErrorTitle,
+      title: displayErrorTitle + " " + url,
       description: displayErrorDescription,
       variant: "destructive",
+      duration: 20000, // 2 seconds
     });
 
     return null;
@@ -248,6 +252,18 @@ export const getAllSprintsGlobalHelper = async (options: FetchEntitiesOptions): 
     errorMessagePrefix: "Failed to load all sprints",
     successToastTitle: "All Sprints Loaded",
     errorToastTitle: "Error Loading All Sprints",
+  });
+};
+export const getAllSprintUsersHelper = async (body: SprintRequest, options: FetchEntitiesOptions): Promise<SprintUser[] | null> => {
+  return apiCall<SprintUser[]>({
+    url: `${SPRINT_GET_ALL_USER_URL}`,
+    method: httpMethods.POST,
+    body: body,
+    setLoading: options.setLoading,
+    successMessage: "All sprint Users have been retrieved.",
+    errorMessagePrefix: "Failed to load all sprint Users",
+    successToastTitle: "All Sprint Users Loaded",
+    errorToastTitle: "Error Loading All Sprint Users",
   });
 };
 
@@ -712,16 +728,13 @@ export const removeTaskFromSprintHelper = async (body: SprintTaskRemoveRequest, 
   });
 }
 
-export const getAllSprintTasksHelper = async (sprintId: string, projectId: string, options: FetchEntitiesOptions): Promise<ProjectTask[] | null> => {
-  if (!sprintId || !projectId) {
-    options.setLoading(false);
-    return [];
-  }
+export const getAllSprintTasksHelper = async (body: SprintTaskGetAllRequest, options: FetchEntitiesOptions): Promise<ProjectTask[] | null> => {
   return apiCall<ProjectTask[]>({
-    url: `${SPRINT_TASK_URL}/sprint/${sprintId}/project/${projectId}`,
-    method: httpMethods.GET,
+    url: SPRINT_TASK_GET_ALL_URL,
+    method: httpMethods.POST,
+    body,
     setLoading: options.setLoading,
-    successMessage: `Tasks for sprint ${sprintId} in project ${projectId} have been retrieved.`,
+    successMessage: `Tasks for sprint in project have been retrieved.`,
     errorMessagePrefix: "Failed to load sprint tasks",
     successToastTitle: "Sprint Tasks Loaded",
     errorToastTitle: "Error Loading Sprint Tasks",

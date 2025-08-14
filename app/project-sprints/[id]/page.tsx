@@ -14,9 +14,9 @@ import { tasks as dummyTasks } from "@/data/tasks"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { AlertCircle, Loader2 } from "lucide-react"
 import { toast } from "@/hooks/use-toast"
-import { Sprint } from "@/types/sprint"
+import { Sprint, SprintRequest, SprintTaskGetAllRequest, SprintUser, UpdateSprintStatusRequest } from "@/types/sprint"
 import { Project } from "@/types/project"
-import { getSprintHelper, getAllProjectsHelper, getAllSprintTasksHelper } from "@/lib/service/api-helpers" // Import the new helpers
+import { getSprintHelper, getAllProjectsHelper, getAllSprintTasksHelper, getAllSprintUsersHelper } from "@/lib/service/api-helpers" // Import the new helpers
 import { ProjectTask } from "@/types/task"
 import { setSingleSprint } from "@/lib/redux/features/sprints-slice"
 
@@ -37,6 +37,7 @@ export default function SprintDetailPage() {
   const [sprint, setSprint] = useState<Sprint>();
   const [projectList, setProjectList] = useState<Project[] | []>([]);
   const [sprintTasks, setSprintTasks] = useState<ProjectTask[]>([]); // Adjust type as needed
+  const [sprintUsers, setSprintUsers] = useState<SprintUser[] | []>([])
 
   const dispatch = useDispatch()
 
@@ -45,8 +46,11 @@ export default function SprintDetailPage() {
       setLoading(false);
       return;
     }
+    let body: SprintTaskGetAllRequest = {
+      projectId, sprintId
+    }
     // Assuming you have a function to fetch tasks by sprint ID
-    const tasksData = await getAllSprintTasksHelper(sprintId, projectId, { setLoading });
+    const tasksData = await getAllSprintTasksHelper(body, { setLoading });
     if (tasksData) {
       setSprintTasks(tasksData);
       console.log("Sprint Tasks:", tasksData); // Debugging line to check fetched tasks
@@ -63,6 +67,7 @@ export default function SprintDetailPage() {
       setSprint(sprintData);
       dispatch(setSingleSprint(sprintData));
       fetchAllSprintTasks(sprintData.createdProject.id); // Fetch tasks for the sprint's project
+      handleGetSprintUsers(sprintData?.id)
     }
   }, [sprintId]);
 
@@ -80,12 +85,21 @@ export default function SprintDetailPage() {
   }, [fetchSprint, fetchAllProjects])
 
 
+  const handleGetSprintUsers = useCallback(async (sprintId: string) => {
+    setLoading(true)
+    let body: SprintRequest = {
+      sprintId
+    }
+    const usersData = await getAllSprintUsersHelper(body, { setLoading })
+    if (usersData) {
+      setSprintUsers(usersData)
+    } else {
+      setSprintUsers([])
+    }
+    setLoading(false)
+  }, [])
 
 
-  // Find team for this sprint
-  const sprintTeam = sprint?.team?.length
-    ? teams.find((team) => sprint.team.some((member) => team.members.some((m) => m.id === member.id)))
-    : null
 
   const updatedSprint = useSelector((state: RootState) => state.sprints.sprints.find((s) => s.id === sprintId))
 
@@ -109,7 +123,7 @@ export default function SprintDetailPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="md:col-span-2 space-y-6">
-                <SprintDetailInfo sprint={sprint} team={sprintTeam} /> {/* Add non-null assertion */}
+                <SprintDetailInfo sprint={sprint} sprintUsers={sprintUsers} /> {/* Add non-null assertion */}
                 <SprintDetailTasks
                   sprintId={sprint?.id}
                   tasks={sprintTasks}
