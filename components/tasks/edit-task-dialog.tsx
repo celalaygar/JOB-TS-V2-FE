@@ -26,7 +26,7 @@ import { Sprint } from "@/types/sprint"
 import Select from "react-select"
 
 import {
-  getProjectUsersHelper,
+  getActiveProjectUsersHelper,
   getNonCompletedSprintsHelper,
   getAllProjectTaskStatusHelper,
   updateProjectTaskHelper,
@@ -180,7 +180,7 @@ export function EditTaskDialog({ projectTask, open, onOpenChange, projectList, f
 
   const handleGetProjectUsers = useCallback(async (projectId: string) => {
     setLoadingProjectUsers(true);
-    const usersData = await getProjectUsersHelper(projectId, { setLoading: setLoadingProjectUsers });
+    const usersData = await getActiveProjectUsersHelper(projectId, { setLoading: setLoadingProjectUsers });
     if (usersData) {
       setProjectUsers(usersData);
     } else {
@@ -226,6 +226,10 @@ export function EditTaskDialog({ projectTask, open, onOpenChange, projectList, f
     }
 
     const { title, description, projectId, projectTaskStatusId, assigneeId, priority, taskType, sprint, parentTask } = formData
+
+    if (!projectTask) {
+      return;
+    }
 
     const updatedTask: TaskUpdateRequest = {
       id: projectTask?.id,

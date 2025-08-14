@@ -10,7 +10,7 @@ import { Plus, Search, Filter, Bug, Lightbulb, BookOpen, GitBranch, Loader2 } fr
 import { CreateTaskDialog } from "@/components/tasks/create-task-dialog"
 import {
   getAllProjectTaskStatusHelper,
-  getProjectUsersHelper
+  getActiveProjectUsersHelper
 } from "@/lib/service/api-helpers" // Import helpers
 import { Project, ProjectTaskStatus, ProjectUser } from "@/types/project"
 import { ProjectTaskFilterRequest, ProjectTaskPriority, ProjectTaskType } from "@/types/task"
@@ -49,7 +49,7 @@ export function TasksHeader({ filters, setFilters, handleChange, fetchData, proj
 
   const fetchProjectUsers = useCallback(async (projectId: string) => {
     setProjectUsers([]);
-    const usersData = await getProjectUsersHelper(projectId, { setLoading });
+    const usersData = await getActiveProjectUsersHelper(projectId, { setLoading });
     if (usersData) {
       setProjectUsers(usersData);
     } else {

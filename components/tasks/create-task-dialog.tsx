@@ -25,7 +25,7 @@ import { Sprint } from "@/types/sprint"
 
 import Select from "react-select"
 
-import { createProjectTaskHelper, getAllProjectTaskStatusHelper, getNonCompletedSprintsHelper, getProjectUsersHelper, getSprintsHelper } from "@/lib/service/api-helpers"
+import { createProjectTaskHelper, getAllProjectTaskStatusHelper, getNonCompletedSprintsHelper, getActiveProjectUsersHelper, getSprintsHelper } from "@/lib/service/api-helpers"
 
 interface CreateTaskDialogProps {
   open: boolean
@@ -154,7 +154,7 @@ export function CreateTaskDialog({ open, onOpenChange, parentTask, projectList, 
   }, []);
 
   const handleGetProjectUsers = useCallback(async (projectId: string) => {
-    const usersData = await getProjectUsersHelper(projectId, { setLoading: setLoadingProjectUsers });
+    const usersData = await getActiveProjectUsersHelper(projectId, { setLoading: setLoadingProjectUsers });
     if (usersData) {
       setProjectUsers(usersData);
     } else {
@@ -183,7 +183,6 @@ export function CreateTaskDialog({ open, onOpenChange, parentTask, projectList, 
       return;
     }
 
-    const selectedAssigneeData = users.find((user) => user.id === formData.assignee);
 
     const { title, description, project, projectTaskStatus, assignee, priority, taskType, sprint, parentTask } = formData
 
@@ -239,7 +238,6 @@ export function CreateTaskDialog({ open, onOpenChange, parentTask, projectList, 
 
 
   useEffect(() => {
-    console.log("Parent task değişti. Current parentTask:", parentTask);
     if (parentTask?.id) { // parentTask'ın varlığını ve id'sinin olduğunu kontrol et
       setFormData((prev) => ({
         ...prev,

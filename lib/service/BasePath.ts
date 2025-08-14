@@ -49,7 +49,8 @@ export const SPRINT_TASK_ADD_URL = SPRINT_TASK_URL + "/add";
 export const SPRINT_TASK_REMOVE_URL = SPRINT_TASK_URL + "/remove";
 
 export const PROJECT_USERS = BASE_PATH_V2 + "project-users";
-export const GET_PROJECT_USERS = PROJECT_USERS + "/get-users/project";
+export const GET_ACTIVE_PROJECT_USERS = PROJECT_USERS + "/get-active-users/project";
+export const GET_ALL_PROJECT_USERS = PROJECT_USERS + "/all-users/project";
 export const REMOVE_PROJECT_USERS_URL = PROJECT_USERS + "/remove-user";
 
 

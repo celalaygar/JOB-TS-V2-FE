@@ -11,7 +11,7 @@ import { useCallback, useState } from "react"
 import { ProjectTaskType } from "@/types/task"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { ProjectTaskStatus, ProjectUser } from "@/types/project"
-import { getAllProjectTaskStatusHelper, getProjectUsersHelper } from "@/lib/service/api-helpers"
+import { getAllProjectTaskStatusHelper, getActiveProjectUsersHelper } from "@/lib/service/api-helpers"
 import { BacklogFilterRequest } from "@/types/backlog"
 
 interface BacklogFiltersProps {
@@ -60,7 +60,7 @@ export function BacklogFilters({
 
   const fetchProjectUsers = useCallback(async (projectId: string) => {
     setProjectUsers(null);
-    const usersData = await getProjectUsersHelper(projectId, { setLoading });
+    const usersData = await getActiveProjectUsersHelper(projectId, { setLoading });
     if (usersData) {
       setProjectUsers(usersData);
     } else {

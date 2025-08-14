@@ -4,7 +4,7 @@
 import { useCallback, useEffect, useState } from "react";
 import KanbanBoard from "@/components/kanban/kanban-board"
 import KanbanHeader from "@/components/kanban/kanban-header"
-import { getAllBacklogTaskHelper, getAllKanbanTaskHelper, getAllProjectsHelper, getAllProjectTaskStatusHelper, getNonCompletedSprintsHelper, getProjectUsersHelper } from "@/lib/service/api-helpers";
+import { getAllBacklogTaskHelper, getAllKanbanTaskHelper, getAllProjectsHelper, getAllProjectTaskStatusHelper, getNonCompletedSprintsHelper, getActiveProjectUsersHelper } from "@/lib/service/api-helpers";
 import { KanbanFilterRequest } from "@/types/kanban";
 import { Project, ProjectTaskStatus, ProjectUser } from "@/types/project";
 import { Loader2 } from "lucide-react";
@@ -66,7 +66,7 @@ export default function KanbanPage() {
 
   const fetchProjectUsers = useCallback(async (projectId: string) => {
     setProjectUsers(null);
-    const usersData = await getProjectUsersHelper(projectId, { setLoading });
+    const usersData = await getActiveProjectUsersHelper(projectId, { setLoading });
     if (usersData) {
       setProjectUsers(usersData);
     } else {

@@ -11,6 +11,7 @@ import { Sprint } from "@/types/sprint"
 import { useLanguage } from "@/lib/i18n/context"
 import { useSelector } from "react-redux"
 import { RootState } from "@/lib/redux/store"
+import { Project } from "@/types/project"
 
 interface SprintDetailInfoProps {
   team?: {
@@ -25,7 +26,7 @@ export function SprintDetailInfo({ team }: SprintDetailInfoProps) {
   const { translations } = useLanguage()
 
   const sprint: Sprint | null = useSelector((state: RootState) => state.sprints.singleSprint)
-  
+
   return (
     <>
       <Card>
@@ -139,12 +140,14 @@ export function SprintDetailInfo({ team }: SprintDetailInfoProps) {
           </div>
         </CardContent>
       </Card>
-
-      <AddSprintMemberDialog
-        sprintId={sprint.id}
-        open={isAddMemberDialogOpen}
-        onOpenChange={setIsAddMemberDialogOpen}
-      />
+      {sprint &&
+        <AddSprintMemberDialog
+          project={sprint.createdProject}
+          sprintId={sprint.id}
+          open={isAddMemberDialogOpen}
+          onOpenChange={setIsAddMemberDialogOpen}
+        />
+      }
     </>
   )
 }

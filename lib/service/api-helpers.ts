@@ -10,6 +10,8 @@ import type { ProjectRole, ProjectRolePermission, ProjectRoleRequest } from "@/t
 import type { Invitation } from "@/lib/redux/features/invitations-slice";
 import {
   GET_PROJECT_USERS,
+  GET_ACTIVE_PROJECT_USERS,
+  GET_ALL_PROJECT_USERS,
   REMOVE_PROJECT_USERS_URL,
   SPRINT_NON_COMPLETED_GET_ALL_URL,
   PROJECT_TEAM_URL,
@@ -41,7 +43,7 @@ import {
   TEAM_USER_IN_URL,
   KANBAN_URL
 } from "@/lib/service/BasePath";
-import { ProjectTask, ProjectTaskFilterRequest, TaskResponse } from "@/types/task";
+import { ProjectTask, ProjectTaskFilterRequest, TaskResponse, TaskUpdateRequest } from "@/types/task";
 import { BacklogFilterRequest } from "@/types/backlog";
 import { ProjectTaskStatusRequest } from "@/types/project-task-status";
 
@@ -82,7 +84,7 @@ export async function apiCall<T>(config: ApiOperationConfig<T>): Promise<T | nul
         title: successToastTitle || "Success",
         description: successMessage,
         variant: "default",
-        duration: 2000, // 2 seconds
+        duration: 200, // 2 seconds
       });
     }
 
@@ -141,14 +143,14 @@ export const removeProjectUserHelper = async (body: RemoveProjectUserRequest, op
 }
 
 
-export const getProjectUsersHelper = async (projectId: string, options: FetchEntitiesOptions): Promise<ProjectUser[] | null> => {
+export const getActiveProjectUsersHelper = async (projectId: string, options: FetchEntitiesOptions): Promise<ProjectUser[] | null> => {
   if (!projectId) {
     options.setLoading(false);
     return [];
   }
 
   return apiCall<ProjectUser[]>({
-    url: `${GET_PROJECT_USERS}/${projectId}`,
+    url: `${GET_ACTIVE_PROJECT_USERS}/${projectId}`,
     method: httpMethods.GET,
     setLoading: options.setLoading,
     successMessage: `Users for project ${projectId} have been retrieved.`,
@@ -590,7 +592,7 @@ export const createProjectTaskHelper = async (projectTaskData: any, options: Fet
   });
 };
 
-export const updateProjectTaskHelper = async (taskId: string, projectTaskData: any, options: FetchEntitiesOptions): Promise<ProjectTask | null> => {
+export const updateProjectTaskHelper = async (taskId: string, projectTaskData: TaskUpdateRequest, options: FetchEntitiesOptions): Promise<ProjectTask | null> => {
   return apiCall<ProjectTask>({
     url: `${PROJECT_TASK}/${taskId}`,
     method: httpMethods.PUT,

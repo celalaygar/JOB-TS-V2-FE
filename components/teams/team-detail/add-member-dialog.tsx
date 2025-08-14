@@ -18,7 +18,7 @@ import {
 import { cn } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import { ProjectUser } from "@/types/project"
-import { addProjectTeamUserHelper, getProjectTeamUsersNotInTeamHelper, getProjectUsersHelper } from "@/lib/service/api-helpers"
+import { addProjectTeamUserHelper, getProjectTeamUsersNotInTeamHelper } from "@/lib/service/api-helpers"
 
 interface AddMemberDialogProps {
   fetchProjectUsers: () => void

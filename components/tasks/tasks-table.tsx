@@ -72,26 +72,6 @@ export function TasksTable({ filters, taskResponse, loading, projectList, loadin
 
 
 
-  // const fetchAllProjectTaskStatus = useCallback(async (projectId: string) => {
-  //   setProjectTaskStatus([]);
-  //   const statusesData = await getAllProjectTaskStatusHelper(projectId, { setLoading });
-  //   if (statusesData) {
-  //     setProjectTaskStatus(statusesData);
-  //   } else {
-  //     setProjectTaskStatus([]);
-  //   }
-  // }, []);
-
-  // const fetchProjectUsers = useCallback(async (projectId: string) => {
-  //   setProjectUsers([]);
-  //   const usersData = await getProjectUsersHelper(projectId, { setLoading });
-  //   if (usersData) {
-  //     setProjectUsers(usersData);
-  //   } else {
-  //     setProjectUsers([]);
-  //   }
-  // }, []);
-
 
   // Calculate pagination
   const totalItems = taskResponse?.totalElements

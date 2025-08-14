@@ -2,7 +2,18 @@ import { ProjectTaskStatus } from "./project"
 
 
 
-
+export interface TaskUpdateRequest {
+  id: string | number | undefined; // projectTask?.id olabilir, bu yüzden string | number | undefined
+  title: string;
+  description: string;
+  projectTaskStatusId: string | number;
+  priority: string;
+  taskType: TaskType; // zaten senin projenizde tanımlı olmalı
+  projectId: string | number;
+  assigneeId: string | number;
+  sprintId: string | number | null;
+  parentTaskId: string | number | null;
+}
 
 // Ortak özelliklere sahip nesneler için temel bir arayüz
 interface IdName {
