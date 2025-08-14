@@ -26,7 +26,7 @@ import {
 } from "lucide-react"
 import { ProjectSystemRole, type Project, type ProjectUser, type RemoveProjectUserRequest } from "@/types/project"
 import { InviteUserDialog } from "./dialogs/invite-user-dialog"
-import { getActiveProjectUsersHelper, removeProjectUserHelper } from "@/lib/service/api-helpers"
+import { getActiveProjectUsersHelper, getAllProjectUsersHelper, removeProjectUserHelper } from "@/lib/service/api-helpers"
 import { RemoveUserDialog } from "./dialogs/remove-user-dialog copy"
 
 interface ProjectUsersTabProps {
@@ -54,7 +54,7 @@ export function ProjectUsersTab({
   const [projectUsers, setprojectUsers] = useState<ProjectUser[]>()
 
   const fetchProjectUsers = useCallback(async () => {
-    const usersData = await getActiveProjectUsersHelper(project.id, { setLoading });
+    const usersData = await getAllProjectUsersHelper(project.id, { setLoading });
     if (usersData) {
       setprojectUsers(usersData);
     } else {

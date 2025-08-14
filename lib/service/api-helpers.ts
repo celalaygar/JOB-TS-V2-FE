@@ -9,7 +9,6 @@ import type { ProjectTeam, Project, ProjectTaskStatus } from "@/types/project";
 import type { ProjectRole, ProjectRolePermission, ProjectRoleRequest } from "@/types/project-role";
 import type { Invitation } from "@/lib/redux/features/invitations-slice";
 import {
-  GET_PROJECT_USERS,
   GET_ACTIVE_PROJECT_USERS,
   GET_ALL_PROJECT_USERS,
   REMOVE_PROJECT_USERS_URL,
@@ -153,12 +152,32 @@ export const getActiveProjectUsersHelper = async (projectId: string, options: Fe
     url: `${GET_ACTIVE_PROJECT_USERS}/${projectId}`,
     method: httpMethods.GET,
     setLoading: options.setLoading,
-    successMessage: `Users for project ${projectId} have been retrieved.`,
-    errorMessagePrefix: "Failed to load project users",
-    successToastTitle: "Project Users Loaded",
-    errorToastTitle: "Error Loading Project Users",
+    successMessage: `Active Users for project ${projectId} have been retrieved.`,
+    errorMessagePrefix: "Failed to load project Active users",
+    successToastTitle: "Project Active Users Loaded",
+    errorToastTitle: "Error Loading Project Active Users",
   });
 };
+
+export const getAllProjectUsersHelper = async (projectId: string, options: FetchEntitiesOptions): Promise<ProjectUser[] | null> => {
+  if (!projectId) {
+    options.setLoading(false);
+    return [];
+  }
+
+  return apiCall<ProjectUser[]>({
+    url: `${GET_ALL_PROJECT_USERS}/${projectId}`,
+    method: httpMethods.GET,
+    setLoading: options.setLoading,
+    successMessage: `All Users for project ${projectId} have been retrieved.`,
+    errorMessagePrefix: "Failed to load project All users",
+    successToastTitle: "Project All Users Loaded",
+    errorToastTitle: "Error Loading Project All Users",
+  });
+};
+
+
+
 
 export const getSprintsHelper = async (projectId: string, options: FetchEntitiesOptions): Promise<Sprint[] | null> => {
   if (!projectId) {
