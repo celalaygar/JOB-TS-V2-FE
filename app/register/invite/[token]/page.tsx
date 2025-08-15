@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
 import { useDispatch, useSelector } from "react-redux"
@@ -14,13 +14,25 @@ import { Home, Loader2, Calendar } from "lucide-react"
 import { register, clearError } from "@/lib/redux/features/auth-slice"
 import { useLanguage } from "@/lib/i18n/context"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Calendar as CalendarComponent } from "@/components/ui/calendar"
 import { format } from "date-fns"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import BaseService from "@/lib/service/BaseService"
 import { toast } from "@/hooks/use-toast"
-import { REGISTER_WITH_TOKEN } from "@/lib/service/BasePath"
+import { REGISTER_WITH_TOKEN, VALIDATE_INVITATION_TOKEN } from "@/lib/service/BasePath"
+import { httpMethods } from "@/lib/service/HttpService"
+import { string } from "zod"
+
+
+export interface ValidateTokenRequest {
+  token: string
+}
+
+export interface ValidateTokenResponse {
+  isValid: boolean
+  token: string
+  invitedUserEmail: string
+  message: string
+}
 
 export default function RegisterPage() {
   const params = useParams()
@@ -130,6 +142,54 @@ export default function RegisterPage() {
     return Object.keys(errors).length === 0
   }
 
+
+  const controlToken = useCallback(async () => {
+    e.preventDefault()
+    setLoadingForm(true)
+    if (validateForm()) {
+      let body = { token };
+      try {
+        const response: ValidateTokenResponse | null = await BaseService.request(VALIDATE_INVITATION_TOKEN, {
+          method: httpMethods.POST,
+          body: body,
+        });
+        if (!!response) {
+          if (response.invitedUserEmail && response.isValid === true) {
+            toast({
+              title: "Token is valid",
+              description: `Token is valid"`,
+            })
+            setFormData({ ...formData, email: response.invitedUserEmail })
+          } else {
+            toast({
+              title: "Token is expired",
+              description: `Token is expired"`,
+              variant: "destructive",
+            })
+          }
+        }
+      } catch (error: any) {
+        if (error.status === 400 && error.message) {
+          toast({
+            title: `Token is not valid.`,
+            description: error.message,
+            variant: "destructive",
+          })
+          console.error('Token is not valid 400:', error.message);
+        } else {
+          console.error('Token is not valid:', error);
+        }
+      }
+    }
+    setLoadingForm(false)
+  }, [token])
+
+
+  useEffect(() => {
+    controlToken();
+  }, [controlToken])
+
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoadingForm(true)
@@ -137,10 +197,9 @@ export default function RegisterPage() {
       formData["token"] = token;
       try {
         const response = await BaseService.request(REGISTER_WITH_TOKEN, {
-          method: 'POST',
+          method: httpMethods.POST,
           body: formData,
         });
-        console.log('Register success:', response);
         toast({
           title: "Register success:" + response,
           description: `Register ${formData.email} success.`,
@@ -269,6 +328,7 @@ export default function RegisterPage() {
                     id="email"
                     name="email"
                     type="email"
+                    disabled={true}
                     placeholder={translations.register.emailPlaceholder}
                     value={formData.email}
                     onChange={handleChange}

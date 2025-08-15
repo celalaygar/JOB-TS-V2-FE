@@ -3,6 +3,7 @@
 export const BASE_AUTH = "/api/auth/"
 export const REGISTER = BASE_AUTH + "register"
 export const REGISTER_WITH_TOKEN = BASE_AUTH + "register-by-invitation"
+export const VALIDATE_INVITATION_TOKEN = BASE_AUTH + "validate-invitation-token"
 
 
 
