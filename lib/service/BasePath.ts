@@ -73,6 +73,7 @@ export const UPDATE_STATUS_URL = SPRINT_URL + "/status";
 // sprint
 export const SPRINT_USER_URL = BASE_PATH_V2 + "sprint-user";
 export const SPRINT_GET_ALL_USER_URL = SPRINT_USER_URL + "/users";
+export const SPRINT_BULK_ADD_URL = SPRINT_USER_URL + "/bulk-add";
 
 
 // sprint-task

@@ -4,7 +4,7 @@ import BaseService from "@/lib/service/BaseService";
 import { httpMethods } from "@/lib/service/HttpService";
 import { toast } from "@/hooks/use-toast";
 import type { ProjectUser, RemoveProjectUserRequest } from "@/types/project";
-import type { Sprint, SprintRequest, SprintTaskAddRequest, SprintTaskGetAllRequest, SprintTaskRemoveRequest, SprintUser, UpdateSprintStatusRequest } from "@/types/sprint";
+import type { AddUserToSprintRequest, Sprint, SprintRequest, SprintTaskAddRequest, SprintTaskGetAllRequest, SprintTaskRemoveRequest, SprintUser, UpdateSprintStatusRequest } from "@/types/sprint";
 import type { ProjectTeam, Project, ProjectTaskStatus } from "@/types/project";
 import type { ProjectRole, ProjectRolePermission, ProjectRoleRequest } from "@/types/project-role";
 import type { Invitation } from "@/lib/redux/features/invitations-slice";
@@ -43,7 +43,8 @@ import {
   TEAM_USER_IN_URL,
   KANBAN_URL,
   SPRINT_TASK_GET_ALL_URL,
-  SPRINT_GET_ALL_USER_URL
+  SPRINT_GET_ALL_USER_URL,
+  SPRINT_BULK_ADD_URL
 } from "@/lib/service/BasePath";
 import { ProjectTask, ProjectTaskFilterRequest, TaskResponse, TaskUpdateRequest } from "@/types/task";
 import { BacklogFilterRequest } from "@/types/backlog";
@@ -267,6 +268,18 @@ export const getAllSprintUsersHelper = async (body: SprintRequest, options: Fetc
   });
 };
 
+export const addBulkUserToSprintHelper = async (body: AddUserToSprintRequest, options: FetchEntitiesOptions): Promise<SprintUser[] | null> => {
+  return apiCall<SprintUser[]>({
+    url: `${SPRINT_BULK_ADD_URL}`,
+    method: httpMethods.POST,
+    body: body,
+    setLoading: options.setLoading,
+    successMessage: "All sprint Bulk Users have been added.",
+    errorMessagePrefix: "Failed to load all sprint Bulk Users",
+    successToastTitle: "All Sprint Bulk Users added",
+    errorToastTitle: "Error adding All Sprint Bulk Users",
+  });
+};
 
 export const updateSprintStatustHelper = async (body: UpdateSprintStatusRequest, options: FetchEntitiesOptions): Promise<Sprint | null> => {
   return apiCall<Sprint>({

@@ -91,6 +91,13 @@ export interface SprintTaskGetAllRequest {
 }
 
 
+export interface AddUserToSprintRequest {
+  sprintId: string;
+  projectId: string;
+  userIds: string[]
+}
+
+
 
 export interface SprintUser {
   id: string;

@@ -19,8 +19,8 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent } from "@/components/ui/card"
 import { Search, Users, User, UserCheck, Plus, Loader2 } from "lucide-react"
 import { CreatedProject, Project, ProjectUser } from "@/types/project"
-import { getActiveProjectUsersHelper } from "@/lib/service/api-helpers"
-import { SprintUser } from "@/types/sprint"
+import { addBulkUserToSprintHelper, getActiveProjectUsersHelper } from "@/lib/service/api-helpers"
+import { AddUserToSprintRequest, SprintUser } from "@/types/sprint"
 
 interface AddSprintMemberDialogProps {
   sprintUsers?: SprintUser[]
@@ -42,10 +42,11 @@ export function AddSprintMemberDialog({ sprintUsers, project, sprintId, open, on
   const [loading, setLoading] = useState(false)
 
   // Get current sprint team member IDs
-  const currentMemberIds = sprintUsers?.map((member) => member.id) || []
+  const currentUserIds = sprintUsers?.map((member) => member.user.id) || []
 
   // Filter available users (not already in sprint)
-  const availableUsers = projectUsers.filter((user) => !currentMemberIds.includes(user.id))
+  const availableUsers = projectUsers.filter((user) => !currentUserIds.includes(user.userId))
+
 
   const handleGetProjectUsers = useCallback(async (projectId: string) => {
     setLoading(true)
@@ -84,25 +85,26 @@ export function AddSprintMemberDialog({ sprintUsers, project, sprintId, open, on
     let usersToAdd: string[] = []
 
     if (selectAll) {
-      usersToAdd = availableUsers.map((user) => user.id)
+      usersToAdd = availableUsers.map((user) => user.userId)
     } else {
       usersToAdd = [...selectedUsers]
     }
 
-    if (usersToAdd.length > 0) {
+    if (usersToAdd.length > 0 && !!sprint) {
       setIsAdding(true)
-      console.log("Seçilen Kullanıcı ID'leri:", usersToAdd) // Konsola ID'leri yazdır
-      try {
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-        onOpenChange(false) // Diyalogu kapat
+
+      let body: AddUserToSprintRequest = {
+        projectId: sprint?.createdProject.id,
+        sprintId: sprint?.id,
+        userIds: [...usersToAdd]
+      }
+
+      const response = await addBulkUserToSprintHelper(body, { setLoading })
+      if (response) {
         setSelectedUsers([])
         setSelectAll(false)
         setSearchTerm("")
-      } catch (error) {
-        console.error("Error adding members:", error)
-      } finally {
-        setIsAdding(false)
+        onOpenChange(false) // Diyalogu kapat
       }
     }
   }
@@ -113,6 +115,7 @@ export function AddSprintMemberDialog({ sprintUsers, project, sprintId, open, on
     }
     return selectedUsers.length
   }
+
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -182,12 +185,12 @@ export function AddSprintMemberDialog({ sprintUsers, project, sprintId, open, on
                               Select Individual Users ({filteredUsers.length} available)
                             </div>
                             {filteredUsers.map((user: ProjectUser) => (
-                              <Card key={user.id} className="cursor-pointer hover:bg-muted/50">
+                              <Card key={user.userId} className="cursor-pointer hover:bg-muted/50">
                                 <CardContent className="p-3 sm:p-4">
                                   <div className="flex items-center space-x-3">
                                     <Checkbox
-                                      checked={selectedUsers.includes(user.id)}
-                                      onCheckedChange={() => handleUserToggle(user.id)}
+                                      checked={selectedUsers.includes(user.userId)}
+                                      onCheckedChange={() => handleUserToggle(user.userId)}
                                     />
                                     <Avatar className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0">
                                       <AvatarImage src={"/placeholder.svg"} alt={user.firstname + " " + user.lastname} />
@@ -251,13 +254,7 @@ export function AddSprintMemberDialog({ sprintUsers, project, sprintId, open, on
                     disabled={getTotalSelectedCount() === 0 || isAdding}
                     className="min-w-[100px]"
                   >
-                    {isAdding ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Adding...
-                      </>
-                    ) : (
-                      "Add"
-                    )}
+                    Add
                   </Button>
                 </div>
               </div>
