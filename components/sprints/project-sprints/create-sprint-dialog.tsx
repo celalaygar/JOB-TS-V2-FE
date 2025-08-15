@@ -19,7 +19,7 @@ import { addSprint } from "@/lib/redux/features/sprints-slice"
 import { teams } from "@/data/teams"
 import { Project, ProjectTaskStatus } from "@/types/project"
 import { toast } from "@/hooks/use-toast"
-import { Sprint } from "@/types/sprint"
+import { Sprint, SprintType } from "@/types/sprint"
 import Select from "react-select"
 
 // react-datepicker imports
@@ -42,8 +42,8 @@ interface SelectOption {
 }
 
 const sprintTypeOptions: SelectOption[] = [
-  { value: "standard", label: "Standard Sprint" },
-  { value: "project-team", label: "Project Team Sprint" }
+  { value: SprintType.PROJECT, label: "Standard Sprint" },
+  { value: SprintType.TEAM, label: "Project Team Sprint" }
 ]
 
 export function CreateSprintDialog({ projectList, open, onOpenChange, projectId }: CreateSprintDialogProps) {
@@ -55,7 +55,7 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
   const [startDate, setStartDate] = useState<Date | null>(new Date()) // Change to Date | null
   const [endDate, setEndDate] = useState<Date | null>(new Date(new Date().setDate(new Date().getDate() + 14))) // Change to Date | null
   const [projectTaskStatusId, setProjectTaskStatusId] = useState<string | null>(null)
-  const [sprintType, setSprintType] = useState<string>("standard")
+  const [sprintType, setSprintType] = useState<string>(SprintType.PROJECT)
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null)
   const [loading, setLoading] = useState(false);
   const [taskStatuses, setTaskStatuses] = useState<ProjectTaskStatus[] | []>([])
@@ -109,7 +109,7 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
       return
     }
 
-    if (sprintType === "project-team" && !selectedTeamId) {
+    if (sprintType === SprintType.TEAM && !selectedTeamId) {
       toast({
         title: "Missing Team",
         description: "Please select a project team for 'Project Team Sprint' type.",
@@ -125,10 +125,10 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
       projectId: selectedProjectId,
       startDate: startDate.toISOString(),
       endDate: endDate.toISOString(),
-      status: "planning",
+      //status: "planning",
       projectTaskStatusId: projectTaskStatusId,
-      sprintType,
-      teamId: sprintType === "project-team" ? selectedTeamId : undefined,
+      sprintType: SprintType.PROJECT,
+      projectTeamId: sprintType === SprintType.TEAM ? selectedTeamId : undefined,
       tasks: [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -148,7 +148,7 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
     setStartDate(new Date())
     setEndDate(new Date(new Date().setDate(new Date().getDate() + 14)))
     setProjectTaskStatusId(null)
-    setSprintType("standard")
+    setSprintType(SprintType.PROJECT)
     setSelectedTeamId(null)
   }, [projectId])
 
@@ -218,14 +218,14 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
                       <Select
                         id="sprintType"
                         value={sprintTypeOptions.find(option => option.value === sprintType)}
-                        onChange={(option) => setSprintType(option?.value || "standard")}
+                        onChange={(option) => setSprintType(option?.value || SprintType.PROJECT)}
                         options={sprintTypeOptions}
                         placeholder="Select Sprint Type"
                       />
                     </div>
                   </div>
 
-                  {sprintType === "project-team" && selectedProjectId && (
+                  {sprintType === SprintType.TEAM && selectedProjectId && (
                     <div className="grid grid-cols-4 items-center gap-4">
                       <Label className="text-right">
                         Project Team
@@ -321,7 +321,7 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
                   <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                     Cancel
                   </Button>
-                  <Button type="submit" disabled={sprintType === "project-team" && !selectedTeamId}>
+                  <Button type="submit" disabled={sprintType === SprintType.TEAM && !selectedTeamId}>
                     Create Sprint
                   </Button>
                 </DialogFooter>

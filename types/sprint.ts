@@ -1,8 +1,13 @@
 import { CreatedBy, CreatedProject } from "./project";
 
 //export type SprintStatus = "planned" | "active" | "completed" | "planning" | "cancelled"
-export type SprintType = "standard" | "project-team"
 
+
+// SprintStatus.ts veya benzeri bir dosya
+export enum SprintType {
+  PROJECT = "PROJECT",
+  TEAM = "TEAM"
+}
 export interface SprintTeamMember {
   name: string
   avatar?: string
@@ -51,7 +56,7 @@ export interface Sprint {
   endDate: string;
   status: SprintStatus; // Artık enum tipini kullanıyoruz
   completionStatus?: string;
-  sprintType?: SprintType;
+  sprintType?: string;
   teamId?: string;
   totalIssues: number;
   completedIssues: number;
