@@ -15,9 +15,10 @@ import { Project } from "@/types/project"
 
 interface SprintDetailInfoProps {
   sprintUsers?: SprintUser[]
+  fetchData: () => void
 }
 
-export function SprintDetailInfo({ sprintUsers }: SprintDetailInfoProps) {
+export function SprintDetailInfo({ sprintUsers, fetchData }: SprintDetailInfoProps) {
   const [isAddMemberDialogOpen, setIsAddMemberDialogOpen] = useState(false)
   const { translations } = useLanguage()
 
@@ -85,11 +86,11 @@ export function SprintDetailInfo({ sprintUsers }: SprintDetailInfoProps) {
                     <div className="flex flex-wrap gap-2">
                       {sprintUsers.map((member: SprintUser) => (
                         <div key={member.id} className="flex items-center gap-2 bg-muted p-2 rounded-md">
-                          <Avatar className="h-6 w-6">
-                            <AvatarImage src={"/placeholder.svg"}
-                              alt={member.user.firstname + " " + member.user.lastname} />
-                          </Avatar>
-                          <span className="text-sm">{member.user.firstname + " " + member.user.lastname}</span>
+
+                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                            {member.user.firstname.charAt(0) + " " + member.user.lastname.charAt(0)}
+                          </div>
+                          <span className="text-sm">{member.user.firstname.charAt(0) + " " + member.user.lastname.charAt(0)}</span>
                           <span className="text-sm">{member.user.email}</span>
                         </div>
                       ))}
@@ -110,6 +111,7 @@ export function SprintDetailInfo({ sprintUsers }: SprintDetailInfoProps) {
       </Card>
       {sprint &&
         <AddSprintMemberDialog
+          fetchData={fetchData}
           sprintUsers={sprintUsers}
           project={sprint.createdProject}
           sprintId={sprint.id}

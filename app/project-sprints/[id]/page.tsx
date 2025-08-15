@@ -53,7 +53,6 @@ export default function SprintDetailPage() {
     const tasksData = await getAllSprintTasksHelper(body, { setLoading });
     if (tasksData) {
       setSprintTasks(tasksData);
-      console.log("Sprint Tasks:", tasksData); // Debugging line to check fetched tasks
     }
   }, [sprintId]);
 
@@ -79,10 +78,16 @@ export default function SprintDetailPage() {
     }
   }, []);
 
-  useEffect(() => {
+  const fetchData = useCallback(() => {
     fetchSprint();
     fetchAllProjects();
+  }, []);
+
+  useEffect(() => {
+    fetchData();
   }, [fetchSprint, fetchAllProjects])
+
+
 
 
   const handleGetSprintUsers = useCallback(async (sprintId: string) => {
@@ -123,7 +128,11 @@ export default function SprintDetailPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="md:col-span-2 space-y-6">
-                <SprintDetailInfo sprint={sprint} sprintUsers={sprintUsers} /> {/* Add non-null assertion */}
+                <SprintDetailInfo
+                  fetchData={fetchData}
+                  sprintUsers={sprintUsers} />
+
+                {/* Add non-null assertion */}
                 <SprintDetailTasks
                   sprintId={sprint?.id}
                   tasks={sprintTasks}

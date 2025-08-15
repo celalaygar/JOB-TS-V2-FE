@@ -28,9 +28,10 @@ interface AddSprintMemberDialogProps {
   sprintId: string
   open: boolean
   onOpenChange: (open: boolean) => void
+  fetchData: () => void
 }
 
-export function AddSprintMemberDialog({ sprintUsers, project, sprintId, open, onOpenChange }: AddSprintMemberDialogProps) {
+export function AddSprintMemberDialog({ sprintUsers, project, sprintId, open, onOpenChange, fetchData }: AddSprintMemberDialogProps) {
   const dispatch = useDispatch()
   const sprint = useSelector((state: RootState) => state.sprints.sprints.find((s) => s.id === sprintId))
 
@@ -89,13 +90,12 @@ export function AddSprintMemberDialog({ sprintUsers, project, sprintId, open, on
     } else {
       usersToAdd = [...selectedUsers]
     }
-
-    if (usersToAdd.length > 0 && !!sprint) {
+    if (usersToAdd.length > 0 && !!sprintId && !!project) {
       setIsAdding(true)
 
       let body: AddUserToSprintRequest = {
-        projectId: sprint?.createdProject.id,
-        sprintId: sprint?.id,
+        projectId: project.id,
+        sprintId: sprintId,
         userIds: [...usersToAdd]
       }
 
@@ -105,6 +105,7 @@ export function AddSprintMemberDialog({ sprintUsers, project, sprintId, open, on
         setSelectAll(false)
         setSearchTerm("")
         onOpenChange(false) // Diyalogu kapat
+        fetchData()
       }
     }
   }
