@@ -12,6 +12,7 @@ import { useLanguage } from "@/lib/i18n/context"
 import { useSelector } from "react-redux"
 import { RootState } from "@/lib/redux/store"
 import { Project } from "@/types/project"
+import { RemoveSprintMemberDialog } from "./remove-sprint-member-dialog"
 
 interface SprintDetailInfoProps {
   sprintUsers?: SprintUser[]
@@ -20,8 +21,8 @@ interface SprintDetailInfoProps {
 
 export function SprintDetailInfo({ sprintUsers, fetchData }: SprintDetailInfoProps) {
   const [isAddMemberDialogOpen, setIsAddMemberDialogOpen] = useState(false)
+  const [isRemoveMemberDialogOpen, setIsRemoveMemberDialogOpen] = useState(false)
   const { translations } = useLanguage()
-
   const sprint: Sprint | null = useSelector((state: RootState) => state.sprints.singleSprint)
 
   return (
@@ -76,6 +77,10 @@ export function SprintDetailInfo({ sprintUsers, fetchData }: SprintDetailInfoPro
                 <Plus className="h-3 w-3 mr-1" />
                 Add User
               </Button>
+              <Button size="sm" variant="outline" onClick={() => setIsRemoveMemberDialogOpen(true)} className="h-8 px-3">
+                <Plus className="h-3 w-3 mr-1" />
+                Remove User
+              </Button>
             </div>
 
             <div className="space-y-3">
@@ -88,10 +93,12 @@ export function SprintDetailInfo({ sprintUsers, fetchData }: SprintDetailInfoPro
                         <div key={member.id} className="flex items-center gap-2 bg-muted p-2 rounded-md">
 
                           <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                            {member.user.firstname.charAt(0) + " " + member.user.lastname.charAt(0)}
+                            {member.createdBy.firstname.charAt(0) + " " + member.createdBy.lastname.charAt(0)}
                           </div>
-                          <span className="text-sm">{member.user.firstname.charAt(0) + " " + member.user.lastname.charAt(0)}</span>
-                          <span className="text-sm">{member.user.email}</span>
+                          <span className="text-sm">
+                            {member.createdBy.firstname.charAt(0) + " " + member.createdBy.lastname.charAt(0)}
+                          </span>
+                          <span className="text-sm">{member.createdBy.email}</span>
                         </div>
                       ))}
                     </div>
@@ -119,6 +126,18 @@ export function SprintDetailInfo({ sprintUsers, fetchData }: SprintDetailInfoPro
           onOpenChange={setIsAddMemberDialogOpen}
         />
       }
+
+      {sprint &&
+        <RemoveSprintMemberDialog
+          fetchData={fetchData}
+          sprintUsers={sprintUsers}
+          project={sprint.createdProject}
+          sprintId={sprint.id}
+          open={isRemoveMemberDialogOpen}
+          onOpenChange={setIsRemoveMemberDialogOpen}
+        />
+      }
+
     </>
   )
 }

@@ -97,18 +97,21 @@ export interface AddUserToSprintRequest {
   userIds: string[]
 }
 
+export interface RemoveUserFromSprintRequest {
+  sprintId: string;
+  projectId: string;
+  userIds: string[]
+}
 
 
 export interface SprintUser {
   id: string;
   sprintId: string;
   projectId: string;
-  user: CreatedBy;
+  createdBy: CreatedBy;
   createdProject: CreatedProject;
   assignmentDate: string; // Instant → ISO date string format
-  roleInSprint: string;
-  statusInSprint: string;
-  estimatedEffort: number;
+  sprintUserSystemRole: string
   notes: string;
   createdAt: string; // LocalDateTime → ISO date string
   updatedAt: string; // LocalDateTime → ISO date string

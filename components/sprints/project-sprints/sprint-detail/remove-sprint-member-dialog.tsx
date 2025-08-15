@@ -1,7 +1,7 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
-import { useSelector, useDispatch } from "react-redux"
+import { useState } from "react"
+import { useSelector } from "react-redux"
 import type { RootState } from "@/lib/redux/store"
 import {
   Dialog,
@@ -17,12 +17,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent } from "@/components/ui/card"
-import { Search, Users, User, UserCheck, Plus, Loader2 } from "lucide-react"
-import { CreatedProject, Project, ProjectUser } from "@/types/project"
-import { addBulkUserToSprintHelper, getActiveProjectUsersHelper } from "@/lib/service/api-helpers"
-import { AddUserToSprintRequest, SprintUser } from "@/types/sprint"
+import { Search, UserMinus, Loader2 } from "lucide-react"
+import { CreatedProject } from "@/types/project"
+import { RemoveUserFromSprintRequest, SprintUser } from "@/types/sprint"
+import { removeBulkUserFromSprintHelper } from "@/lib/service/api-helpers"
 
-interface AddSprintMemberDialogProps {
+interface RemoveSprintMemberDialogProps {
   sprintUsers?: SprintUser[]
   project?: CreatedProject
   sprintId: string
@@ -31,40 +31,14 @@ interface AddSprintMemberDialogProps {
   fetchData: () => void
 }
 
-export function AddSprintMemberDialog({ sprintUsers, project, sprintId, open, onOpenChange, fetchData }: AddSprintMemberDialogProps) {
-  const dispatch = useDispatch()
-  const sprint = useSelector((state: RootState) => state.sprints.sprints.find((s) => s.id === sprintId))
-
+export function RemoveSprintMemberDialog({ sprintUsers, project, sprintId, open, onOpenChange, fetchData }: RemoveSprintMemberDialogProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedUsers, setSelectedUsers] = useState<string[]>([])
   const [selectAll, setSelectAll] = useState(false)
-  const [isAdding, setIsAdding] = useState(false)
-  const [projectUsers, setProjectUsers] = useState<ProjectUser[] | []>([])
   const [loading, setLoading] = useState(false)
 
-  // Get current sprint team member IDs
-  const currentUserIds = sprintUsers?.map((member) => member.createdBy.id) || []
-
-  // Filter available users (not already in sprint)
-  const availableUsers = projectUsers.filter((user) => !currentUserIds.includes(user.userId))
-
-
-  const handleGetProjectUsers = useCallback(async (projectId: string) => {
-    setLoading(true)
-    const usersData = await getActiveProjectUsersHelper(projectId, { setLoading })
-    if (usersData) {
-      setProjectUsers(usersData)
-    } else {
-      setProjectUsers([])
-    }
-    setLoading(false)
-  }, [])
-
-  useEffect(() => {
-    if (project) {
-      handleGetProjectUsers(project.id)
-    }
-  }, [project, handleGetProjectUsers])
+  // Sprint'ten çıkarılacak kullanıcılar (sprintUsers)
+  const usersToRemove = sprintUsers || []
 
   const handleUserToggle = (userId: string) => {
     setSelectAll(false)
@@ -74,57 +48,56 @@ export function AddSprintMemberDialog({ sprintUsers, project, sprintId, open, on
   const handleSelectAll = (checked: boolean) => {
     setSelectAll(checked)
     if (checked) {
+      setSelectedUsers(usersToRemove.map((user) => user.createdBy.id))
+    } else {
       setSelectedUsers([])
     }
   }
 
-  const filteredUsers = availableUsers.filter((user) =>
-    (user.firstname + " " + user.lastname).toLowerCase().includes(searchTerm.toLowerCase()),
+  const filteredUsers = usersToRemove.filter((user) =>
+    (user.createdBy.firstname + " " + user.createdBy.lastname).toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
-  const handleAddMembers = async () => {
-    let usersToAdd: string[] = []
+  const handleRemoveMembers = async () => {
+    let usersToRemoveIds: string[] = []
 
     if (selectAll) {
-      usersToAdd = availableUsers.map((user) => user.userId)
+      usersToRemoveIds = usersToRemove.map((user) => user.createdBy.id)
     } else {
-      usersToAdd = [...selectedUsers]
+      usersToRemoveIds = [...selectedUsers]
     }
-    if (usersToAdd.length > 0 && !!sprintId && !!project) {
-      setIsAdding(true)
 
-      let body: AddUserToSprintRequest = {
+    if (usersToRemoveIds.length > 0 && !!sprintId && !!project) {
+
+      let body: RemoveUserFromSprintRequest = {
         projectId: project.id,
         sprintId: sprintId,
-        userIds: [...usersToAdd]
+        userIds: [...usersToRemoveIds],
       }
 
-      const response = await addBulkUserToSprintHelper(body, { setLoading })
+      const response = await removeBulkUserFromSprintHelper(body, { setLoading })
       if (response) {
         setSelectedUsers([])
         setSelectAll(false)
         setSearchTerm("")
-        onOpenChange(false) // Diyalogu kapat
+        onOpenChange(false)
         fetchData()
       }
+
     }
   }
 
   const getTotalSelectedCount = () => {
-    if (selectAll) {
-      return availableUsers.length
-    }
     return selectedUsers.length
   }
-
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
         <DialogHeader className="flex-shrink-0">
-          <DialogTitle>Add Members to Sprint</DialogTitle>
+          <DialogTitle>Remove Members from Sprint</DialogTitle>
           <DialogDescription>
-            Select individual users or project teams to add to this sprint.
+            Select individual users to remove from this sprint.
           </DialogDescription>
         </DialogHeader>
 
@@ -138,7 +111,7 @@ export function AddSprintMemberDialog({ sprintUsers, project, sprintId, open, on
               <div className="relative mb-4">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
-                  placeholder="Search users..."
+                  placeholder="Search sprint members..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -151,23 +124,25 @@ export function AddSprintMemberDialog({ sprintUsers, project, sprintId, open, on
                     <Card className="border-dashed">
                       <CardContent className="p-3 sm:p-4">
                         <div className="flex items-center space-x-3">
-                          <Checkbox checked={selectAll} onCheckedChange={(checked: boolean) => handleSelectAll(checked)} />
-                          <UserCheck className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground flex-shrink-0" />
+                          <Checkbox
+                            checked={selectAll}
+                            onCheckedChange={(checked: boolean) => handleSelectAll(checked)}
+                          />
+                          <UserMinus className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground flex-shrink-0" />
                           <div className="flex-1 min-w-0">
-                            <div className="font-medium text-sm sm:text-base">Select All Project Users</div>
+                            <div className="font-medium text-sm sm:text-base">Remove All Sprint Members</div>
                             <div className="text-xs sm:text-sm text-muted-foreground">
-                              Add all {availableUsers?.length} available users to this sprint
+                              Remove all {usersToRemove.length} members from this sprint
                             </div>
                           </div>
                           <Badge variant="outline" className="text-xs flex-shrink-0">
-                            {availableUsers?.length} users
+                            {usersToRemove.length} members
                           </Badge>
                         </div>
                         {selectAll && (
-                          <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                            <div className="text-xs sm:text-sm text-blue-800 dark:text-blue-200">
-                              <strong>Note:</strong> This will add all {availableUsers?.length} available project users to the sprint
-                              team.
+                          <div className="mt-3 p-3 bg-red-50 dark:bg-red-950/20 rounded-lg border border-red-200 dark:border-red-800">
+                            <div className="text-xs sm:text-sm text-red-800 dark:text-red-200">
+                              <strong>Warning:</strong> This will remove all members from the sprint team.
                             </div>
                           </div>
                         )}
@@ -178,29 +153,29 @@ export function AddSprintMemberDialog({ sprintUsers, project, sprintId, open, on
                       <div className="space-y-2">
                         {filteredUsers.length === 0 ? (
                           <div className="text-center py-8 text-muted-foreground">
-                            {searchTerm ? "No users found matching your search." : "No available users to add."}
+                            {searchTerm ? "No users found matching your search." : "No members in this sprint."}
                           </div>
                         ) : (
                           <>
                             <div className="text-sm font-medium text-muted-foreground px-1">
-                              Select Individual Users ({filteredUsers.length} available)
+                              Select Individual Members ({filteredUsers.length} available)
                             </div>
-                            {filteredUsers.map((user: ProjectUser) => (
-                              <Card key={user.userId} className="cursor-pointer hover:bg-muted/50">
+                            {filteredUsers.map((user: SprintUser) => (
+                              <Card key={user.id} className="cursor-pointer hover:bg-muted/50">
                                 <CardContent className="p-3 sm:p-4">
                                   <div className="flex items-center space-x-3">
                                     <Checkbox
-                                      checked={selectedUsers.includes(user.userId)}
-                                      onCheckedChange={() => handleUserToggle(user.userId)}
+                                      checked={selectedUsers.includes(user.createdBy.id)}
+                                      onCheckedChange={() => handleUserToggle(user.createdBy.id)}
                                     />
                                     <Avatar className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0">
-                                      <AvatarImage src={"/placeholder.svg"} alt={user.firstname + " " + user.lastname} />
+                                      <AvatarImage src={"/placeholder.svg"} alt={user.createdBy.firstname + " " + user.createdBy.lastname} />
                                       <AvatarFallback className="text-xs sm:text-sm">
-                                        {user.firstname
+                                        {user.createdBy.firstname
                                           .split(" ")
                                           .map((n) => n[0])
                                           .join("") +
-                                          user.lastname
+                                          user.createdBy.lastname
                                             .split(" ")
                                             .map((n) => n[0])
                                             .join("")}
@@ -208,14 +183,14 @@ export function AddSprintMemberDialog({ sprintUsers, project, sprintId, open, on
                                     </Avatar>
                                     <div className="flex-1 min-w-0">
                                       <div className="font-medium text-sm sm:text-base truncate">
-                                        {user.firstname + " " + user.lastname}
+                                        {user.createdBy.firstname + " " + user.createdBy.lastname}
                                       </div>
                                       <div className="text-xs sm:text-sm text-muted-foreground truncate">
-                                        {user.email}
+                                        {user.createdBy.email}
                                       </div>
                                     </div>
                                     <Badge variant="outline" className="text-xs flex-shrink-0">
-                                      {user.projectSystemRole}
+                                      {user.sprintUserSystemRole}
                                     </Badge>
                                   </div>
                                 </CardContent>
@@ -246,16 +221,17 @@ export function AddSprintMemberDialog({ sprintUsers, project, sprintId, open, on
                     variant="outline"
                     onClick={() => onOpenChange(false)}
                     className="min-w-[80px]"
-                    disabled={isAdding}
+                    disabled={loading}
                   >
                     Cancel
                   </Button>
                   <Button
-                    onClick={handleAddMembers}
-                    disabled={getTotalSelectedCount() === 0 || isAdding}
+                    onClick={handleRemoveMembers}
+                    disabled={getTotalSelectedCount() === 0 || loading}
                     className="min-w-[100px]"
+                    variant="destructive"
                   >
-                    Add
+                    Remove
                   </Button>
                 </div>
               </div>

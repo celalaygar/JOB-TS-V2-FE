@@ -89,7 +89,6 @@ class RouteBaseService {
                     raw: errorBody,
                 };
             }
-
             const data = isJson ? await response.json() : await response.text();
             return NextResponse.json(data, { status: 200 });
         } catch (error: any) {
