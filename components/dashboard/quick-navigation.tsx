@@ -11,10 +11,10 @@ export function QuickNavigation() {
       color: "bg-blue-50 text-blue-600",
     },
     {
-      title: "Issues",
-      description: "Track all issues",
+      title: "Tasks",
+      description: "Track all Tasks",
       icon: ListTodo,
-      href: "/issues",
+      href: "/tasks",
       color: "bg-purple-50 text-purple-600",
     },
     {

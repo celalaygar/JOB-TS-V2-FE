@@ -28,7 +28,7 @@ export interface ValidateTokenRequest {
 }
 
 export interface ValidateTokenResponse {
-  isValid: boolean
+  valid: boolean
   token: string
   invitedUserEmail: string
   message: string
@@ -56,6 +56,56 @@ export default function RegisterPage() {
     token: token,
   })
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
+
+
+
+
+  const controlToken = useCallback(async () => {
+    setLoadingForm(true)
+    let body = { token };
+    try {
+      console.log("contorl token body : " + body)
+      const response: ValidateTokenResponse | null = await BaseService.request(VALIDATE_INVITATION_TOKEN, {
+        method: httpMethods.POST,
+        body: body,
+      });
+      console.log("contorl token : " + response)
+      console.log(response)
+      if (!!response) {
+        if (response.invitedUserEmail && response.valid === true) {
+          toast({
+            title: "Token is valid",
+            description: `Token is valid"`,
+          })
+          setFormData({ ...formData, email: response.invitedUserEmail })
+        } else {
+          toast({
+            title: "Token is expired",
+            description: `Token is expired"`,
+            variant: "destructive",
+          })
+        }
+      }
+    } catch (error: any) {
+      if (error.status === 400 && error.message) {
+        toast({
+          title: `Token is not valid.`,
+          description: error.message,
+          variant: "destructive",
+        })
+        console.error('Token is not valid 400:', error.message);
+      } else {
+        console.error('Token is not valid:', error);
+      }
+    }
+    setLoadingForm(false)
+  }, [token])
+
+
+  useEffect(() => {
+    controlToken();
+  }, [controlToken])
+
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -142,52 +192,6 @@ export default function RegisterPage() {
     return Object.keys(errors).length === 0
   }
 
-
-  const controlToken = useCallback(async () => {
-    e.preventDefault()
-    setLoadingForm(true)
-    if (validateForm()) {
-      let body = { token };
-      try {
-        const response: ValidateTokenResponse | null = await BaseService.request(VALIDATE_INVITATION_TOKEN, {
-          method: httpMethods.POST,
-          body: body,
-        });
-        if (!!response) {
-          if (response.invitedUserEmail && response.isValid === true) {
-            toast({
-              title: "Token is valid",
-              description: `Token is valid"`,
-            })
-            setFormData({ ...formData, email: response.invitedUserEmail })
-          } else {
-            toast({
-              title: "Token is expired",
-              description: `Token is expired"`,
-              variant: "destructive",
-            })
-          }
-        }
-      } catch (error: any) {
-        if (error.status === 400 && error.message) {
-          toast({
-            title: `Token is not valid.`,
-            description: error.message,
-            variant: "destructive",
-          })
-          console.error('Token is not valid 400:', error.message);
-        } else {
-          console.error('Token is not valid:', error);
-        }
-      }
-    }
-    setLoadingForm(false)
-  }, [token])
-
-
-  useEffect(() => {
-    controlToken();
-  }, [controlToken])
 
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -276,163 +280,175 @@ export default function RegisterPage() {
             <CardDescription>{translations.register.description}</CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit}>
-              <div className="grid gap-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="firstname">{translations.register.firstNameLabel}</Label>
-                    <Input
-                      id="firstname"
-                      name="firstname"
-                      type="text"
-                      placeholder={translations.register.firstNamePlaceholder}
-                      value={formData.firstname}
-                      onChange={handleChange}
-                      className={formErrors.firstname ? "border-red-500" : ""}
-                    />
-                    {formErrors.firstname && <p className="text-red-500 text-xs mt-1">{formErrors.firstname}</p>}
-                  </div>
-
-                  <div className="grid gap-2">
-                    <Label htmlFor="lastname">{translations.register.lastNameLabel}</Label>
-                    <Input
-                      id="lastname"
-                      name="lastname"
-                      type="text"
-                      placeholder={translations.register.lastNamePlaceholder}
-                      value={formData.lastname}
-                      onChange={handleChange}
-                      className={formErrors.lastname ? "border-red-500" : ""}
-                    />
-                    {formErrors.lastname && <p className="text-red-500 text-xs mt-1">{formErrors.lastname}</p>}
+            {
+              loading ?
+                <div className="grid gap-4 py-4">
+                  <div className="flex items-center justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
                   </div>
                 </div>
+                :
+                <>
+                  <form onSubmit={handleSubmit}>
+                    <div className="grid gap-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                          <Label htmlFor="firstname">{translations.register.firstNameLabel}</Label>
+                          <Input
+                            id="firstname"
+                            name="firstname"
+                            type="text"
+                            placeholder={translations.register.firstNamePlaceholder}
+                            value={formData.firstname}
+                            onChange={handleChange}
+                            className={formErrors.firstname ? "border-red-500" : ""}
+                          />
+                          {formErrors.firstname && <p className="text-red-500 text-xs mt-1">{formErrors.firstname}</p>}
+                        </div>
 
-                <div className="grid gap-2">
-                  <Label htmlFor="username">{translations.register.usernameLabel}</Label>
-                  <Input
-                    id="username"
-                    name="username"
-                    type="text"
-                    placeholder={translations.register.usernamePlaceholder}
-                    value={formData.username}
-                    onChange={handleChange}
-                    className={formErrors.username ? "border-red-500" : ""}
-                  />
-                  {formErrors.username && <p className="text-red-500 text-xs mt-1">{formErrors.username}</p>}
-                </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="lastname">{translations.register.lastNameLabel}</Label>
+                          <Input
+                            id="lastname"
+                            name="lastname"
+                            type="text"
+                            placeholder={translations.register.lastNamePlaceholder}
+                            value={formData.lastname}
+                            onChange={handleChange}
+                            className={formErrors.lastname ? "border-red-500" : ""}
+                          />
+                          {formErrors.lastname && <p className="text-red-500 text-xs mt-1">{formErrors.lastname}</p>}
+                        </div>
+                      </div>
 
-                <div className="grid gap-2">
-                  <Label htmlFor="email">{translations.register.emailLabel}</Label>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    disabled={true}
-                    placeholder={translations.register.emailPlaceholder}
-                    value={formData.email}
-                    onChange={handleChange}
-                    className={formErrors.email ? "border-red-500" : ""}
-                  />
-                  {formErrors.email && <p className="text-red-500 text-xs mt-1">{formErrors.email}</p>}
-                </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="username">{translations.register.usernameLabel}</Label>
+                        <Input
+                          id="username"
+                          name="username"
+                          type="text"
+                          placeholder={translations.register.usernamePlaceholder}
+                          value={formData.username}
+                          onChange={handleChange}
+                          className={formErrors.username ? "border-red-500" : ""}
+                        />
+                        {formErrors.username && <p className="text-red-500 text-xs mt-1">{formErrors.username}</p>}
+                      </div>
 
-                <div className="grid gap-2">
-                  <Label htmlFor="phone">{translations.register.phoneLabel}</Label>
-                  <Input
-                    id="phone"
-                    name="phone"
-                    type="tel"
-                    placeholder={translations.register.phonePlaceholder}
-                    value={formData.phone}
-                    onChange={handleChange}
-                    className={formErrors.phone ? "border-red-500" : ""}
-                  />
-                  {formErrors.phone && <p className="text-red-500 text-xs mt-1">{formErrors.phone}</p>}
-                </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="email">{translations.register.emailLabel}</Label>
+                        <Input
+                          id="email"
+                          name="email"
+                          type="email"
+                          disabled={true}
+                          placeholder={translations.register.emailPlaceholder}
+                          value={formData.email}
+                          onChange={handleChange}
+                          className={formErrors.email ? "border-red-500" : ""}
+                        />
+                        {formErrors.email && <p className="text-red-500 text-xs mt-1">{formErrors.email}</p>}
+                      </div>
 
-                <div className="grid gap-2">
-                  <Label htmlFor="dateOfBirth">{translations.register.dateOfBirthLabel}</Label>
-                  <Input
-                    id="endDate"
-                    type="date"
-                    value={formData.dateOfBirth ? format(formData.dateOfBirth, "yyyy-MM-dd") : ""}
-                    onChange={(e) => handleDateChange(e.target.value ? new Date(e.target.value) : undefined)}
-                    className={formErrors.dateOfBirth ? "border-[var(--fixed-danger)]" : "border-[var(--fixed-card-border)]"}
-                  />
-                  {formErrors.dateOfBirth && <p className="text-red-500 text-xs mt-1">{formErrors.dateOfBirth}</p>}
-                </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="phone">{translations.register.phoneLabel}</Label>
+                        <Input
+                          id="phone"
+                          name="phone"
+                          type="tel"
+                          placeholder={translations.register.phonePlaceholder}
+                          value={formData.phone}
+                          onChange={handleChange}
+                          className={formErrors.phone ? "border-red-500" : ""}
+                        />
+                        {formErrors.phone && <p className="text-red-500 text-xs mt-1">{formErrors.phone}</p>}
+                      </div>
 
-                <div className="grid gap-2">
-                  <Label>{translations.register.genderLabel}</Label>
-                  <RadioGroup value={formData.gender} onValueChange={handleGenderChange} className="flex gap-4">
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="male" id="male" />
-                      <Label htmlFor="male" className="cursor-pointer">
-                        {translations.register.genderOptions.male}
-                      </Label>
+                      <div className="grid gap-2">
+                        <Label htmlFor="dateOfBirth">{translations.register.dateOfBirthLabel}</Label>
+                        <Input
+                          id="endDate"
+                          type="date"
+                          value={formData.dateOfBirth ? format(formData.dateOfBirth, "yyyy-MM-dd") : ""}
+                          onChange={(e) => handleDateChange(e.target.value ? new Date(e.target.value) : undefined)}
+                          className={formErrors.dateOfBirth ? "border-[var(--fixed-danger)]" : "border-[var(--fixed-card-border)]"}
+                        />
+                        {formErrors.dateOfBirth && <p className="text-red-500 text-xs mt-1">{formErrors.dateOfBirth}</p>}
+                      </div>
+
+                      <div className="grid gap-2">
+                        <Label>{translations.register.genderLabel}</Label>
+                        <RadioGroup value={formData.gender} onValueChange={handleGenderChange} className="flex gap-4">
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="male" id="male" />
+                            <Label htmlFor="male" className="cursor-pointer">
+                              {translations.register.genderOptions.male}
+                            </Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="female" id="female" />
+                            <Label htmlFor="female" className="cursor-pointer">
+                              {translations.register.genderOptions.female}
+                            </Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="other" id="other" />
+                            <Label htmlFor="other" className="cursor-pointer">
+                              {translations.register.genderOptions.other}
+                            </Label>
+                          </div>
+                        </RadioGroup>
+                      </div>
+
+                      <div className="grid gap-2">
+                        <Label htmlFor="password">{translations.register.passwordLabel}</Label>
+                        <Input
+                          id="password"
+                          name="password"
+                          type="password"
+                          value={formData.password}
+                          onChange={handleChange}
+                          className={formErrors.password ? "border-red-500" : ""}
+                        />
+                        {formErrors.password && <p className="text-red-500 text-xs mt-1">{formErrors.password}</p>}
+                      </div>
+
+                      <div className="grid gap-2">
+                        <Label htmlFor="confirmPassword">{translations.register.confirmPasswordLabel}</Label>
+                        <Input
+                          id="confirmPassword"
+                          name="confirmPassword"
+                          type="password"
+                          value={formData.confirmPassword}
+                          onChange={handleChange}
+                          className={formErrors.confirmPassword ? "border-red-500" : ""}
+                        />
+                        {formErrors.confirmPassword && (
+                          <p className="text-red-500 text-xs mt-1">{formErrors.confirmPassword}</p>
+                        )}
+                      </div>
+
+                      {error && (
+                        <div className="bg-red-50 p-3 rounded-md border border-red-200">
+                          <p className="text-red-600 text-sm">{error}</p>
+                        </div>
+                      )}
+
+                      <Button type="submit" className="w-full" disabled={loadingForm}>
+                        {loadingForm ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            {translations.register.processingButton}
+                          </>
+                        ) : (
+                          translations.register.submitButton
+                        )}
+                      </Button>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="female" id="female" />
-                      <Label htmlFor="female" className="cursor-pointer">
-                        {translations.register.genderOptions.female}
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="other" id="other" />
-                      <Label htmlFor="other" className="cursor-pointer">
-                        {translations.register.genderOptions.other}
-                      </Label>
-                    </div>
-                  </RadioGroup>
-                </div>
+                  </form>
 
-                <div className="grid gap-2">
-                  <Label htmlFor="password">{translations.register.passwordLabel}</Label>
-                  <Input
-                    id="password"
-                    name="password"
-                    type="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    className={formErrors.password ? "border-red-500" : ""}
-                  />
-                  {formErrors.password && <p className="text-red-500 text-xs mt-1">{formErrors.password}</p>}
-                </div>
-
-                <div className="grid gap-2">
-                  <Label htmlFor="confirmPassword">{translations.register.confirmPasswordLabel}</Label>
-                  <Input
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    type="password"
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                    className={formErrors.confirmPassword ? "border-red-500" : ""}
-                  />
-                  {formErrors.confirmPassword && (
-                    <p className="text-red-500 text-xs mt-1">{formErrors.confirmPassword}</p>
-                  )}
-                </div>
-
-                {error && (
-                  <div className="bg-red-50 p-3 rounded-md border border-red-200">
-                    <p className="text-red-600 text-sm">{error}</p>
-                  </div>
-                )}
-
-                <Button type="submit" className="w-full" disabled={loadingForm}>
-                  {loadingForm ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      {translations.register.processingButton}
-                    </>
-                  ) : (
-                    translations.register.submitButton
-                  )}
-                </Button>
-              </div>
-            </form>
+                </>
+            }
           </CardContent>
           <CardFooter className="flex justify-center">
             <p className="text-sm text-[var(--fixed-sidebar-muted)]">

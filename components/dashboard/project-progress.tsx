@@ -31,7 +31,7 @@ export function ProjectProgress() {
                   {project.name}
                 </Link>
                 <div className="flex items-center">
-                  <span className="text-sm text-[var(--fixed-sidebar-muted)] mr-2">{project.progress}%</span>
+                  <span className="text-sm text-[var(--fixed-sidebar-muted)] mr-2">{0}%</span>
                   <span
                     className={`
                       text-xs py-0.5 px-1.5 rounded-full
@@ -54,8 +54,8 @@ export function ProjectProgress() {
                 />
               </div>
               <div className="flex justify-between items-center text-xs text-[var(--fixed-sidebar-muted)]">
-                <span>{project.issueCount} issues</span>
-                <span>{project.team && project.team.length} team members</span>
+                <span>{0} Tasks</span>
+                <span>{0} team members</span>
               </div>
             </div>
           ))}

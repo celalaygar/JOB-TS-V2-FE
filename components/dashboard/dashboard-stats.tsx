@@ -5,14 +5,14 @@ import { AlertCircle, CheckCircle2, Clock, Folder } from "lucide-react"
 
 export function DashboardStats() {
   // Use useState for all variables instead of Redux
-  const totalProjects = 5
-  const openIssues = 12
-  const inProgressIssues = 8
-  const completedIssues = 24
-  const projectsChange = Math.floor(Math.random() * 3) + 1
-  const openIssuesChange = Math.floor(Math.random() * 6) + 1
-  const inProgressChange = Math.floor(Math.random() * 4) - 2
-  const completedChange = Math.floor(Math.random() * 10) + 1
+  const totalProjects = 0
+  const openIssues = 0
+  const inProgressIssues = 0
+  const completedIssues = 0
+  const projectsChange = 0
+  const openIssuesChange = 0
+  const inProgressChange = 0
+  const completedChange = 0
 
 
   return (
