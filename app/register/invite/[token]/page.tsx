@@ -56,6 +56,7 @@ export default function RegisterPage() {
     token: token,
   })
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
+  const [controlResponse, setControlResponse] = useState<ValidateTokenResponse | null>()
 
 
 
@@ -72,6 +73,7 @@ export default function RegisterPage() {
       console.log("contorl token : " + response)
       console.log(response)
       if (!!response) {
+        setControlResponse(response)
         if (response.invitedUserEmail && response.valid === true) {
           toast({
             title: "Token is valid",
