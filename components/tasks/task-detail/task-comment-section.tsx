@@ -1,12 +1,13 @@
+// components/tasks/task-detail/task-comment-section.tsx
 "use client"
 
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { TaskComment } from "@/components/tasks/task-comment"
 import { useCallback, useEffect, useState } from "react"
 import type { ProjectTaskComment, TaskCommentRequest } from "@/types/task"
 import { addProjectTaskCommentHelper, getProjectTaskCommentsHelper } from "@/lib/service/api-helpers"
 import { Loader2 } from "lucide-react"
+import { TaskComment } from "../task-comment"
 
 interface TaskCommentSectionProps {
   taskId: string
@@ -35,7 +36,6 @@ export function TaskCommentSection({ taskId, currentUser, projectId }: TaskComme
 
 
   const handleAddComment = async () => {
-    // In a real app, this would dispatch an action to add the comment
     let body: TaskCommentRequest = {
       taskId,
       projectId,
@@ -66,7 +66,11 @@ export function TaskCommentSection({ taskId, currentUser, projectId }: TaskComme
             {comments && comments.length > 0 ? (
               <div className="space-y-4">
                 {comments.map((comment) => (
-                  <TaskComment key={comment.id} comment={comment} />
+                  <TaskComment
+                    key={comment.id}
+                    comment={comment}
+                    setComments={setComments}
+                  />
                 ))}
               </div>
             ) : (

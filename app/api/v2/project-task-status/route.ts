@@ -17,16 +17,3 @@ export async function POST(req: NextRequest) {
         // withAuth default: true
     });
 }
-
-/*
-export async function PUT(req: NextRequest) {
-    const body = await req.json();
-    const clientIp = req.ip || req.headers.get('x-forwarded-for') || req.headers.get('remote-address');
-    return RouteBaseService.request(URL + PROJECTS_T_STATUS + "/" + body.id, {
-        method: 'PUT',
-        body: body,
-        clientIp: clientIp, // ✅ IP'yi servise ilet
-        // withAuth default: true
-    });
-}
-    */

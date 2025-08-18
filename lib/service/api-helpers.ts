@@ -764,6 +764,31 @@ export const addProjectTaskCommentHelper = async (body: TaskCommentRequest, opti
   });
 }
 
+export const updateProjectTaskCommentHelper = async (commentId: string, taskId: string, body: TaskCommentRequest, options: FetchEntitiesOptions): Promise<ProjectTaskComment | null> => {
+  return apiCall<ProjectTaskComment>({
+    url: PROJECT_TASK_COMMENT + "/update/" + commentId + "/task/" + taskId,
+    method: httpMethods.PUT,
+    body,
+    setLoading: options.setLoading,
+    successMessage: `Comment has been added to Project Task .`,
+    errorMessagePrefix: "Failed to add Project Task Comment ",
+    successToastTitle: "Project Task Comment Added to Project Task ",
+    errorToastTitle: "Error Adding Comment to Project Task",
+  });
+}
+
+export const deleteProjectTaskCommentHelper = async (commentId: string, taskId: string, options: FetchEntitiesOptions): Promise<boolean | null> => {
+  return apiCall<boolean>({
+    url: PROJECT_TASK_COMMENT + "/delete/" + commentId + "/task/" + taskId,
+    method: httpMethods.DELETE,
+    setLoading: options.setLoading,
+    successMessage: `Comment has been added to Project Task .`,
+    errorMessagePrefix: "Failed to add Project Task Comment ",
+    successToastTitle: "Project Task Comment Added to Project Task ",
+    errorToastTitle: "Error Adding Comment to Project Task",
+  });
+}
+
 export const addTaskToSprintHelper = async (body: SprintTaskAddRequest, options: FetchEntitiesOptions): Promise<ProjectTask | null> => {
   return apiCall<ProjectTask>({
     url: SPRINT_TASK_ADD_URL,
