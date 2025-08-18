@@ -94,3 +94,7 @@ export const UPDATE_PROJECT_TASK_STATUS_URL = PROJECT_TASK + "/update-status";
 
 export const PROJECT_TASK_SUBTASKS = PROJECT_TASK + "/subtasks";
 
+
+export const PROJECT_TASK_COMMENT = BASE_PATH_V2 + "project-task-comment"
+export const PROJECT_TASK_COMMENT_ADD_URL = PROJECT_TASK_COMMENT + "/add";
+

@@ -36,10 +36,6 @@ export function AppHeader() {
 
   const totalUnread = unreadNotifications.length + pendingInvitations.length
 
-  const handleLogout = () => {
-    dispatch(logout())
-    router.push("/login")
-  }
 
   const handleAcceptInvitation = (invitationId: string) => {
     const invitation = invitations.find((inv) => inv.id === invitationId)

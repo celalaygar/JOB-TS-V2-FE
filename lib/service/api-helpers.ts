@@ -26,6 +26,7 @@ import {
   INVITE_TO_PROJECT,
   SPRINT_TASK_URL,
   SPRINT_USER_URL,
+  PROJECT_TASK_COMMENT_ADD_URL,
   SPRINT_TASK_ADD_URL,
   SPRINT_TASK_REMOVE_URL,
   BACKLOG_URL,
@@ -45,9 +46,10 @@ import {
   SPRINT_TASK_GET_ALL_URL,
   SPRINT_GET_ALL_USER_URL,
   SPRINT_BULK_ADD_URL,
-  SPRINT_BULK_REMOVE_URL
+  SPRINT_BULK_REMOVE_URL,
+  PROJECT_TASK_COMMENT
 } from "@/lib/service/BasePath";
-import { ProjectTask, ProjectTaskFilterRequest, TaskResponse, TaskUpdateRequest } from "@/types/task";
+import { ProjectTask, ProjectTaskComment, ProjectTaskFilterRequest, TaskCommentRequest, TaskResponse, TaskUpdateRequest } from "@/types/task";
 import { BacklogFilterRequest } from "@/types/backlog";
 import { ProjectTaskStatusRequest } from "@/types/project-task-status";
 
@@ -732,6 +734,35 @@ export const getSubTasksByProjectTaskIdkHelper = async (taskId: string, options:
     errorToastTitle: "Error Loading Project Sub Task ",
   });
 };
+
+
+
+
+export const getProjectTaskCommentsHelper = async (taskId: string, options: FetchEntitiesOptions): Promise<ProjectTaskComment[] | null> => {
+  return apiCall<ProjectTaskComment[]>({
+    url: PROJECT_TASK_COMMENT + "/" + taskId,
+    method: httpMethods.GET,
+    setLoading: options.setLoading,
+    successMessage: `Comment has been added to Project Task .`,
+    errorMessagePrefix: "Failed to add Project Task Comment ",
+    successToastTitle: "Project Task Comment Added to Project Task ",
+    errorToastTitle: "Error Adding Comment to Project Task",
+  });
+}
+
+
+export const addProjectTaskCommentHelper = async (body: TaskCommentRequest, options: FetchEntitiesOptions): Promise<ProjectTaskComment | null> => {
+  return apiCall<ProjectTaskComment>({
+    url: PROJECT_TASK_COMMENT_ADD_URL,
+    method: httpMethods.POST,
+    body,
+    setLoading: options.setLoading,
+    successMessage: `Comment has been added to Project Task .`,
+    errorMessagePrefix: "Failed to add Project Task Comment ",
+    successToastTitle: "Project Task Comment Added to Project Task ",
+    errorToastTitle: "Error Adding Comment to Project Task",
+  });
+}
 
 export const addTaskToSprintHelper = async (body: SprintTaskAddRequest, options: FetchEntitiesOptions): Promise<ProjectTask | null> => {
   return apiCall<ProjectTask>({

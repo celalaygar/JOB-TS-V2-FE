@@ -127,6 +127,7 @@ export default function TaskDetailPage() {
 
             {activeTab === "comments" && (
               <TaskCommentSection
+                projectId={projectTask.createdProject.id}
                 comments={projectTask.comments || []}
                 taskId={taskId}
                 currentUser={users.find((u) => u.id === "user-1")}

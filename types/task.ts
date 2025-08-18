@@ -95,6 +95,25 @@ export interface Task {
   parentTask: ParentTask;
 }
 
+export interface TaskCommentRequest {
+  taskId: string
+  projectId: string
+  comment: string
+  userIds: string[] | null
+}
+
+export interface ProjectTaskComment {
+  id: string;
+  taskId: string;
+  comment: string;
+  description: string;
+  createdBy: CreatedBy;
+  createdProject: CreatedProject;
+  createdAt: string
+  updatedAt: string
+}
+
+
 
 
 export type TaskType = "bug" | "feature" | "story" | "subtask" | string
