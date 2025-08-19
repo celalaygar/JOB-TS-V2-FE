@@ -40,7 +40,7 @@ export function RecentTasks() {
 
   const fetchAllProjectTasks = useCallback(async (filters: ProjectTaskFilterRequest) => {
     if (!!filters) {
-      filters["assigneeId"] = authUser?.user?.id;
+      filters["assigneeId"] = authUser?.user?.id ?? "";
     }
 
     const response: TaskResponse | null = await getAllProjectTaskHelper(0, 10, filters, { setLoading });
@@ -70,7 +70,7 @@ export function RecentTasks() {
     <Card className="col-span-1 fixed-card">
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
-          <CardTitle>Recent singleTasks</CardTitle>
+          <CardTitle>Recent Tasks</CardTitle>
           <CardDescription className="text-[var(--fixed-sidebar-muted)]">
             Latest singleTasks across all projects
           </CardDescription>

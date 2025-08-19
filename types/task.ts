@@ -143,7 +143,7 @@ export interface ProjectTaskFilterRequest {
   description: string;
   projectTaskStatusId: string;
   projectId: string;
-  assigneeId: string;
+  assigneeId: string | undefined;
   priority: ProjectTaskPriority | string;
   taskType: ProjectTaskType | string;
 }
