@@ -84,7 +84,7 @@ export function RecentTasks() {
           {!!allTasks && allTasks.map((singleTask: ProjectTask) => (
             <div
               key={singleTask.id}
-              className="flex items-center justify-between space-x-4">
+              className="flex items-center justify-between space-x-4 p-2 hover:bg-[var(--fixed-secondary)]">
               <div className="flex items-center space-x-4">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={"/placeholder.svg"} alt={singleTask.assignee.email} />
