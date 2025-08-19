@@ -137,6 +137,7 @@ export interface Comment {
 
 
 export interface ProjectTaskFilterRequest {
+  search: string;
   taskNumber: string;
   title: string;
   description: string;

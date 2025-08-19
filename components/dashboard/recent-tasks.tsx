@@ -12,15 +12,14 @@ import { Project } from "@/types/project"
 import { setTasks } from "@/lib/redux/features/tasks-slice"
 import { Badge } from "../ui/badge"
 import { getPriorityClassName } from "@/lib/utils/priority-utils"
+import { useRouter } from "next/navigation"
 
 export function RecentTasks() {
-  const allTasks = useSelector((state: RootState) => state.tasks.tasks)
-  const projects = useSelector((state: RootState) => state.projects.projects)
+  const allTasks: ProjectTask[] | null = useSelector((state: RootState) => state.tasks.tasks)
 
-
+  const router = useRouter()
 
   const dispatch = useDispatch()
-  const [taskList, setTaskList] = useState<ProjectTask[] | null>(null)
   const [taskResponse, setTaskResponse] = useState<TaskResponse | null>(null)
   const [loading, setLoading] = useState(false);
   const [filters, setFilters] = useState<ProjectTaskFilterRequest>({
@@ -30,18 +29,18 @@ export function RecentTasks() {
     priority: "all",
     assigneeId: "all",
     taskType: "all",
+    taskNumber: "",
+    title: "",
+    description: "",
   })
 
 
 
   const fetchAllProjectTasks = useCallback(async (filters: ProjectTaskFilterRequest) => {
-    setTaskList([]) // Clear previous tasks
     const response: TaskResponse | null = await getAllProjectTaskHelper(0, 10, filters, { setLoading });
     if (response) {
       setTaskResponse(response);
       dispatch(setTasks(response.content))
-    } else {
-      setTaskList([]);
     }
   }, []);
 
@@ -77,13 +76,18 @@ export function RecentTasks() {
       <CardContent>
         <div className="space-y-4">
           {!!allTasks && allTasks.map((singleTask: ProjectTask) => (
-            <div key={singleTask.id} className="flex items-center justify-between space-x-4">
+            <div
+              key={singleTask.id}
+              className="flex items-center justify-between space-x-4">
               <div className="flex items-center space-x-4">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={"/placeholder.svg"} alt={singleTask.assignee.email} />
                   <AvatarFallback>{singleTask.assignee.email}</AvatarFallback>
                 </Avatar>
-                <div>
+                <div
+                  className=" cursor-pointer "
+                  onClick={() => router.push(`/tasks/${singleTask.id}`)}
+                >
                   <p className="text-sm font-medium leading-none">{singleTask.title}</p>
                   <p className="text-sm text-[var(--fixed-sidebar-muted)]">
                     {singleTask.createdProject.name} · {new Date(singleTask.createdAt).toLocaleDateString()}

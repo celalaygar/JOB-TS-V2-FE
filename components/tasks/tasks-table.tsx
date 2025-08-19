@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { useState } from "react"
 import { useSelector, useDispatch } from "react-redux"
 import type { RootState } from "@/lib/redux/store"
 import { updateTask } from "@/lib/redux/features/tasks-slice"
@@ -35,12 +35,11 @@ import {
   ChevronRight,
   Loader2,
 } from "lucide-react"
-import { ProjectTaskPriority, type ProjectTask, type ProjectTaskFilterRequest, type Task, type TaskResponse, type TaskType } from "@/types/task"
+import { type ProjectTask, type ProjectTaskFilterRequest, type Task, type TaskResponse } from "@/types/task"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { EditTaskDialog } from "./edit-task-dialog"
-import { getAllProjectsHelper } from "@/lib/service/api-helpers"
 import { Project } from "@/types/project"
 import { getPriorityClassName } from "@/lib/utils/priority-utils"
 import { getTaskTypeIcon, getTaskTypeIconClassName } from "@/lib/utils/task-type-utils"
