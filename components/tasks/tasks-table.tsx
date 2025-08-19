@@ -42,6 +42,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { EditTaskDialog } from "./edit-task-dialog"
 import { getAllProjectsHelper } from "@/lib/service/api-helpers"
 import { Project } from "@/types/project"
+import { getPriorityClassName } from "@/lib/utils/priority-utils"
+import { getTaskTypeIcon, getTaskTypeIconClassName } from "@/lib/utils/task-type-utils"
 
 interface TasksTableProps {
   filters: ProjectTaskFilterRequest
@@ -70,12 +72,12 @@ export function TasksTable({ filters, taskResponse, loading, projectList, loadin
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(10)
 
-
-
-
   // Calculate pagination
   const totalItems = taskResponse?.totalElements
-  const totalPages = Math.ceil(totalItems / taskResponse?.size)
+  let totalPages: number;
+  if (!!totalItems && !!taskResponse) {
+    totalPages = Math.ceil(totalItems / taskResponse?.size)
+  }
   const startIndex = (currentPage - 1) * itemsPerPage
   const endIndex = startIndex + itemsPerPage
 
@@ -113,20 +115,6 @@ export function TasksTable({ filters, taskResponse, loading, projectList, loadin
     }
   }
 
-  const getTaskTypeIcon = (taskType: TaskType) => {
-    switch (taskType) {
-      case "bug":
-        return <Bug className="h-4 w-4 text-red-500" />
-      case "feature":
-        return <Lightbulb className="h-4 w-4 text-blue-500" />
-      case "story":
-        return <BookOpen className="h-4 w-4 text-purple-500" />
-      case "subtask":
-        return <GitBranch className="h-4 w-4 text-gray-500" />
-      default:
-        return null
-    }
-  }
 
   return loading || loadingTaskTable ?
     <div className="grid gap-4 py-4">
@@ -207,7 +195,8 @@ export function TasksTable({ filters, taskResponse, loading, projectList, loadin
           </TableHeader>
           <TableBody>
             {!!allTasks && (allTasks as ProjectTask[]).map((task: ProjectTask) => {
-
+              const IconComponent = getTaskTypeIcon(task.taskType);
+              const iconClassName = getTaskTypeIconClassName(task.taskType);
               return (
                 <TableRow
                   key={task.id}
@@ -231,7 +220,7 @@ export function TasksTable({ filters, taskResponse, loading, projectList, loadin
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
-                      {getTaskTypeIcon(task.taskType)}
+                      {IconComponent && <IconComponent className={`h-4 w-4 ${iconClassName}`} />}
                       <span className="capitalize">{task.taskType}</span>
                     </div>
                   </TableCell>
@@ -249,17 +238,7 @@ export function TasksTable({ filters, taskResponse, loading, projectList, loadin
                   </TableCell>
                   <TableCell>
                     <Badge
-                      className={
-                        task.priority === ProjectTaskPriority.CRITICAL
-                          ? "bg-[var(--fixed-danger)] text-white"
-                          : task.priority === ProjectTaskPriority.HIGH
-                            ? "bg-[var(--fixed-warning)] text-white"
-                            : task.priority === ProjectTaskPriority.MEDIUM
-                              ? "bg-[var(--fixed-info)] text-white"
-                              : task.priority === ProjectTaskPriority.LOW
-                                ? "bg-[var(--fixed-secondary)] text-white"
-                                : "bg-[var(--fixed-secondary)] text-white"
-                      }
+                      className={getPriorityClassName(task.priority)}
                     >
                       {task.priority}
                     </Badge>

@@ -14,6 +14,8 @@ import Link from "next/link"
 import { Project } from "@/types/project"
 import { useSelector } from "react-redux"
 import { RootState } from "@/lib/redux/store"
+import { getTaskTypeIcon, getTaskTypeIconClassName, getTypeColor } from "@/lib/utils/task-type-utils"
+import { getPriorityClassName } from "@/lib/utils/priority-utils"
 
 interface KanbanCardProps {
   task: ProjectTask
@@ -66,51 +68,10 @@ export default function KanbanCard({ task }: KanbanCardProps) {
     // Buradaki setTimeout'u kaldırıyoruz çünkü handleDragEnd içinde temizliği yapacağız.
   }
 
-  const getTypeIcon = () => {
-    switch (task.taskType) {
-      case ProjectTaskType.BUG:
-        return <Bug className="h-4 w-4" />
-      case ProjectTaskType.FEATURE:
-        return <Lightbulb className="h-4 w-4" />
-      case ProjectTaskType.STORY:
-        return <BookOpen className="h-4 w-4" />
-      case ProjectTaskType.SUBTASK:
-        return <GitBranch className="h-4 w-4" />
-      default:
-        return <AlertCircle className="h-4 w-4" />
-    }
-  }
 
-  const getTypeColor = () => {
-    switch (task.taskType) {
-      case ProjectTaskType.BUG:
-        return "bg-red-100 text-red-800 border-red-200"
-      case ProjectTaskType.FEATURE:
-        return "bg-blue-100 text-blue-800 border-blue-200"
-      case ProjectTaskType.STORY:
-        return "bg-purple-100 text-purple-800 border-purple-200"
-      case ProjectTaskType.SUBTASK:
-        return "bg-gray-100 text-gray-800 border-gray-200"
-      default:
-        return "bg-gray-100 text-gray-800 border-gray-200"
-    }
-  }
 
-  const getPriorityColor = () => {
-    switch (task.priority) {
-      case ProjectTaskPriority.LOW:
-        return "bg-slate-500"
-      case ProjectTaskPriority.MEDIUM:
-        return "bg-blue-500"
-      case ProjectTaskPriority.HIGH:
-        return "bg-amber-500"
-      case ProjectTaskPriority.CRITICAL:
-        return "bg-red-500"
-      default:
-        return "bg-slate-500"
-    }
-  }
-
+  const IconComponent = getTaskTypeIcon(task.taskType);
+  const iconClassName = getTaskTypeIconClassName(task.taskType);
   return (
     <>
       <div
@@ -123,15 +84,15 @@ export default function KanbanCard({ task }: KanbanCardProps) {
         onDragEnd={handleDragEnd}
       >
         <div className="flex items-center justify-between mb-2">
-          <Badge variant="outline" className={getTypeColor()}>
+          <Badge variant="outline" className={getTypeColor(task.taskType)}>
             <span className="flex items-center gap-1">
-              {getTypeIcon()}
+              <IconComponent className={`h-4 w-4 ${iconClassName}`} />
               {task.taskType.charAt(0).toUpperCase() + task.taskType.slice(1)}
             </span>
           </Badge>
 
           <div className="flex items-center gap-2">
-            <div className={`h-2 w-2 rounded-full ${getPriorityColor()}`} title={`Priority: ${task.priority}`} />
+            <div className={`h-2 w-2 rounded-full ${getPriorityClassName(task.priority)}`} title={`Priority: ${task.priority}`} />
             <DropdownMenu>
               <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                 <Button variant="ghost" size="icon" className="h-6 w-6 p-0">

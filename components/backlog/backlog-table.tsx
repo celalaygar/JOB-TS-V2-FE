@@ -15,6 +15,8 @@ import { Project } from "@/types/project"
 import { BacklogFilterRequest } from "@/types/backlog"
 import { useState } from "react"
 import { EditTaskDialog } from "../tasks/edit-task-dialog"
+import { getTaskTypeBadgeColor, getTaskTypeIcon, getTaskTypeIconClassName } from "@/lib/utils/task-type-utils"
+import { getPriorityClassName } from "@/lib/utils/priority-utils"
 
 interface BacklogTableProps {
   filters: BacklogFilterRequest
@@ -40,59 +42,10 @@ export function BacklogTable({ filters, loadingTaskTable, projectList, taskRespo
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const t = translations.backlog.table
 
-  // Get type badge color
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case ProjectTaskType.BUG:
-        return "bg-red-500"
-      case ProjectTaskType.FEATURE:
-        return "bg-green-500"
-      case ProjectTaskType.STORY:
-        return "bg-blue-500"
-      case ProjectTaskType.SUBTASK:
-        return "bg-purple-500"
-      default:
-        return "bg-slate-500"
-    }
-  }
-
-
-  // Get task type icon
-  const getTaskTypeIcon = (type: string) => {
-    switch (type) {
-      case ProjectTaskType.BUG:
-        return <Bug className="h-4 w-4 text-red-500" />
-      case ProjectTaskType.FEATURE:
-        return <Lightbulb className="h-4 w-4 text-blue-500" />
-      case ProjectTaskType.BUG:
-        return <BookOpen className="h-4 w-4 text-purple-500" />
-      case ProjectTaskType.SUBTASK:
-        return <GitBranch className="h-4 w-4 text-gray-500" />
-      default:
-        return <Lightbulb className="h-4 w-4 text-blue-500" />
-    }
-  }
-
-  // Get priority badge color
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case ProjectTaskPriority.LOW:
-        return "bg-slate-500"
-      case ProjectTaskPriority.MEDIUM:
-        return "bg-blue-500"
-      case ProjectTaskPriority.HIGH:
-        return "bg-amber-500"
-      case ProjectTaskPriority.CRITICAL:
-        return "bg-red-500"
-      default:
-        return "bg-slate-500"
-    }
-  }
 
   return (
     <div className="rounded-md border">
       {loadingTaskTable ?
-
         <div className="grid gap-4 py-4">
           <div className="flex items-center justify-center">
             <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
@@ -111,7 +64,6 @@ export function BacklogTable({ filters, loadingTaskTable, projectList, taskRespo
                 <TableHead className="w-[120px] bg-white">{t.taskNumber}</TableHead>
                 <TableHead className="w-[100px] bg-white">{t.title}</TableHead>
                 <TableHead className="w-[100px] bg-white">{t.priority}</TableHead>
-                {/* <TableHead className="w-[100px] bg-white">{t.status}</TableHead> */}
                 <TableHead className="w-[100px] bg-white">{t.taskType}</TableHead>
                 <TableHead className="w-[150px] bg-white">{t.assignee}</TableHead>
                 <TableHead className="w-[150px] bg-white">{t.project}</TableHead>
@@ -119,74 +71,76 @@ export function BacklogTable({ filters, loadingTaskTable, projectList, taskRespo
               </TableRow>
             </TableHeader>
             <TableBody>
-              {taskResponse?.content && taskResponse.content.length > 0 && taskResponse.content.map((task: ProjectTask) => (
-                <TableRow key={task.id}>
-                  <TableCell className="font-medium">
-                    <div className="flex items-center gap-2">
-                      {getTaskTypeIcon(task.taskType)}
-                      <span>{task.taskNumber}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>{task.title}</TableCell>
-                  <TableCell>
-                    <Badge className={`${getPriorityColor(task.priority)} text-white`}>
-                      {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
-                    </Badge>
-                  </TableCell>
+              {taskResponse?.content && taskResponse.content.length > 0 && taskResponse.content.map((task: ProjectTask) => {
+                // Bileşen değişkenlerini tanımlayın
+                const IconComponent = getTaskTypeIcon(task.taskType);
+                const iconClassName = getTaskTypeIconClassName(task.taskType);
 
-                  {/* <TableCell className="capitalize">{task.projectTaskStatus.label.replace("-", " ")}</TableCell> */}
-
-                  <TableCell>
-                    <Badge className={`${getTypeColor(task.taskType)} text-white`}>
-                      {task.taskType.charAt(0).toUpperCase() + task.taskType.slice(1)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Avatar className="h-6 w-6">
-                        <AvatarImage src={"/placeholder.svg"} alt={task.assignee.email} />
-                        <AvatarFallback>{task.assignee.email}</AvatarFallback>
-                      </Avatar>
-                      <span className="truncate max-w-[100px]">{task.assignee.email}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>{task.createdProject.name}</TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                          <span className="sr-only">Open menu</span>
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem asChild>
-                          <Link href={`/tasks/${task.id}`} className="flex items-center">
-                            <Eye className="mr-2 h-4 w-4" />
-                            <span>{t.viewDetails}</span>
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          className="flex items-center cursor-pointer"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setSelecteddTask(task)
-                            setEditDialogOpen(true)
-                          }}
-                        >
-                          <Edit className="mr-2 h-4 w-4" />
-                          {t.edit}
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))}
+                return (
+                  <TableRow key={task.id}>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        {/* 🌟 Bileşeni direkt olarak kullanın ve prop'ları iletin */}
+                        <IconComponent className={`h-4 w-4 ${iconClassName}`} />
+                        <span>{task.taskNumber}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>{task.title}</TableCell>
+                    <TableCell>
+                      <Badge className={getPriorityClassName(task.priority)}>
+                        {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={`${getTaskTypeBadgeColor(task.taskType)} text-white`}>
+                        {task.taskType.charAt(0).toUpperCase() + task.taskType.slice(1)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Avatar className="h-6 w-6">
+                          <AvatarImage src={"/placeholder.svg"} alt={task.assignee.email} />
+                          <AvatarFallback>{task.assignee.email}</AvatarFallback>
+                        </Avatar>
+                        <span className="truncate max-w-[100px]">{task.assignee.email}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>{task.createdProject.name}</TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                            <span className="sr-only">Open menu</span>
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem asChild>
+                            <Link href={`/tasks/${task.id}`} className="flex items-center">
+                              <Eye className="mr-2 h-4 w-4" />
+                              <span>{t.viewDetails}</span>
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="flex items-center cursor-pointer"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setSelecteddTask(task)
+                              setEditDialogOpen(true)
+                            }}
+                          >
+                            <Edit className="mr-2 h-4 w-4" />
+                            {t.edit}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
             </TableBody>
           </Table>
       }
-
-
       {selecteddTask &&
         <EditTaskDialog
           projectTask={selecteddTask}

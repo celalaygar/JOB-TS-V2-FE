@@ -19,13 +19,11 @@ import {
 import { ArrowUpDown, MoreHorizontal, Eye, Edit, UserPlus, Trash2, Search, Filter, CheckCircle2, FolderInput } from "lucide-react"
 import Link from "next/link"
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select"
-import { ViewTaskDialog } from "../../sprint-detail/view-task-dialog"
 import { EditTaskDialog } from "@/components/tasks/edit-task-dialog"
-import { AssignTaskToUserDialog } from "../../sprint-detail/assign-task-to-user-dialog"
-import { MoveTaskDialog } from "../../sprint-detail/move-task-dialog"
-import { DeleteTaskDialog } from "../../sprint-detail/delete-task-dialog"
 import { ProjectTask, ProjectTaskPriority, ProjectTaskType } from "@/types/task"
 import { Project } from "@/types/project"
+import { getTaskTypeIcon, getTaskTypeIconClassName, getTypeColor } from "@/lib/utils/task-type-utils"
+import { getPriorityClassName } from "@/lib/utils/priority-utils"
 
 interface SprintDetailTasksProps {
   sprintId: string
@@ -82,38 +80,6 @@ export function SprintDetailTasks({ sprintId, tasks, projectList }: SprintDetail
   }
 
 
-
-  // Get priority badge color
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case ProjectTaskPriority.LOW:
-        return "bg-slate-500"
-      case ProjectTaskPriority.MEDIUM:
-        return "bg-blue-500"
-      case ProjectTaskPriority.HIGH:
-        return "bg-amber-500"
-      case ProjectTaskPriority.CRITICAL:
-        return "bg-red-500"
-      default:
-        return "bg-slate-500"
-    }
-  }
-
-  // Get type badge color
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case ProjectTaskType.BUG:
-        return "bg-red-500"
-      case ProjectTaskType.FEATURE:
-        return "bg-green-500"
-      case ProjectTaskType.STORY:
-        return "bg-blue-500"
-      case ProjectTaskType.SUBTASK:
-        return "bg-purple-500"
-      default:
-        return "bg-slate-500"
-    }
-  }
 
   return (
     <>
@@ -202,7 +168,7 @@ export function SprintDetailTasks({ sprintId, tasks, projectList }: SprintDetail
                     <Button
                       variant="ghost"
                       onClick={() => handleSort("title")}
-                      className="flex items-center gap-1 px-0 hover:bg-transparent"
+                      className="flex items-center  px-0 hover:bg-transparent"
                     >
                       Title
                       <ArrowUpDown className="h-3 w-3" />
@@ -212,7 +178,7 @@ export function SprintDetailTasks({ sprintId, tasks, projectList }: SprintDetail
                     <Button
                       variant="ghost"
                       onClick={() => handleSort("taskType")}
-                      className="flex items-center gap-1 px-0 hover:bg-transparent"
+                      className="flex items-center   px-0 hover:bg-transparent"
                     >
                       Type
                       <ArrowUpDown className="h-3 w-3" />
@@ -222,7 +188,7 @@ export function SprintDetailTasks({ sprintId, tasks, projectList }: SprintDetail
                     <Button
                       variant="ghost"
                       onClick={() => handleSort("status")}
-                      className="flex items-center gap-1 px-0 hover:bg-transparent"
+                      className="flex items-center  px-0 hover:bg-transparent"
                     >
                       Status
                       <ArrowUpDown className="h-3 w-3" />
@@ -232,7 +198,7 @@ export function SprintDetailTasks({ sprintId, tasks, projectList }: SprintDetail
                     <Button
                       variant="ghost"
                       onClick={() => handleSort("priority")}
-                      className="flex items-center gap-1 px-0 hover:bg-transparent"
+                      className="flex items-center  px-0 hover:bg-transparent"
                     >
                       Priority
                       <ArrowUpDown className="h-3 w-3" />
@@ -242,7 +208,7 @@ export function SprintDetailTasks({ sprintId, tasks, projectList }: SprintDetail
                     <Button
                       variant="ghost"
                       onClick={() => handleSort("assignee")}
-                      className="flex items-center gap-1 px-0 hover:bg-transparent"
+                      className="flex items-center  px-0 hover:bg-transparent"
                     >
                       Assignee
                       <ArrowUpDown className="h-3 w-3" />
@@ -253,42 +219,47 @@ export function SprintDetailTasks({ sprintId, tasks, projectList }: SprintDetail
               </TableHeader>
               <TableBody>
                 {!!tasks ? (
-                  tasks.map((task: ProjectTask) => (
-                    <TableRow key={task.id} className="group">
-                      <TableCell className="font-medium">
-                        <Link href={`/tasks/${task.id}`} className="hover:text-primary hover:underline">
-                          {task.title}
-                        </Link>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={`${getTypeColor(task.taskType)} text-white`}>
-                          {task.taskType.charAt(0).toUpperCase() + task.taskType.slice(1)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={`bg-[${task.projectTaskStatus.color}] text-black`}>
-                          {task.projectTaskStatus.name}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={`${getPriorityColor(task.priority)} text-white`}>
-                          {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {task.assignee ? (
-                          <div className="flex items-center gap-2">
-                            <Avatar className="h-6 w-6">
-                              <AvatarImage src={"/placeholder.svg"} alt={task.assignee.email} />
-                              <AvatarFallback>{task.assignee.email.charAt(0)}</AvatarFallback>
-                            </Avatar>
-                            <span className="text-sm">{task.assignee.email}</span>
+                  tasks.map((task: ProjectTask) => {
+
+                    const IconComponent = getTaskTypeIcon(task.taskType);
+                    const iconClassName = getTaskTypeIconClassName(task.taskType);
+                    return (
+                      <TableRow key={task.id} className="group">
+                        <TableCell className="font-medium">
+                          <Link href={`/tasks/${task.id}`} className="hover:text-primary hover:underline">
+                            {task.title}
+                          </Link>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-1">
+                            {IconComponent && <IconComponent className={`h-4 w-4 ${iconClassName}`} />}
+                            <span className="capitalize"> {task.taskType}</span>
                           </div>
-                        ) : (
-                          <span className="text-sm text-muted-foreground">Unassigned</span>
-                        )}
-                      </TableCell>
-                      {/* <TableCell>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={`bg-[${task.projectTaskStatus.color}] text-black`}>
+                            {task.projectTaskStatus.name}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={`${getPriorityClassName(task.priority)}`}>
+                            {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {task.assignee ? (
+                            <div className="flex items-center ">
+                              <Avatar className="h-6 w-6">
+                                <AvatarImage src={"/placeholder.svg"} alt={task.assignee.email} />
+                                <AvatarFallback>{task.assignee.email.charAt(0)}</AvatarFallback>
+                              </Avatar>
+                              <span className="text-sm">{task.assignee.email}</span>
+                            </div>
+                          ) : (
+                            <span className="text-sm text-muted-foreground">Unassigned</span>
+                          )}
+                        </TableCell>
+                        {/* <TableCell>
                         <div className="flex justify-end">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -323,47 +294,47 @@ export function SprintDetailTasks({ sprintId, tasks, projectList }: SprintDetail
                           </DropdownMenu>
                         </div>
                       </TableCell> */}
-                      <TableCell>
-                        <div className="flex justify-end">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-8 w-8">
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Actions</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem asChild>
-                                <Link href={`/tasks/${task?.id}`} className="flex items-center cursor-pointer">
-                                  <Eye className="mr-2 h-4 w-4" />
-                                  View Details
-                                </Link>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleEditTask(task)}>
-                                <Edit className="mr-2 h-4 w-4" />
-                                Edit
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleAssignTask(task)}>
-                                <UserPlus className="mr-2 h-4 w-4" />
-                                Assign to User
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleMoveTask(task)}>
-                                <FolderInput className="mr-2 h-4 w-4" />
-                                Move
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => handleDeleteTask(task.id)}
-                                className="text-red-600"
-                              >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
+                        <TableCell>
+                          <div className="flex justify-end">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                  <MoreHorizontal className="h-4 w-4" />
+                                  <span className="sr-only">Actions</span>
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem asChild>
+                                  <Link href={`/tasks/${task?.id}`} className="flex items-center cursor-pointer">
+                                    <Eye className="mr-2 h-4 w-4" />
+                                    View Details
+                                  </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleEditTask(task)}>
+                                  <Edit className="mr-2 h-4 w-4" />
+                                  Edit
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleAssignTask(task)}>
+                                  <UserPlus className="mr-2 h-4 w-4" />
+                                  Assign to User
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleMoveTask(task)}>
+                                  <FolderInput className="mr-2 h-4 w-4" />
+                                  Move
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => handleDeleteTask(task.id)}
+                                  className="text-red-600"
+                                >
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Delete
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                        </TableCell>
+                      </TableRow>)
+                  })
                 ) : (
                   <TableRow>
                     <TableCell colSpan={6} className="h-24 text-center">
@@ -403,7 +374,6 @@ export function SprintDetailTasks({ sprintId, tasks, projectList }: SprintDetail
 
       {selectedTask && (
         <>
-          <ViewTaskDialog open={viewTaskDialogOpen} onOpenChange={setViewTaskDialogOpen} taskId={selectedTaskId} />
 
           <EditTaskDialog
             projectList={projectList}
@@ -411,6 +381,7 @@ export function SprintDetailTasks({ sprintId, tasks, projectList }: SprintDetail
             onOpenChange={setEditTaskDialogOpen}
             projectTask={selectedTask} />
 
+          {/* <ViewTaskDialog open={viewTaskDialogOpen} onOpenChange={setViewTaskDialogOpen} taskId={selectedTaskId} />
           <AssignTaskToUserDialog
             open={assignTaskDialogOpen}
             onOpenChange={setAssignTaskDialogOpen}
@@ -424,7 +395,7 @@ export function SprintDetailTasks({ sprintId, tasks, projectList }: SprintDetail
             open={deleteTaskDialogOpen}
             onOpenChange={setDeleteTaskDialogOpen}
             taskId={selectedTaskId}
-          />
+          /> */}
         </>
       )}
     </>

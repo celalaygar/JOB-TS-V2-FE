@@ -6,6 +6,8 @@ import { format } from "date-fns"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ProjectTaskPriority, ProjectTaskType, type ProjectTask, type Task } from "@/types/task"
 import { Project } from "@/types/project"
+import { getPriorityClassName } from "@/lib/utils/priority-utils"
+import { getTaskTypeIcon, getTaskTypeIconClassName } from "@/lib/utils/task-type-utils"
 
 interface TaskDetailInfoProps {
   task: ProjectTask
@@ -13,20 +15,8 @@ interface TaskDetailInfoProps {
 }
 
 export function TaskDetailInfo({ task, project }: TaskDetailInfoProps) {
-  const getTaskTypeIcon = () => {
-    switch (task.taskType) {
-      case ProjectTaskType.BUG:
-        return <Bug className="h-4 w-4 text-red-500" />
-      case ProjectTaskType.FEATURE:
-        return <Lightbulb className="h-4 w-4 text-blue-500" />
-      case ProjectTaskType.STORY:
-        return <BookOpen className="h-4 w-4 text-purple-500" />
-      case ProjectTaskType.SUBTASK:
-        return <GitBranch className="h-4 w-4 text-gray-500" />
-      default:
-        return <Lightbulb className="h-4 w-4 text-blue-500" />
-    }
-  }
+  const IconComponent = getTaskTypeIcon(task.taskType);
+  const iconClassName = getTaskTypeIconClassName(task.taskType);
 
   return (
     <>
@@ -62,7 +52,7 @@ export function TaskDetailInfo({ task, project }: TaskDetailInfoProps) {
         <div className="space-y-1">
           <h3 className="text-sm font-medium text-muted-foreground">Type</h3>
           <div className="flex items-center gap-2">
-            {getTaskTypeIcon()}
+            {IconComponent && <IconComponent className={`h-4 w-4 ${iconClassName}`} />}
             <span className="capitalize">{task.taskType}</span>
           </div>
         </div>
@@ -71,17 +61,7 @@ export function TaskDetailInfo({ task, project }: TaskDetailInfoProps) {
           <h3 className="text-sm font-medium text-muted-foreground">Priority</h3>
           <div>
             <Badge
-              className={
-                task.priority === ProjectTaskPriority.CRITICAL
-                  ? "bg-[var(--fixed-danger)] text-white"
-                  : task.priority === ProjectTaskPriority.HIGH
-                    ? "bg-[var(--fixed-warning)] text-white"
-                    : task.priority === ProjectTaskPriority.MEDIUM
-                      ? "bg-[var(--fixed-info)] text-white"
-                      : task.priority === ProjectTaskPriority.LOW
-                        ? "bg-[var(--fixed-secondary)] text-white"
-                        : "bg-[var(--fixed-secondary)] text-white"
-              }
+              className={getPriorityClassName(task.priority)}
             >
               {task.priority}
             </Badge>
