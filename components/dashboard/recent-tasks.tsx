@@ -13,10 +13,12 @@ import { setTasks } from "@/lib/redux/features/tasks-slice"
 import { Badge } from "../ui/badge"
 import { getPriorityClassName } from "@/lib/utils/priority-utils"
 import { useRouter } from "next/navigation"
+import { useAuthUser } from "@/lib/hooks/useAuthUser"
 
 export function RecentTasks() {
   const allTasks: ProjectTask[] | null = useSelector((state: RootState) => state.tasks.tasks)
 
+  const authUser = useAuthUser();
   const router = useRouter()
 
   const dispatch = useDispatch()
@@ -27,7 +29,7 @@ export function RecentTasks() {
     projectId: "all",
     projectTaskStatusId: "all",
     priority: "all",
-    assigneeId: "all",
+    assigneeId: authUser?.user.id,
     taskType: "all",
     taskNumber: "",
     title: "",
@@ -37,6 +39,10 @@ export function RecentTasks() {
 
 
   const fetchAllProjectTasks = useCallback(async (filters: ProjectTaskFilterRequest) => {
+    if (!!filters) {
+      filters["assigneeId"] = authUser?.user?.id;
+    }
+
     const response: TaskResponse | null = await getAllProjectTaskHelper(0, 10, filters, { setLoading });
     if (response) {
       setTaskResponse(response);
