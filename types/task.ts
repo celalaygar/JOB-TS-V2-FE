@@ -143,8 +143,8 @@ export interface ProjectTaskFilterRequest {
   projectTaskStatusId: string;
   projectId: string;
   assigneeId: string;
-  priority: ProjectTaskPriority;
-  taskType: ProjectTaskType;
+  priority: ProjectTaskPriority | string;
+  taskType: ProjectTaskType | string;
 }
 
 export interface TaskResponse {

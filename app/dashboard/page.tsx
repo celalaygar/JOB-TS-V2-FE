@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react"
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { DashboardStats } from "@/components/dashboard/dashboard-stats"
-import { RecentIssues } from "@/components/dashboard/recent-issues"
+import { RecentTasks } from "@/components/dashboard/recent-tasks"
 import { ProjectProgress } from "@/components/dashboard/project-progress"
 import { QuickNavigation } from "@/components/dashboard/quick-navigation"
 import { Project } from "@/types/project"
@@ -47,7 +47,7 @@ export default function Dashboard() {
             </div>
             :
             <>
-              <RecentIssues />
+              <RecentTasks />
               <ProjectProgress />
             </>
         }

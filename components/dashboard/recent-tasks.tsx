@@ -1,43 +1,73 @@
 "use client"
 
 import Link from "next/link"
-import { useSelector } from "react-redux"
+import { useDispatch, useSelector } from "react-redux"
 import type { RootState } from "@/lib/redux/store"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Bug, Lightbulb, BookOpen, GitBranch } from "lucide-react"
-import type { TaskType } from "@/types/task"
+import { useCallback, useEffect, useState } from "react"
+import { ProjectTask, ProjectTaskFilterRequest, TaskResponse } from "@/types/task"
+import { getAllProjectTaskHelper } from "@/lib/service/api-helpers"
+import { Project } from "@/types/project"
+import { setTasks } from "@/lib/redux/features/tasks-slice"
+import { Badge } from "../ui/badge"
+import { getPriorityClassName } from "@/lib/utils/priority-utils"
 
 export function RecentTasks() {
   const allTasks = useSelector((state: RootState) => state.tasks.tasks)
+  const projects = useSelector((state: RootState) => state.projects.projects)
 
-  // Sort tasks by creation date (newest first) and take the first 5
-  const recentTasks = [...allTasks]
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    .slice(0, 5)
 
-  const getTaskTypeIcon = (taskType: TaskType) => {
-    switch (taskType) {
-      case "bug":
-        return <Bug className="h-4 w-4 text-red-500" />
-      case "feature":
-        return <Lightbulb className="h-4 w-4 text-blue-500" />
-      case "story":
-        return <BookOpen className="h-4 w-4 text-purple-500" />
-      case "subtask":
-        return <GitBranch className="h-4 w-4 text-gray-500" />
-      default:
-        return null
+
+  const dispatch = useDispatch()
+  const [taskList, setTaskList] = useState<ProjectTask[] | null>(null)
+  const [taskResponse, setTaskResponse] = useState<TaskResponse | null>(null)
+  const [loading, setLoading] = useState(false);
+  const [filters, setFilters] = useState<ProjectTaskFilterRequest>({
+    search: "",
+    projectId: "all",
+    projectTaskStatusId: "all",
+    priority: "all",
+    assigneeId: "all",
+    taskType: "all",
+  })
+
+
+
+  const fetchAllProjectTasks = useCallback(async (filters: ProjectTaskFilterRequest) => {
+    setTaskList([]) // Clear previous tasks
+    const response: TaskResponse | null = await getAllProjectTaskHelper(0, 10, filters, { setLoading });
+    if (response) {
+      setTaskResponse(response);
+      dispatch(setTasks(response.content))
+    } else {
+      setTaskList([]);
     }
-  }
+  }, []);
+
+  const fetchData = useCallback(() => {
+    let filter = Object.fromEntries(
+      Object.entries(filters).map(([key, value]) => [
+        key,
+        value === "all" || value === "" ? null : value,
+      ])
+    ) as unknown as ProjectTaskFilterRequest;
+    fetchAllProjectTasks(filter);
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchAllProjectTasks])
+
+
 
   return (
     <Card className="col-span-1 fixed-card">
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
-          <CardTitle>Recent Tasks</CardTitle>
+          <CardTitle>Recent singleTasks</CardTitle>
           <CardDescription className="text-[var(--fixed-sidebar-muted)]">
-            Latest tasks across all projects
+            Latest singleTasks across all projects
           </CardDescription>
         </div>
         <Link href="/tasks" className="fixed-secondary-button h-9 px-3 py-2 rounded-md text-sm font-medium">
@@ -46,43 +76,29 @@ export function RecentTasks() {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {recentTasks.map((task) => (
-            <div key={task.id} className="flex items-center justify-between space-x-4">
+          {!!allTasks && allTasks.map((singleTask: ProjectTask) => (
+            <div key={singleTask.id} className="flex items-center justify-between space-x-4">
               <div className="flex items-center space-x-4">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src={task.assignee.avatar || "/placeholder.svg"} alt={task.assignee.name} />
-                  <AvatarFallback>{task.assignee.initials}</AvatarFallback>
+                  <AvatarImage src={"/placeholder.svg"} alt={singleTask.assignee.email} />
+                  <AvatarFallback>{singleTask.assignee.email}</AvatarFallback>
                 </Avatar>
                 <div>
-                  <div className="flex items-center gap-1">
-                    {getTaskTypeIcon(task.taskType)}
-                    <p className="text-sm font-medium leading-none">{task.title}</p>
-                  </div>
+                  <p className="text-sm font-medium leading-none">{singleTask.title}</p>
                   <p className="text-sm text-[var(--fixed-sidebar-muted)]">
-                    {task.projectName} · {new Date(task.createdAt).toLocaleDateString()}
+                    {singleTask.createdProject.name} · {new Date(singleTask.createdAt).toLocaleDateString()}
                   </p>
                 </div>
               </div>
-              <span
-                className={`
-                  text-xs py-1 px-2 rounded-full font-medium
-                  ${
-                    task.priority === "High"
-                      ? "bg-[var(--fixed-danger)] text-white"
-                      : task.priority === "Medium"
-                        ? "bg-[var(--fixed-warning)] text-white"
-                        : "bg-[var(--fixed-secondary)] text-[var(--fixed-secondary-fg)]"
-                  }
-                `}
-              >
-                {task.priority}
-              </span>
+              <Badge className={`${getPriorityClassName(singleTask.priority)}`}>
+                {singleTask.priority.charAt(0).toUpperCase() + singleTask.priority.slice(1)}
+              </Badge>
             </div>
           ))}
 
-          {recentTasks.length === 0 && (
+          {!!allTasks && allTasks.length === 0 && (
             <div className="text-center py-6">
-              <p className="text-[var(--fixed-sidebar-muted)]">No tasks found.</p>
+              <p className="text-[var(--fixed-sidebar-muted)]">No singleTasks found.</p>
             </div>
           )}
         </div>
