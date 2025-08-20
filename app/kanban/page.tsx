@@ -96,7 +96,7 @@ export default function KanbanPage() {
   }, []);
 
   const fetchData = () => {
-    console.log("Fetching data with filters:", filters);
+    dispatch(setTasks(null))
     let filter = Object.fromEntries(
       Object.entries(filters).map(([key, value]) => [
         key,

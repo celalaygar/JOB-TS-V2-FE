@@ -165,6 +165,7 @@ export interface ProjectTask {
   taskNumber: string;
   title: string;
   description: string;
+  status: string | null;
   systemStatus: ProjectTaskSystemStatus;
   projectTaskStatus: ProjectTaskStatusModel;
   priority: ProjectTaskPriority;

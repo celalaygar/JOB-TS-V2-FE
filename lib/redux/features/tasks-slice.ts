@@ -4,7 +4,7 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit"
 
 
 type TasksState = {
-  tasks: ProjectTask[]
+  tasks: ProjectTask[] | null
   selectedTask: ProjectTask | null
 }
 
@@ -17,49 +17,49 @@ export const tasksSlice = createSlice({
   name: "tasks",
   initialState,
   reducers: {
-    setTasks: (state, action: PayloadAction<ProjectTask[]>) => {
-      console.log("setTasks ", action.payload)
+    setTasks: (state, action: PayloadAction<ProjectTask[] | null>) => {
       state.tasks = action.payload
     },
     selectTask: (state, action: PayloadAction<string>) => {
-      state.selectedTask = state.tasks.find((task) => task.id === action.payload) || null
+      if (state.tasks) {
+        state.selectedTask = state.tasks?.find((task) => task.id === action.payload) || null
+      }
     },
     updateTaskStatus: (state, action: PayloadAction<{ id: string; status: string }>) => {
-      const task = state.tasks.find((task) => task.id === action.payload.id)
+      const task = state.tasks?.find((task) => task.id === action.payload.id)
       if (task) {
         task.status = action.payload.status
       }
     },
     addTask: (state, action: PayloadAction<ProjectTask>) => {
-
-      state.tasks.push(action.payload)
+      if (state.tasks) {
+        state.tasks.push(action.payload)
+      }
     },
     updateTask: (state, action: PayloadAction<ProjectTask>) => {
-      console.log("updateTask action.payload ", action.payload)
-      console.log("updateTask state.tasks ", state.tasks)
-      console.log("updateTask state.tasks ", state.tasks.length)
-      const index = state.tasks.findIndex((task) => task.id === action.payload.id)
-      console.log("updateTask index ", index)
-      if (index !== -1) {
+      const index = state.tasks?.findIndex((task) => task.id === action.payload.id)
+      if (index !== -1 && state.tasks) {
         state.tasks[index] = action.payload
       }
-      state.tasks.forEach((task, i) => {
-        console.log(`Task ${i}:`, task)
-      })
     },
     removeTask: (state, action: PayloadAction<string>) => {
-      state.tasks = state.tasks.filter((task) => task.id !== action.payload)
-      if (state.selectedTask?.id === action.payload) {
-        state.selectedTask = null
+      if (state.tasks) {
+        state.tasks = state.tasks.filter((task) => task.id !== action.payload)
+        if (state.selectedTask?.id === action.payload) {
+          state.selectedTask = null
+        }
       }
     },
     addComment: (state, action: PayloadAction<{ taskId: string; comment: Comment }>) => {
-      const task = state.tasks.find((task) => task.id === action.payload.taskId)
-      if (task) {
-        if (!task.comments) {
-          task.comments = []
+      if (state.tasks) {
+        const task = state.tasks.find((task) => task.id === action.payload.taskId)
+        if (task) {
+          if (!!(task.comments)) {
+            task.comments.push(action.payload.comment)
+          } else {
+            task.comments = []
+          }
         }
-        task.comments.push(action.payload.comment)
       }
     },
     updateComment: (state, action: PayloadAction<{ taskId: string; commentId: string; changes: Partial<Comment> }>) => {
