@@ -9,7 +9,6 @@ const REGISTER_PATH = URL + 'auth/register-by-invitation'
 
 export async function POST(req: NextRequest) {
     const body = await req.json();
-    console.log(body)
 
     return RouteBaseService.request(REGISTER_PATH, {
         method: 'POST',
@@ -18,21 +17,3 @@ export async function POST(req: NextRequest) {
         // withAuth default: true
     });
 }
-
-/*
-export async function POST(req: NextRequest) {
-    try {
-        const body = await req.json();
-
-        const result = await BaseService.request<any>(URL + 'auth/register-by-invitation', {
-            method: 'POST',
-            body,
-        });
-
-        return NextResponse.json(result, { status: 200 });
-    } catch (error: any) {
-        const statusCode = error?.status || 500; // ❗ Doğrudan kullan
-        return NextResponse.json({ error: error.message || 'Unexpected error' }, { status: statusCode });
-    }
-}
-*/

@@ -8,7 +8,6 @@ const URL = process.env.BASE_URL
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
-        console.log(body)
         const result = await BaseService.request<any>(URL + 'auth/register', {
             method: 'POST',
             body,
