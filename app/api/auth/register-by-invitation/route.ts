@@ -9,6 +9,8 @@ const REGISTER_PATH = URL + 'auth/register-by-invitation'
 
 export async function POST(req: NextRequest) {
     const body = await req.json();
+    console.log(body)
+
     return RouteBaseService.request(REGISTER_PATH, {
         method: 'POST',
         body: body,

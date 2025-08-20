@@ -1,11 +1,11 @@
 "use client"
 
 import type React from "react"
-
-import { useState } from "react"
+import { useState, useMemo } from "react" // useMemo'yu ekledik
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useDispatch, useSelector } from "react-redux"
+import Select from "react-select" // React Select'i import ettik
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -13,14 +13,19 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Home, Loader2, Calendar } from "lucide-react"
 import { register, clearError } from "@/lib/redux/features/auth-slice"
 import { useLanguage } from "@/lib/i18n/context"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar as CalendarComponent } from "@/components/ui/calendar"
-import { format, set } from "date-fns"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { format } from "date-fns"
+import { Select as SelectShad, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import BaseService from "@/lib/service/BaseService"
 import { toast } from "@/hooks/use-toast"
 import { REGISTER } from "@/lib/service/BasePath"
+import { cn } from "@/lib/utils"; // cn utility'sini import ettik
+
+interface SelectOption {
+  value: string;
+  label: string;
+}
 
 export default function RegisterPage() {
   const { language, translations, setLanguage } = useLanguage()
@@ -28,7 +33,6 @@ export default function RegisterPage() {
   const dispatch = useDispatch()
   const { loading, error } = useSelector((state: any) => state.auth)
   const [loadingForm, setLoadingForm] = useState(false)
-  const [open, setOpen] = useState(false); // Popover açık/kapalı durumu
   const [formData, setFormData] = useState({
     firstname: "",
     lastname: "",
@@ -38,15 +42,43 @@ export default function RegisterPage() {
     confirmPassword: "",
     phone: "",
     dateOfBirth: undefined as Date | undefined,
-    gender: "male",
+    gender: "", // Başlangıç değeri boş string
+    department: "", // Yeni alan
   })
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
+
+  // Gender ve Department seçeneklerini useMemo ile tanımlıyoruz
+  const genderOptions: SelectOption[] = useMemo(
+    () => [
+      { value: "male", label: translations.register.genderOptions.male },
+      { value: "female", label: translations.register.genderOptions.female },
+      { value: "non-binary", label: translations.register.genderOptions.nonBinary },
+      { value: "other", label: translations.register.genderOptions.other },
+      { value: "prefer-not-to-say", label: translations.register.genderOptions.preferNotToSay },
+    ],
+    [translations.register.genderOptions]
+  );
+
+  const departmentOptions: SelectOption[] = useMemo(
+    () => [
+      { value: "ENGINEERING", label: translations.register.departmentOptions.engineering },
+      { value: "PRODUCT", label: translations.register.departmentOptions.product },
+      { value: "DESIGN", label: translations.register.departmentOptions.design },
+      { value: "MARKETING", label: translations.register.departmentOptions.marketing },
+      { value: "SALES", label: translations.register.departmentOptions.sales },
+      { value: "SUPPORT", label: translations.register.departmentOptions.support },
+      { value: "HR", label: translations.register.departmentOptions.hr },
+      { value: "FINANCE", label: translations.register.departmentOptions.finance },
+      { value: "OPERATIONS", label: translations.register.departmentOptions.operations },
+      { value: "OTHER", label: translations.register.departmentOptions.other },
+    ],
+    [translations.register.departmentOptions]
+  );
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
 
-    // Clear error when user types
     if (formErrors[name]) {
       setFormErrors((prev) => {
         const newErrors = { ...prev }
@@ -54,21 +86,25 @@ export default function RegisterPage() {
         return newErrors
       })
     }
-
-    // Clear Redux error
     if (error) {
       dispatch(clearError())
     }
   }
 
-  const handleGenderChange = (value: string) => {
-    setFormData((prev) => ({ ...prev, gender: value }))
-  }
+  // Select bileşenleri için ortak bir handleChange fonksiyonu
+  const handleSelectChange = (field: "gender" | "department", option: SelectOption | null) => {
+    setFormData((prev) => ({ ...prev, [field]: option?.value || "" }))
+    if (formErrors[field]) {
+      setFormErrors((prev) => {
+        const newErrors = { ...prev }
+        delete newErrors[field]
+        return newErrors
+      })
+    }
+  };
 
   const handleDateChange = (date: Date | undefined) => {
     setFormData((prev) => ({ ...prev, dateOfBirth: date }))
-
-    // Clear date error if exists
     if (formErrors.dateOfBirth) {
       setFormErrors((prev) => {
         const newErrors = { ...prev }
@@ -85,43 +121,21 @@ export default function RegisterPage() {
   const validateForm = () => {
     const errors: Record<string, string> = {}
 
-    if (!formData.firstname.trim()) {
-      errors.firstname = translations.register.errors.firstNameRequired
-    }
+    if (!formData.firstname.trim()) { errors.firstname = translations.register.errors.firstNameRequired }
+    if (!formData.lastname.trim()) { errors.lastname = translations.register.errors.lastNameRequired }
+    if (!formData.username.trim()) { errors.username = translations.register.errors.usernameRequired }
+    if (!formData.email.trim()) { errors.email = translations.register.errors.emailRequired }
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) { errors.email = translations.register.errors.emailInvalid }
+    if (!formData.phone.trim()) { errors.phone = translations.register.errors.phoneRequired }
+    else if (!/^\+?[0-9\s-()]{10,15}$/.test(formData.phone)) { errors.phone = translations.register.errors.phoneInvalid }
+    if (!formData.dateOfBirth) { errors.dateOfBirth = translations.register.errors.dateRequired }
+    if (!formData.password) { errors.password = translations.register.errors.passwordRequired }
+    else if (formData.password.length < 6) { errors.password = translations.register.errors.passwordLength }
+    if (formData.password !== formData.confirmPassword) { errors.confirmPassword = translations.register.errors.passwordsMatch }
 
-    if (!formData.lastname.trim()) {
-      errors.lastname = translations.register.errors.lastNameRequired
-    }
-
-    if (!formData.username.trim()) {
-      errors.username = translations.register.errors.usernameRequired
-    }
-
-    if (!formData.email.trim()) {
-      errors.email = translations.register.errors.emailRequired
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      errors.email = translations.register.errors.emailInvalid
-    }
-
-    if (!formData.phone.trim()) {
-      errors.phone = translations.register.errors.phoneRequired
-    } else if (!/^\+?[0-9\s-()]{10,15}$/.test(formData.phone)) {
-      errors.phone = translations.register.errors.phoneInvalid
-    }
-
-    if (!formData.dateOfBirth) {
-      errors.dateOfBirth = translations.register.errors.dateRequired
-    }
-
-    if (!formData.password) {
-      errors.password = translations.register.errors.passwordRequired
-    } else if (formData.password.length < 6) {
-      errors.password = translations.register.errors.passwordLength
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      errors.confirmPassword = translations.register.errors.passwordsMatch
-    }
+    // Yeni validasyonlar
+    if (!formData.gender) { errors.gender = translations.register.errors.genderRequired; }
+    if (!formData.department) { errors.department = translations.register.errors.departmentRequired; }
 
     setFormErrors(errors)
     return Object.keys(errors).length === 0
@@ -168,14 +182,12 @@ export default function RegisterPage() {
       confirmPassword: "",
       phone: "",
       dateOfBirth: undefined,
-      gender: "male",
+      gender: "",
+      department: "",
     });
     setFormErrors({});
   }
-  const openPopover = (value: boolean) => {
-    console.log(value)
-    setOpen(true)
-  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-[var(--fixed-background)] p-4">
       <div className="w-full max-w-2xl">
@@ -189,7 +201,7 @@ export default function RegisterPage() {
           </div>
 
           <div className=" mt-4 sm:mt-2 flex justify-center sm:absolute sm:top-0 sm:right-0 languageDiv" >
-            <Select value={language} onValueChange={handleLanguageChange}>
+            <SelectShad value={language} onValueChange={handleLanguageChange}>
               <SelectTrigger className="w-[120px]">
                 <SelectValue placeholder="Language" />
               </SelectTrigger>
@@ -205,10 +217,9 @@ export default function RegisterPage() {
                   </div>
                 </SelectItem>
               </SelectContent>
-            </Select>
+            </SelectShad>
           </div>
         </div>
-
 
         <Card>
           <CardHeader>
@@ -218,7 +229,7 @@ export default function RegisterPage() {
           <CardContent>
             <form onSubmit={handleSubmit}>
               <div className="grid gap-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="grid gap-2">
                     <Label htmlFor="firstname">{translations.register.firstNameLabel}</Label>
                     <Input
@@ -290,41 +301,64 @@ export default function RegisterPage() {
                   {formErrors.phone && <p className="text-red-500 text-xs mt-1">{formErrors.phone}</p>}
                 </div>
 
-                <div className="grid gap-2">
-                  <Label htmlFor="dateOfBirth">{translations.register.dateOfBirthLabel}</Label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Date of Birth */}
+                  <div className="grid gap-2">
+                    <Label htmlFor="dateOfBirth">{translations.register.dateOfBirthLabel}</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant={"outline"}
+                          className={cn(
+                            "w-full pl-3 text-left font-normal",
+                            !formData.dateOfBirth && "text-muted-foreground",
+                            formErrors.dateOfBirth && "border-red-500"
+                          )}
+                        >
+                          {formData.dateOfBirth ? format(formData.dateOfBirth, "PPP") : <span>{translations.register.pickDatePlaceholder}</span>}
+                          <Calendar className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <CalendarComponent
+                          mode="single"
+                          selected={formData.dateOfBirth}
+                          onSelect={handleDateChange}
+                          disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    {formErrors.dateOfBirth && <p className="text-red-500 text-xs mt-1">{formErrors.dateOfBirth}</p>}
+                  </div>
 
-                  <Input
-                    id="endDate"
-                    type="date"
-                    value={formData.dateOfBirth ? format(formData.dateOfBirth, "yyyy-MM-dd") : ""}
-                    onChange={(e) => handleDateChange(e.target.value ? new Date(e.target.value) : undefined)}
-                    className={formErrors.dateOfBirth ? "border-[var(--fixed-danger)]" : "border-[var(--fixed-card-border)]"}
-                  />
-                  {formErrors.dateOfBirth && <p className="text-red-500 text-xs mt-1">{formErrors.dateOfBirth}</p>}
-                </div>
+                  {/* Gender */}
+                  <div className="grid gap-2">
+                    <Label htmlFor="gender">{translations.register.genderLabel}</Label>
+                    <Select
+                      id="gender"
+                      options={genderOptions}
+                      value={genderOptions.find((option) => option.value === formData.gender)}
+                      onChange={(option) => handleSelectChange("gender", option)}
+                      placeholder={translations.register.selectGenderPlaceholder}
+                      className={formErrors.gender ? "border-red-500" : ""}
+                    />
+                    {formErrors.gender && <p className="text-red-500 text-xs mt-1">{formErrors.gender}</p>}
+                  </div>
 
-                <div className="grid gap-2">
-                  <Label>{translations.register.genderLabel}</Label>
-                  <RadioGroup value={formData.gender} onValueChange={handleGenderChange} className="flex gap-4">
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="male" id="male" />
-                      <Label htmlFor="male" className="cursor-pointer">
-                        {translations.register.genderOptions.male}
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="female" id="female" />
-                      <Label htmlFor="female" className="cursor-pointer">
-                        {translations.register.genderOptions.female}
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="other" id="other" />
-                      <Label htmlFor="other" className="cursor-pointer">
-                        {translations.register.genderOptions.other}
-                      </Label>
-                    </div>
-                  </RadioGroup>
+                  {/* Department */}
+                  <div className="grid gap-2">
+                    <Label htmlFor="department">{translations.register.department}</Label>
+                    <Select
+                      id="department"
+                      options={departmentOptions}
+                      value={departmentOptions.find((option) => option.value === formData.department)}
+                      onChange={(option) => handleSelectChange("department", option)}
+                      placeholder={translations.register.selectDepartment}
+                      className={formErrors.department ? "border-red-500" : ""}
+                    />
+                    {formErrors.department && <p className="text-red-500 text-xs mt-1">{formErrors.department}</p>}
+                  </div>
                 </div>
 
                 <div className="grid gap-2">

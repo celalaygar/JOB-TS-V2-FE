@@ -104,7 +104,6 @@ export function CreateTaskDialog({ open, onOpenChange, parentTask, projectList, 
 
 
   const parentTaskOptions: SelectOption[] = useMemo(() => {
-    // Mevcut görevleri filtrele (alt görev olmayanlar ve seçili projeye ait olanlar)
     const filteredTasks = allTasks.filter(
       (task) => task.taskType !== "SUBTASK" && (formData.project ? task.createdProject.id === formData.project : true)
     );
@@ -115,9 +114,6 @@ export function CreateTaskDialog({ open, onOpenChange, parentTask, projectList, 
       label: `${task.taskNumber} - ${task.title}`
     }));
 
-    // Eğer allTasks boşsa VEYA filtreleme sonucu hiçbir görev kalmamışsa VE parentTask prop'u varsa,
-    // parentTask'ı seçeneklere ekle.
-    // Ayrıca, parentTask zaten options içinde yoksa ekle kontrolü yapıyoruz.
     if (parentTask && !options.some(option => option.value === parentTask.id)) {
       options = [{
         value: parentTask.id,
@@ -241,23 +237,19 @@ export function CreateTaskDialog({ open, onOpenChange, parentTask, projectList, 
 
 
   useEffect(() => {
-    if (parentTask?.id) { // parentTask'ın varlığını ve id'sinin olduğunu kontrol et
+    if (parentTask?.id) {
       setFormData((prev) => ({
         ...prev,
         project: parentTask.createdProject.id,
         taskType: "subtask",
         parentTask: parentTask.id,
       }));
-      // parentTask.createdProject'ın null veya undefined olmadığından emin olmak için ek bir kontrol ekleyebilirsiniz,
-      // ancak ProjectTask tip tanımınızda createdProject zorunlu ise gerek kalmaz.
-      // Yine de, API'den gelen verinin tutarlılığını sağlamak için eklemek iyi bir pratik olabilir.
-      if (parentTask.createdProject) { // Veya tip tanımınız garanti ediyorsa kaldırılabilir
+      if (parentTask.createdProject) {
         handleGetProjectUsers(parentTask.createdProject.id);
         handleGetSprints(parentTask.createdProject.id);
         fetchAllProjectTaskStatus(parentTask.createdProject.id);
       }
     } else {
-      // parentTask null olduğunda form verilerini ve ilgili listeleri temizle
       setFormData((prev) => ({
         ...prev,
         project: null,
@@ -346,7 +338,7 @@ export function CreateTaskDialog({ open, onOpenChange, parentTask, projectList, 
                       value={parentTaskOptions.find(option => option.value === formData.parentTask)}
                       onChange={(option) => handleChange("parentTask", option)}
                       placeholder={"Select parent task"}
-                      isDisabled={parentTask}
+                      isDisabled={!!parentTask}
                       isClearable
                     />
                   </div>}

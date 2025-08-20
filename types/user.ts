@@ -18,6 +18,7 @@ export interface User {
   education?: string[]
   location?: string
   workHours?: string
+  dateOfBirth?: string
 }
 
 export interface AuthenticationUser extends User {
