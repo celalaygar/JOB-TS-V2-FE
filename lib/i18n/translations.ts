@@ -201,10 +201,12 @@ export const en = {
     phoneLabel: "Phone Number (with area code)",
     phonePlaceholder: "+1 (555) 123-4567",
     dateOfBirthLabel: "Date of Birth",
+    pickDatePlaceholder: "Select Date of Birth",
     pickDate: "Pick a date",
     department: "Department",
     selectDepartment: "Select your department",
     genderLabel: "Gender",
+    selectGenderPlaceholder: "Select Gender",
     genderOptions: {
       male: "Male",
       female: "Female",
@@ -221,6 +223,8 @@ export const en = {
     haveAccount: "Already have an account?",
     signIn: "Sign in",
     errors: {
+      genderRequired: "Gender is required",
+      departmentRequired: "Department is required",
       firstNameRequired: "First name is required",
       lastNameRequired: "Last name is required",
       usernameRequired: "Username is required",
@@ -1316,6 +1320,8 @@ export const tr = {
     dateOfBirthLabel: "Doğum Tarihi",
     pickDate: "Tarih seçin",
     genderLabel: "Cinsiyet",
+    selectGenderPlaceholder: "Cinsiyet seçin",
+    pickDatePlaceholder: "Doğum Tarihi seçin",
     department: "Departman",
     selectDepartment: "Departman seçin",
     genderOptions: {
@@ -1334,6 +1340,8 @@ export const tr = {
     haveAccount: "Zaten bir hesabınız var mı?",
     signIn: "Giriş yap",
     errors: {
+      genderRequired: "Cinsiyet gereklidir",
+      departmentRequired: "Departman gereklidir",
       firstNameRequired: "Ad gereklidir",
       lastNameRequired: "Soyad gereklidir",
       usernameRequired: "Kullanıcı adı gereklidir",
