@@ -57,7 +57,10 @@ body {
   --fixed-success: #10b981;
   --fixed-warning: #f59e0b;
   --fixed-danger: #ef4444;
-  --fixed-info: #3b82f6;
+  --fixed-info: #5385d5;
+  --fixed-completed: #22c55e;
+  --fixed-pending: #eab308;
+  --fixed-draft: #94a3b8;
 }
 
 @layer base {
@@ -128,6 +131,7 @@ body {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }

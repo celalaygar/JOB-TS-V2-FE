@@ -8,9 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useCallback, useEffect, useState } from "react"
 import { ProjectTask, ProjectTaskFilterRequest, TaskResponse } from "@/types/task"
 import { getAllProjectTaskHelper } from "@/lib/service/api-helpers"
-import { Project } from "@/types/project"
 import { setTasks } from "@/lib/redux/features/tasks-slice"
-import { Badge } from "../ui/badge"
+import { Badge } from "@/components/ui/badge"
 import { getPriorityClassName } from "@/lib/utils/priority-utils"
 import { useRouter } from "next/navigation"
 import { useAuthUser } from "@/lib/hooks/useAuthUser"
@@ -100,8 +99,9 @@ export function RecentTasks() {
                   </p>
                 </div>
               </div>
-              <Badge className={`${getPriorityClassName(singleTask.priority)}`}>
-                {singleTask.priority.charAt(0).toUpperCase() + singleTask.priority.slice(1)}
+              <Badge
+                className={`${getPriorityClassName(singleTask.priority)}`}>
+                {singleTask.priority}
               </Badge>
             </div>
           ))}

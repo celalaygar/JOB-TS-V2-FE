@@ -13,10 +13,10 @@ export const getPriorityClassName = (priority: ProjectTaskPriority): string => {
         case ProjectTaskPriority.HIGH:
             return "bg-[var(--fixed-warning)] text-white";
         case ProjectTaskPriority.MEDIUM:
-            return "bg-[var(--fixed-info)] text-white";
+            return "bg-[var(--fixed-info)] text-bold";
         case ProjectTaskPriority.LOW:
             return "bg-[var(--fixed-success)] text-white";
         default:
-            return "bg-[var(--fixed-secondary)] text-white";
+            return "bg-[var(--fixed-secondary)] text-bold";
     }
 };
