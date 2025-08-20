@@ -56,6 +56,7 @@ body {
   /* Status colors */
   --fixed-success: #10b981;
   --fixed-warning: #f59e0b;
+  --fixed-warning2: #84ab63;
   --fixed-danger: #ef4444;
   --fixed-info: #5385d5;
   --fixed-completed: #22c55e;

@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Bug, Lightbulb, BookOpen, GitBranch, Loader2 } from "lucide-react"
-import type { ProjectTask, TaskType, TaskUpdateRequest } from "@/types/task" // Assuming TaskUpdateRequest type
+import { ProjectTaskPriority, ProjectTaskType, type ProjectTask, type TaskType, type TaskUpdateRequest } from "@/types/task" // Assuming TaskUpdateRequest type
 import { toast } from "@/hooks/use-toast"
 import { Project, ProjectTaskStatus, ProjectUser } from "@/types/project"
 import { Sprint } from "@/types/sprint"
@@ -88,17 +88,19 @@ export function EditTaskDialog({ projectTask, open, onOpenChange, projectList, f
   );
 
   const priorityOptions: SelectOption[] = useMemo(() => [
-    { value: "HIGH", label: "High" },
-    { value: "MEDIUM", label: "Medium" },
-    { value: "LOW", label: "Low" },
+    { value: ProjectTaskPriority.CRITICAL, label: "Critical" },
+    { value: ProjectTaskPriority.HIGH, label: "High" },
+    { value: ProjectTaskPriority.MEDIUM, label: "Medium" },
+    { value: ProjectTaskPriority.LOW, label: "Low" },
   ], []);
 
   const taskTypeOptions: SelectOption[] = useMemo(() => [
-    { value: "BUG", label: "Bug", icon: <Bug className="mr-2 h-4 w-4 text-red-500" /> },
-    { value: "FEATURE", label: "Feature", icon: <Lightbulb className="mr-2 h-4 w-4 text-blue-500" /> },
-    { value: "STORY", label: "Story", icon: <BookOpen className="mr-2 h-4 w-4 text-purple-500" /> },
-    { value: "SUBTASK", label: "Subtask", icon: <GitBranch className="mr-2 h-4 w-4 text-gray-500" /> },
+    { value: ProjectTaskType.BUG, label: "Bug", icon: <Bug className="mr-2 h-4 w-4 text-red-500" /> },
+    { value: ProjectTaskType.FEATURE, label: "Feature", icon: <Lightbulb className="mr-2 h-4 w-4 text-blue-500" /> },
+    { value: ProjectTaskType.STORY, label: "Story", icon: <BookOpen className="mr-2 h-4 w-4 text-purple-500" /> },
+    { value: ProjectTaskType.STORY, label: "Subtask", icon: <GitBranch className="mr-2 h-4 w-4 text-gray-500" /> },
   ], []);
+
 
   const sprintOptions: SelectOption[] = useMemo(() =>
     (sprintList || []).map(sprint => ({ value: sprint.id, label: sprint.name })),
