@@ -3,24 +3,38 @@ import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import { links } from './data/links';
 
-// Middleware fonksiyonu
 export async function middleware(request: NextRequest) {
     const token = await getToken({ req: request, secret: process.env.SECRET_KEY });
 
-    // Kullanıcı giriş yapmışsa, login sayfasına erişimini engelle
-    if (token && (request.nextUrl.pathname === links.login || request.nextUrl.pathname === links.register)) {
-        return NextResponse.redirect(new URL(links.dashboard, request.url));
+    const path = request.nextUrl.pathname;
+
+    console.log("----------------------" + path)
+    console.log("----------------------" + token)
+
+    // Token YOKKEN erişilebilecek sayfalar
+    const publicPaths = [
+        links.login,
+        links.register,
+    ];
+
+    const isInvitePath = path.startsWith('/register/invite/');
+
+    // Token yoksa, sadece login/register/register/invite/... yollarına izin ver
+    if (!token) {
+        if (!publicPaths.includes(path) && !isInvitePath) {
+            return NextResponse.redirect(new URL(links.login, request.url));
+        }
     }
 
-    // Kullanıcı giriş yapmamışsa, giriş yapılması gereken sayfalara erişimini engelle
-    if (!token && !(request.nextUrl.pathname === links.login || request.nextUrl.pathname === links.register)) {
-        return NextResponse.redirect(new URL(links.login, request.url));
+    // Token varsa, login/register/register/invite/... yollarına gidemesin → dashboard’a yönlendir
+    if (token) {
+        if (publicPaths.includes(path) || isInvitePath) {
+            return NextResponse.redirect(new URL(links.dashboard, request.url));
+        }
     }
 
-    // Diğer durumlarda isteği devam ettir
     return NextResponse.next();
 }
-
 
 export const config = {
     matcher: [
@@ -38,6 +52,7 @@ export const config = {
         '/projects/:id([a-zA-Z0-9\-]+)',
         '/projects/:id([a-zA-Z0-9\-]+)/status-management',
         '/register',
+        '/register/invite/:token([a-zA-Z0-9\-]+)',
         '/reports',
         '/request-approvals/leave',
         '/request-approvals/overtime',

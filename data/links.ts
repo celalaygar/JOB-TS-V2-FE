@@ -6,6 +6,7 @@ export interface Links {
     login: string;
     logout: string;
     register: string;
+    registerInviteToken: (token: string) => string;
     profile: string;
     notifications: string;
     users: string;
@@ -41,6 +42,7 @@ export const links: Links = {
     login: "/",
     logout: "/logout",
     register: "/register",
+    registerInviteToken: (token: string) => `/register/invite/${token}`,
     profile: "/profile",
     notifications: "/notifications",
     users: "/users",
