@@ -84,6 +84,10 @@ export const SPRINT_TASK_REMOVE_URL = SPRINT_TASK_URL + "/remove";
 export const SPRINT_TASK_GET_ALL_URL = SPRINT_TASK_URL + "/get-all";
 
 
+// user
+export const USER_URL = BASE_PATH_V2 + "user"
+export const USER_UPDATE_ME_URL = USER_URL + "/me";
+export const USER_UPDATE_ME_PASSWORD_URL = USER_UPDATE_ME_URL + "/password";
 
 
 

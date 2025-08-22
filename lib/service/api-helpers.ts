@@ -25,6 +25,9 @@ import {
   INVITATION_BY_PROJECTID,
   INVITE_TO_PROJECT,
   SPRINT_TASK_URL,
+  USER_URL,
+  USER_UPDATE_ME_URL,
+  USER_UPDATE_ME_PASSWORD_URL,
   SPRINT_USER_URL,
   PROJECT_TASK_COMMENT_ADD_URL,
   SPRINT_TASK_ADD_URL,
@@ -52,6 +55,7 @@ import {
 import { ProjectTask, ProjectTaskComment, ProjectTaskFilterRequest, TaskCommentRequest, TaskResponse, TaskUpdateRequest } from "@/types/task";
 import { BacklogFilterRequest } from "@/types/backlog";
 import { ProjectTaskStatusRequest } from "@/types/project-task-status";
+import { RegisterRequest, UserDto } from "@/types/user";
 
 interface ApiOperationConfig<T> {
   url: string;
@@ -85,14 +89,14 @@ export async function apiCall<T>(config: ApiOperationConfig<T>): Promise<T | nul
     // console.log(body)
     const response: T = await BaseService.request(url, { method, body });
 
-    // if (successMessage) {
-    //   toast({
-    //     title: successToastTitle || "Success",
-    //     description: successMessage,
-    //     variant: "default",
-    //     duration: 20000, // 2 seconds
-    //   });
-    // }
+    if (successMessage) {
+      toast({
+        title: successToastTitle || "Success",
+        description: successMessage,
+        variant: "default",
+        duration: 200, // 2 seconds
+      });
+    }
 
     return response;
   } catch (error: any) {
@@ -928,3 +932,51 @@ export const getProjectTeamUsersInTeamHelper = async (projectTeamUserData: any, 
     errorToastTitle: "Error Loading Project Team Users In Team",
   });
 }
+
+
+
+
+export const getMyInformationHelper = async (options: FetchEntitiesOptions): Promise<ProjectRole | null> => {
+  return apiCall<ProjectRole>({
+    url: `${USER_URL}`,
+    method: httpMethods.GET,
+    setLoading: options.setLoading,
+    successMessage: `My İnformation role has been retrieved.`,
+    errorMessagePrefix: "Failed to load My İnformation",
+    successToastTitle: "My İnformation Loaded",
+    errorToastTitle: "Error Loading My İnformation",
+  });
+};
+
+
+
+export const updateMyInformationHelper = async (body: RegisterRequest, options: FetchEntitiesOptions): Promise<UserDto | null> => {
+  return apiCall<UserDto>({
+    url: `${USER_UPDATE_ME_URL}`,
+    method: httpMethods.PATCH,
+    body: body,
+    setLoading: options.setLoading,
+    successMessage: `My İnformation has been updated.`,
+    errorMessagePrefix: "Failed to update My İnformation",
+    successToastTitle: "My İnformation Updated",
+    errorToastTitle: "Error Updating My İnformation",
+  });
+};
+
+
+
+export const updateMyPasswordHelper = async (body: any, options: FetchEntitiesOptions): Promise<Boolean | null> => {
+  return apiCall<Boolean>({
+    url: `${USER_UPDATE_ME_PASSWORD_URL}`,
+    method: httpMethods.PATCH,
+    body: body,
+    setLoading: options.setLoading,
+    successMessage: `My password has been updated.`,
+    errorMessagePrefix: "Failed to update My password",
+    successToastTitle: "My password Updated",
+    errorToastTitle: "Error Updating My password",
+  });
+};
+
+
+

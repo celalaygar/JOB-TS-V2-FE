@@ -11,6 +11,8 @@ const USER = "user/me"
 export async function PATCH(req: NextRequest) {
     const body = await req.json();
     const clientIp = req.ip || req.headers.get('x-forwarded-for') || req.headers.get('remote-address');
+    console.log("body------------------")
+    console.log(body)
     return RouteBaseService.request(URL + USER, {
         method: httpMethods.PATCH,
         body: body,

@@ -1,9 +1,9 @@
 export interface User {
   id: string
-  name: string
+  username: string
   firstname: string
   lastname: string
-  email: string
+  email?: string
   role?: string
   avatar?: string
   initials?: string
@@ -19,6 +19,9 @@ export interface User {
   location?: string
   workHours?: string
   dateOfBirth?: string
+  gender?: string
+  company?: string
+  position?: string
 }
 
 export interface AuthenticationUser extends User {
@@ -42,4 +45,59 @@ export interface AuthUser {
   role: string | [] | null | undefined;
   password: string | null;
   systemRoles: string[];
+}
+
+export interface RegisterRequest {
+  email?: string;
+  username?: string;
+  firstname?: string;
+  lastname?: string;
+  password?: string;
+  confirmPassword?: string;
+  phone?: string;
+  dateOfBirth?: Date;
+  gender?: string;
+  token?: string;
+  department?: string; // UserDepartment için ayrı bir interface tanımlamanız gerekebilir
+  company?: string;
+  position?: string;
+}
+
+
+export interface UserDto {
+  id?: string;
+  email?: string;
+  username?: string;
+  firstname?: string;
+  lastname?: string;
+  password?: string;
+  systemRoles?: Set<SystemRole>; // TypeScript'te Set<T> olarak çevrilir.
+  status?: string;
+  department?: UserDepartment; // Ayrı bir arayüz veya enum olarak tanımlanmalıdır.
+  phone?: string;
+  dateOfBirth?: Date; // Java'daki Date, TypeScript'te Date nesnesine karşılık gelir.
+  gender?: string;
+  position?: string;
+  company?: string;
+  createdAt?: string; // LocalDateTime genellikle ISO 8601 string olarak gönderilir.
+  projectSystemRole?: ProjectSystemRole; // Ayrı bir arayüz veya enum olarak tanımlanmalıdır.
+  updatedAt?: string; // LocalDateTime genellikle ISO 8601 string olarak gönderilir.
+}
+
+// Örnek bağımlılık tanımlamaları
+// Java modelinize göre bu kısımları düzenlemeniz gerekir.
+
+interface SystemRole {
+  id: string;
+  name: string;
+}
+
+interface UserDepartment {
+  id: string;
+  name: string;
+}
+
+interface ProjectSystemRole {
+  id: string;
+  name: string;
 }

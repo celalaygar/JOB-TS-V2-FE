@@ -40,6 +40,7 @@ export const en = {
   },
   profile: {
     information: {
+      username: "User Name",
       firstname: "First Name",
       lastname: "Last Name",
       title: "Profile Information",
@@ -1158,6 +1159,7 @@ export const tr = {
   },
   profile: {
     information: {
+      username: "Kullanıcı Adı",
       firstname: "İsim",
       lastname: "Soyisim",
       title: "Profil Bilgileri",
