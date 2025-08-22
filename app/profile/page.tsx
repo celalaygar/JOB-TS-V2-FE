@@ -12,9 +12,10 @@ import { AuthUser } from "../api/auth/[...nextauth]/authOptions"
 import { useSession } from "next-auth/react"
 import { AuthenticationUser } from "@/types/user"
 import { useAuthUser } from "@/lib/hooks/useAuthUser"
+import EmailChangeForm from "@/components/profile/Email-change-form"
 
 export default function ProfilePage() {
-  const [activeTab, setActiveTab] = useState<"information" | "security" | "notifications">("information")
+  const [activeTab, setActiveTab] = useState<"information" | "changeEmail" | "security" | "notifications">("information")
   const currentUser = useSelector((state: RootState) => state.auth.currentUser)
 
   const authUser = useAuthUser();
@@ -46,6 +47,16 @@ export default function ProfilePage() {
             Information
           </button>
           <button
+            onClick={() => setActiveTab("changeEmail")}
+            className={cn(
+              "px-4 py-2 text-sm font-medium transition-all",
+              "hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              activeTab === "changeEmail" ? "border-b-2 border-primary text-primary" : "text-muted-foreground",
+            )}
+          >
+            Change Email
+          </button>
+          <button
             onClick={() => setActiveTab("security")}
             className={cn(
               "px-4 py-2 text-sm font-medium transition-all",
@@ -69,6 +80,7 @@ export default function ProfilePage() {
 
         <div className="space-y-6">
           {activeTab === "information" && <ProfileInformation user={authUser.user} />}
+          {activeTab === "changeEmail" && <EmailChangeForm />}
           {activeTab === "security" && <ProfileSecurity />}
           {activeTab === "notifications" && <ProfileNotifications />}
         </div>

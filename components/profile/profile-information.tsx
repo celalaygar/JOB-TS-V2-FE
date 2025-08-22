@@ -277,6 +277,7 @@ export function ProfileInformation() {
                         <Label htmlFor="email">{t.email}</Label>
                         <Input
                           id="email"
+                          disabled={true}
                           placeholder="Enter your email address"
                           value={formData.email}
                           onChange={(e) => handleChange("email", e.target.value)}
