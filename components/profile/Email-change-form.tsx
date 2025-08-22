@@ -162,7 +162,7 @@ const EmailChangeForm: React.FC = () => {
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900 p-4 font-inter">
             {/* Main container with responsive grid layout */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-6xl">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 w-full max-w-6xl">
 
                 {/* Left Section: Email Change Form */}
                 <div className="flex flex-col rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-8 shadow-md">
@@ -181,22 +181,30 @@ const EmailChangeForm: React.FC = () => {
                     <form onSubmit={handleSubmit} className="space-y-6">
                         {/* Current Email Input and Send Code Button */}
                         <div className="space-y-2">
-                            <Label.Root className="text-sm font-medium leading-none text-gray-700 dark:text-gray-300" htmlFor="current-email">
+                            <Label.Root
+                                className="text-sm font-medium leading-none text-gray-700 dark:text-gray-300"
+                                htmlFor="current-email"
+                            >
                                 Current Email
                             </Label.Root>
-                            <div className="flex items-center space-x-2">
+                            <div className="flex flex-col md:flex-row md:items-center gap-2">
                                 <input
                                     id="current-email"
                                     type="email"
                                     value={user?.email || ""}
                                     disabled
-                                    className="flex h-10 w-full rounded-md border border-gray-300 bg-gray-50 dark:bg-gray-700 px-3 py-2 text-sm text-gray-800 dark:text-gray-200 ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 flex-1"
+                                    className="flex h-10 w-full rounded-md border border-gray-300 bg-gray-50 dark:bg-gray-700 
+                 px-3 py-2 text-sm text-gray-800 dark:text-gray-200 
+                 ring-offset-background disabled:cursor-not-allowed disabled:opacity-50"
                                 />
                                 <button
                                     type="button"
                                     onClick={handleSendCode}
                                     disabled={isCodeSending || countdown > 0}
-                                    className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium h-10 px-4 py-2 w-32 bg-indigo-600 text-white hover:bg-indigo-700 transition-colors duration-200 disabled:pointer-events-none disabled:opacity-50"
+                                    className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium 
+                 h-10 px-4 py-2 w-full md:w-32 
+                 bg-indigo-600 text-white hover:bg-indigo-700 
+                 transition-colors duration-200 disabled:pointer-events-none disabled:opacity-50"
                                 >
                                     {isCodeSending ? (
                                         <Loader2 className="h-4 w-4 animate-spin" />
@@ -209,25 +217,35 @@ const EmailChangeForm: React.FC = () => {
 
                         {/* Verification Code Input */}
                         <div className="space-y-2">
-                            <Label.Root className="text-sm font-medium leading-none text-gray-700 dark:text-gray-300" htmlFor="verification-code">
+                            <Label.Root
+                                className="text-sm font-medium leading-none text-gray-700 dark:text-gray-300"
+                                htmlFor="verification-code"
+                            >
                                 Verification Code
                             </Label.Root>
-                            <div className="flex flex-col space-y-2">
-                                <div className="flex gap-2 justify-between">
+                            <div className="space-y-2">
+                                {/* Responsive grid: mobile → 4 sütun, md → 8 sütun */}
+                                <div className="grid grid-cols-4 lg:grid-cols-8 md:grid-cols-8 gap-2">
                                     {Array.from({ length: 8 }).map((_, index) => (
                                         <input
                                             key={index}
-                                            ref={el => inputRefs.current[index] = el}
+                                            ref={(el) => (inputRefs.current[index] = el)}
                                             type="text"
                                             maxLength={1}
                                             value={formData.verificationCode[index] || ""}
                                             onChange={(e) => handleCodeChange(index, e.target.value)}
-                                            className="flex-1 h-12 w-12 rounded-md border text-center text-lg font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200
-                      bg-white dark:bg-gray-700 dark:border-gray-600 border-gray-300 dark:text-white"
+                                            className="h-12 w-full rounded-md border text-center text-lg font-mono 
+                     focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent 
+                     transition-all duration-200
+                     bg-white dark:bg-gray-700 dark:border-gray-600 border-gray-300 dark:text-white"
                                         />
                                     ))}
                                 </div>
-                                {errors.verificationCode && <p className="text-sm font-medium text-red-500 mt-2">{errors.verificationCode}</p>}
+                                {errors.verificationCode && (
+                                    <p className="text-sm font-medium text-red-500 mt-2">
+                                        {errors.verificationCode}
+                                    </p>
+                                )}
                             </div>
                         </div>
 
