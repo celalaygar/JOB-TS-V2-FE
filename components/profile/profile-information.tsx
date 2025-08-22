@@ -19,6 +19,7 @@ import { useLanguage } from "@/lib/i18n/context";
 import { useAuthUser, useUpdateAuthUser } from "@/lib/hooks/useAuthUser";
 import { updateMyInformationHelper } from "@/lib/service/api-helpers";
 import { RegisterRequest, UserDto } from "@/types/user";
+import DatePicker from "react-datepicker";
 
 // Form verileri için state tipi
 interface ProfileFormState {
@@ -297,29 +298,28 @@ export function ProfileInformation() {
                       </div>
 
                       {/* Date of Birth */}
+                      {/* Date of Birth */}
+                      {/* Date of Birth */}
                       <div className="space-y-2">
                         <Label htmlFor="dob">{t.dob}</Label>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button
-                              variant={"outline"}
-                              className={cn("w-full pl-3 text-left font-normal", !formData.dateOfBirth && "text-muted-foreground")}
-                            >
-                              {formData.dateOfBirth ? format(formData.dateOfBirth, "PPP") : <span>{t.pickDate}</span>}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                              mode="single"
-                              selected={formData.dateOfBirth}
-                              onSelect={(date) => handleChange("dateOfBirth", date)}
-                              disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
-                              initialFocus
-                            />
-                          </PopoverContent>
-                        </Popover>
+                        <Input
+                          id="dob"
+                          type="date"
+                          value={formData.dateOfBirth ? formData.dateOfBirth.toISOString().split("T")[0] : ""}
+                          onChange={(e) => handleChange("dateOfBirth", e.target.value ? new Date(e.target.value) : undefined)}
+                          max={new Date().toISOString().split("T")[0]} // gelecekteki tarihleri engelle
+                          className={errors.dateOfBirth
+                            ? "border-[var(--fixed-danger)]"
+                            : "border-[var(--fixed-card-border)]"}
+                        />
+                        {errors.dateOfBirth && (
+                          <p className="text-sm font-medium text-destructive">
+                            {errors.dateOfBirth}
+                          </p>
+                        )}
                       </div>
+
+
 
                       {/* Gender with React Select */}
                       <div className="space-y-2">
