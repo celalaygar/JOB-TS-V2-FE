@@ -1,6 +1,11 @@
 import { EmailChangeRequest, EmailChangeResponse } from "@/types/user";
 import { apiCall, FetchEntitiesOptions } from "./api-helpers";
-import { SEND_CODE_URL, VERIFY_AND_SEND_LINK_URL } from "./BasePath";
+import {
+    SEND_CODE_URL,
+    VERIFY_AND_SEND_LINK_URL,
+    EMAIL_CHANGE_PUBLIC_CONFIRM_URL,
+    EMAIL_CHANGE_PUBLIC_REJECT_URL
+} from "./BasePath";
 import { httpMethods } from "./HttpService";
 
 
