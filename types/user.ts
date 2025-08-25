@@ -101,3 +101,18 @@ interface ProjectSystemRole {
   id: string;
   name: string;
 }
+
+
+
+
+export interface EmailChangeRequest {
+  currentPassword: string;
+  newEmail: string;
+  verificationCode: string;
+}
+
+
+export interface EmailChangeResponse {
+  success: boolean;
+  message: string;
+}

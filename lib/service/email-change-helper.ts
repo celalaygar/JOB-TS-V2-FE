@@ -1,5 +1,6 @@
+import { EmailChangeRequest, EmailChangeResponse } from "@/types/user";
 import { apiCall, FetchEntitiesOptions } from "./api-helpers";
-import { SEND_CODE_URL } from "./BasePath";
+import { SEND_CODE_URL, VERIFY_AND_SEND_LINK_URL } from "./BasePath";
 import { httpMethods } from "./HttpService";
 
 
@@ -7,8 +8,23 @@ import { httpMethods } from "./HttpService";
 
 
 
-export const sendCodeToCurrentEmailHelper = async (options: FetchEntitiesOptions): Promise<Boolean | null> => {
-    return apiCall<Boolean>({
+
+export const changeEmailRequestHelper = async (body: EmailChangeRequest, options: FetchEntitiesOptions): Promise<EmailChangeResponse | null> => {
+    return apiCall<EmailChangeResponse>({
+        url: `${VERIFY_AND_SEND_LINK_URL}`,
+        method: httpMethods.POST,
+        body: body,
+        setLoading: options.setLoading,
+        successMessage: "Change Email Request have been successfully sent.",
+        errorMessagePrefix: "Failed to send Change Email Request",
+        successToastTitle: "Change Email Request Loaded",
+        errorToastTitle: "Error sending Change Email Request",
+    });
+}
+
+
+export const sendCodeToCurrentEmailHelper = async (options: FetchEntitiesOptions): Promise<EmailChangeResponse | null> => {
+    return apiCall<EmailChangeResponse>({
         url: `${SEND_CODE_URL}`,
         method: httpMethods.GET,
         body: null,

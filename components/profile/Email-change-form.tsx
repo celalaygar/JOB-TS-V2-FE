@@ -3,8 +3,8 @@ import React, { useState, useCallback, useEffect, useRef, useMemo } from "react"
 import { Loader2 } from "lucide-react";
 import * as Label from "@radix-ui/react-label";
 import { useAuthUser } from "@/lib/hooks/useAuthUser";
-import { AuthenticationUser } from "@/types/user";
-import { sendCodeToCurrentEmailHelper } from "@/lib/service/email-change-helper";
+import { AuthenticationUser, EmailChangeRequest, EmailChangeResponse } from "@/types/user";
+import { changeEmailRequestHelper, sendCodeToCurrentEmailHelper } from "@/lib/service/email-change-helper";
 
 // This is the complete and self-contained EmailChangeForm component.
 // It uses a responsive grid layout to display user info and the form side-by-side.
@@ -60,36 +60,39 @@ const EmailChangeForm: React.FC = () => {
 
     // Special handler for the 8-digit verification code input
     const handleCodeChange = useCallback((index: number, value: string) => {
-        // Only allow single digits
-        if (!/^\d*$/.test(value)) {
+        // Allow only alphanumeric characters
+        if (!/^[a-zA-Z0-9]*$/.test(value)) {
             return;
         }
 
-        // Update the state with the new digit
+        // Update the state with the new character
         const newCodeArray = formData.verificationCode.split('');
-        newCodeArray[index] = value;
+        newCodeArray[index] = value.toUpperCase(); // opsiyonel: otomatik büyük harf yap
         handleChange("verificationCode", newCodeArray.join(''));
 
-        // Automatically move focus to the next input field
+        // Focus logic
         if (value && index < 7 && inputRefs.current[index + 1]) {
             inputRefs.current[index + 1]?.focus();
         } else if (!value && index > 0 && !newCodeArray[index - 1] && inputRefs.current[index - 1]) {
-            // Handle backspace to move focus to the previous field if the current one becomes empty
             inputRefs.current[index - 1]?.focus();
         }
     }, [formData.verificationCode, handleChange]);
 
+
     // Asynchronous function to simulate sending a verification code
     const handleSendCode = async () => {
 
-        const response: Boolean | null = await sendCodeToCurrentEmailHelper({ setLoading: setIsCodeSending });
-        if (response && response === true) {
-            // Simulate an API call
-            await new Promise(resolve => setTimeout(resolve, 1500));
+        const response: EmailChangeResponse | null = await sendCodeToCurrentEmailHelper({ setLoading: setIsCodeSending });
+        if (response && response.success === true) {
+            if (response.success === true) {
 
-            setCountdown(60); // Start the timer
-            if (user !== null && !user?.email) {
-                setMessage({ text: `A verification code has been sent to your current email: ${user.email}.`, type: 'success' });
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                setCountdown(60); // Start the timer
+                if (user !== null) {
+                    setMessage({ text: `A verification code has been sent to your current email: ${user.email}.`, type: 'success' });
+                }
+            } else {
+                setMessage({ text: response.message, type: 'error' });
             }
         } else {
             setMessage({ text: "Could not send code. Please try again later.", type: 'error' });
@@ -128,20 +131,25 @@ const EmailChangeForm: React.FC = () => {
             setMessage({ text: "Please correct the errors in the form.", type: 'error' });
             return;
         }
+        let body: EmailChangeRequest = {
+            newEmail: formData.newEmail,
+            verificationCode: formData.verificationCode,
+            currentPassword: formData.currentPassword,
+        }
+        const response: EmailChangeResponse | null = await changeEmailRequestHelper(body, { setLoading: setIsChangingEmail })
+        if (response) {
+            if (response.success === true) {
 
-        setIsChangingEmail(true);
-        try {
-            // Simulate an API call
-            await new Promise(resolve => setTimeout(resolve, 2000));
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                setMessage({ text: "To complete the email change process, please click the link in  " + body.newEmail + " in your new email adress if you want Your email address has been successfully updated.", type: 'success' });
+                setFormData({ verificationCode: "", newEmail: "", currentPassword: "" });
+            } else {
+                setMessage({ text: response.message, type: 'error' });
+            }
 
-            setMessage({ text: "Your email address has been successfully updated.", type: 'success' });
-            // Reset form fields after successful submission
-            setFormData({ verificationCode: "", newEmail: "", currentPassword: "" });
-        } catch (error) {
-            console.error("Failed to update email:", error);
+        } else {
+            console.error("Failed to update email:");
             setMessage({ text: "An error occurred while updating the email. Please check your information and try again.", type: 'error' });
-        } finally {
-            setIsChangingEmail(false);
         }
     };
 
