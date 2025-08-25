@@ -116,3 +116,14 @@ export interface EmailChangeResponse {
   success: boolean;
   message: string;
 }
+
+
+
+
+
+export interface ValidateEmailTokenResponse {
+  token: string;
+  newEmailPending: string;
+  currentEmail: string;
+  valid: boolean;
+}

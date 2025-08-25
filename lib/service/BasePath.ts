@@ -94,12 +94,12 @@ export const USER_UPDATE_ME_PASSWORD_URL = USER_UPDATE_ME_URL + "/password";
 export const EMAIL_CHANGE_URL = BASE_PATH_V2 + "email-change";
 export const SEND_CODE_URL = EMAIL_CHANGE_URL + "/send-code";
 export const VERIFY_AND_SEND_LINK_URL = EMAIL_CHANGE_URL + "/verify-and-send-link";
-export const VALIDATE_TOKEN_URL = EMAIL_CHANGE_URL + "/validate-token";
 
 // 
 export const EMAIL_CHANGE_PUBLIC_URL = BASE_PATH_V2 + "email-change-public";
 export const EMAIL_CHANGE_PUBLIC_CONFIRM_URL = EMAIL_CHANGE_PUBLIC_URL + "/confirm";
 export const EMAIL_CHANGE_PUBLIC_REJECT_URL = EMAIL_CHANGE_PUBLIC_URL + "/reject";
+export const EMAIL_CHANGE_PUBLIC_VALIDATE_TOKEN_URL = EMAIL_CHANGE_PUBLIC_URL + "/validate-token";
 
 
 // project-task"
