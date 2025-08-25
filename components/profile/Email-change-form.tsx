@@ -6,10 +6,7 @@ import { useAuthUser } from "@/lib/hooks/useAuthUser";
 import { AuthenticationUser, EmailChangeRequest, EmailChangeResponse } from "@/types/user";
 import { changeEmailRequestHelper, sendCodeToCurrentEmailHelper } from "@/lib/service/email-change-helper";
 
-// This is the complete and self-contained EmailChangeForm component.
-// It uses a responsive grid layout to display user info and the form side-by-side.
 const EmailChangeForm: React.FC = () => {
-    // Use the provided hook to get the authenticated user and handle null checks.
     const authUser = useAuthUser();
     const user: AuthenticationUser | null = authUser?.user ?? null;
 
@@ -25,11 +22,9 @@ const EmailChangeForm: React.FC = () => {
     const [errors, setErrors] = useState<Partial<typeof formData>>({});
     const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' | '' }>({ text: '', type: '' });
 
-    // Refs for the countdown timer and verification code inputs
     const timerRef = useRef<NodeJS.Timeout | null>(null);
     const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-    // Effect for the countdown timer
     useEffect(() => {
         if (countdown > 0) {
             timerRef.current = setInterval(() => {
@@ -39,7 +34,6 @@ const EmailChangeForm: React.FC = () => {
             clearInterval(timerRef.current);
         }
 
-        // Cleanup function to clear the timer when the component unmounts or countdown is reset
         return () => {
             if (timerRef.current) {
                 clearInterval(timerRef.current);
@@ -47,30 +41,24 @@ const EmailChangeForm: React.FC = () => {
         };
     }, [countdown]);
 
-    // Generic handler for form input changes
     const handleChange = useCallback((field: keyof typeof formData, value: string) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
-        // Clear the specific error for the field being edited
         if (errors[field]) {
             setErrors((prev) => ({ ...prev, [field]: undefined }));
         }
-        // Clear any general messages
         setMessage({ text: '', type: '' });
     }, [errors]);
 
-    // Special handler for the 8-digit verification code input
     const handleCodeChange = useCallback((index: number, value: string) => {
         // Allow only alphanumeric characters
         if (!/^[a-zA-Z0-9]*$/.test(value)) {
             return;
         }
 
-        // Update the state with the new character
         const newCodeArray = formData.verificationCode.split('');
-        newCodeArray[index] = value.toUpperCase(); // opsiyonel: otomatik büyük harf yap
+        newCodeArray[index] = value.toUpperCase();
         handleChange("verificationCode", newCodeArray.join(''));
 
-        // Focus logic
         if (value && index < 7 && inputRefs.current[index + 1]) {
             inputRefs.current[index + 1]?.focus();
         } else if (!value && index > 0 && !newCodeArray[index - 1] && inputRefs.current[index - 1]) {
@@ -79,7 +67,6 @@ const EmailChangeForm: React.FC = () => {
     }, [formData.verificationCode, handleChange]);
 
 
-    // Asynchronous function to simulate sending a verification code
     const handleSendCode = async () => {
 
         const response: EmailChangeResponse | null = await sendCodeToCurrentEmailHelper({ setLoading: setIsCodeSending });
@@ -87,7 +74,7 @@ const EmailChangeForm: React.FC = () => {
             if (response.success === true) {
 
                 await new Promise(resolve => setTimeout(resolve, 1500));
-                setCountdown(60); // Start the timer
+                setCountdown(60);
                 if (user !== null) {
                     setMessage({ text: `A verification code has been sent to your current email: ${user.email}.`, type: 'success' });
                 }
@@ -100,7 +87,6 @@ const EmailChangeForm: React.FC = () => {
 
     };
 
-    // Validation function for the entire form
     const validateForm = (): boolean => {
         const newErrors: Partial<typeof formData> = {};
         if (formData.verificationCode.length !== 8) {
@@ -116,7 +102,6 @@ const EmailChangeForm: React.FC = () => {
         return Object.keys(newErrors).length === 0;
     };
 
-    // Memoized value to determine if the form can be submitted
     const canSubmit = useMemo(() => {
         const { verificationCode, newEmail, currentPassword } = formData;
         return verificationCode.length === 8 &&
@@ -124,7 +109,6 @@ const EmailChangeForm: React.FC = () => {
             currentPassword.length >= 6;
     }, [formData]);
 
-    // Asynchronous function to handle form submission (changing the email)
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!validateForm()) {
@@ -153,7 +137,6 @@ const EmailChangeForm: React.FC = () => {
         }
     };
 
-    // If the user data is not yet available, show a loading spinner.
     if (!user) {
         return (
             <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -163,8 +146,7 @@ const EmailChangeForm: React.FC = () => {
     }
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900 p-4 font-inter">
-            {/* Main container with responsive grid layout */}
+        <div className="flex justify-center bg-gray-50 dark:bg-gray-900 font-inter ">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 w-full max-w-6xl">
 
                 {/* Left Section: Email Change Form */}
