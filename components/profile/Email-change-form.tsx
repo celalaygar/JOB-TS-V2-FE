@@ -4,6 +4,7 @@ import { Loader2 } from "lucide-react";
 import * as Label from "@radix-ui/react-label";
 import { useAuthUser } from "@/lib/hooks/useAuthUser";
 import { AuthenticationUser } from "@/types/user";
+import { sendCodeToCurrentEmailHelper } from "@/lib/service/email-change-helper";
 
 // This is the complete and self-contained EmailChangeForm component.
 // It uses a responsive grid layout to display user info and the form side-by-side.
@@ -80,26 +81,20 @@ const EmailChangeForm: React.FC = () => {
 
     // Asynchronous function to simulate sending a verification code
     const handleSendCode = async () => {
-        setIsCodeSending(true);
-        try {
-            // Check if user is logged in
-            if (!user?.email) {
-                setMessage({ text: "Current user email is not available. Cannot send code.", type: 'error' });
-                setIsCodeSending(false);
-                return;
-            }
 
+        const response: Boolean | null = await sendCodeToCurrentEmailHelper({ setLoading: setIsCodeSending });
+        if (response && response === true) {
             // Simulate an API call
             await new Promise(resolve => setTimeout(resolve, 1500));
 
             setCountdown(60); // Start the timer
-            setMessage({ text: `A verification code has been sent to your current email: ${user.email}.`, type: 'success' });
-        } catch (error) {
-            console.error("Failed to send code:", error);
+            if (user !== null && !user?.email) {
+                setMessage({ text: `A verification code has been sent to your current email: ${user.email}.`, type: 'success' });
+            }
+        } else {
             setMessage({ text: "Could not send code. Please try again later.", type: 'error' });
-        } finally {
-            setIsCodeSending(false);
         }
+
     };
 
     // Validation function for the entire form

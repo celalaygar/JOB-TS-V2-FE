@@ -9,6 +9,7 @@ import type { ProjectTeam, Project, ProjectTaskStatus } from "@/types/project";
 import type { ProjectRole, ProjectRolePermission, ProjectRoleRequest } from "@/types/project-role";
 import type { Invitation } from "@/lib/redux/features/invitations-slice";
 import {
+  SEND_CODE_URL,
   GET_ACTIVE_PROJECT_USERS,
   GET_ALL_PROJECT_USERS,
   REMOVE_PROJECT_USERS_URL,
@@ -128,7 +129,7 @@ export async function apiCall<T>(config: ApiOperationConfig<T>): Promise<T | nul
   }
 }
 
-interface FetchEntitiesOptions {
+export interface FetchEntitiesOptions {
   setLoading: (loading: boolean) => void;
 }
 

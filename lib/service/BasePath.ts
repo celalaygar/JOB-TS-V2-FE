@@ -90,12 +90,19 @@ export const USER_UPDATE_ME_URL = USER_URL + "/me";
 export const USER_UPDATE_ME_PASSWORD_URL = USER_UPDATE_ME_URL + "/password";
 
 
+// EMAİL CHANGE
+export const EMAIL_CHANGE_URL = BASE_PATH_V2 + "email-change";
+export const SEND_CODE_URL = EMAIL_CHANGE_URL + "/send-code";
+export const VERIFY_AND_SEND_LINK_URL = EMAIL_CHANGE_URL + "/verify-and-send-link";
+export const VALIDATE_TOKEN_URL = EMAIL_CHANGE_URL + "/validate-token";
+export const CONFIRM_URL = EMAIL_CHANGE_URL + "/confirm";
+
+
+
 
 // project-task"
 export const PROJECT_TASK = BASE_PATH_V2 + "project-task"
 export const UPDATE_PROJECT_TASK_STATUS_URL = PROJECT_TASK + "/update-status";
-
-
 export const PROJECT_TASK_SUBTASKS = PROJECT_TASK + "/subtasks";
 
 
