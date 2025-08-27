@@ -5,18 +5,19 @@ import RouteBaseService from '@/lib/service/RouteBaseService';
 import { NextRequest } from 'next/server';
 
 const URL = process.env.BASE_V2_URL
-const EMAIL_CHANGE_PATH = "email-change-public/confirm"
+const EMAIL_CHANGE_PATH = "public/email-change/validate-token"
 
 
-export async function GET(req: NextRequest,
-    { params }: { params: Promise<{ token: string }> }
+export async function POST(req: NextRequest
 ) {
     const clientIp = req.ip || req.headers.get('x-forwarded-for') || req.headers.get('remote-address');
 
-    const t = await (await params).token;
-    return RouteBaseService.request(URL + EMAIL_CHANGE_PATH + "/" + t, {
-        method: httpMethods.GET,
+    const body = await req.json();
+    console.log(body)
+    return RouteBaseService.request(URL + EMAIL_CHANGE_PATH, {
+        method: httpMethods.POST,
+        body,
         clientIp: clientIp, // ✅ IP'yi servise ilet
-        // withAuth default: true
+        withAuth: false
     });
 }

@@ -7,11 +7,19 @@ import { Button } from "@/components/ui/button";
 import { Info, Loader2 } from "lucide-react";
 import BaseService from "@/lib/service/BaseService";
 import { httpMethods } from "@/lib/service/HttpService";
-import { ValidateEmailTokenResponse } from "@/types/user";
+import { EmailChangeResponse, ValidateEmailTokenResponse } from "@/types/user";
+import { confirmEmailChangeHelper, rejectEmailChangeHelper, validateEmailTokenHelper } from "@/lib/service/email-change-helper";
+import { signOut } from "next-auth/react";
+import { useAuthUser } from "@/lib/hooks/useAuthUser";
 
+const enum ActionType {
+    CONFIRM = "confirm",
+    REJECT = "reject"
+}
 
 
 export default function EmailChangePage() {
+    const authUser = useAuthUser();
     const params = useParams();
     const router = useRouter();
     const token = params.token as string;
@@ -22,17 +30,18 @@ export default function EmailChangePage() {
     const [actionLoading, setActionLoading] = useState(false);
     const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' | '' }>({ text: '', type: '' });
 
+
+
+
+
     const controlToken = useCallback(async () => {
         setLoading(true);
         try {
-            const response: ValidateEmailTokenResponse = await BaseService.request("/api/email-change/validate-token", {
-                method: httpMethods.POST,
-                body: { token },
-            });
+            const response: ValidateEmailTokenResponse | null = await validateEmailTokenHelper(token, { setLoading });
 
-            if (response.valid) {
+            if (!!response && response.valid) {
                 setEmailData(response);
-                setTokenValid(true);
+                setTokenValid(response.valid);
             } else {
                 setMessage({ text: "The email change link is invalid or expired.", type: "error" });
             }
@@ -47,17 +56,56 @@ export default function EmailChangePage() {
         controlToken();
     }, [controlToken]);
 
-    const handleAction = useCallback(async (action: "confirm" | "reject") => {
-        if (!token) return;
+    const handleAction = useCallback(
+        async (action: ActionType.CONFIRM | ActionType.REJECT) => {
+            console.log({ action, token, tokenValid });
+            if (!token) return;
+            if (action !== ActionType.CONFIRM && action !== ActionType.REJECT) return;
 
-    }, [router, token]);
+            if (action === ActionType.CONFIRM) {
+                const response: EmailChangeResponse | null = await confirmEmailChangeHelper(
+                    token,
+                    { setLoading: setActionLoading }
+                );
+
+                if (response?.success) {
+                    setMessage({
+                        text: response.message || "Email change confirmed successfully.",
+                        type: "success",
+                    });
+                    setTokenValid(false);
+
+                    // ✅ Session sadece authUser varsa silinsin
+                    if (authUser) {
+                        const currentOrigin = window.location.origin;
+                        await fetch("/api/auth/logout");
+                        await signOut({ redirect: true, callbackUrl: currentOrigin + "/" });
+                    }
+                }
+            } else if (action === ActionType.REJECT) {
+                const response: EmailChangeResponse | null = await rejectEmailChangeHelper(
+                    token,
+                    { setLoading: setActionLoading }
+                );
+                if (response?.success) {
+                    setMessage({
+                        text: response.message || "Email change rejected successfully.",
+                        type: "success",
+                    });
+                    setTokenValid(false);
+                }
+            }
+        },
+        [router, token, authUser]
+    );
+
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
             <div className="w-full max-w-md">
                 <Card>
                     <CardHeader>
-                        <CardTitle>Email Change Request</CardTitle>
+                        <CardTitle>Email Change Request {tokenValid + ""}  </CardTitle>
                         <CardDescription>Confirm or reject the requested email change.</CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -100,7 +148,7 @@ export default function EmailChangePage() {
                                 <div className="flex gap-4 flex-col sm:flex-row">
                                     <Button
                                         className="flex-1"
-                                        onClick={() => handleAction("confirm")}
+                                        onClick={() => handleAction(ActionType.CONFIRM)}
                                         disabled={actionLoading}
                                     >
                                         {actionLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : "Confirm"}
@@ -108,7 +156,7 @@ export default function EmailChangePage() {
                                     <Button
                                         variant="destructive"
                                         className="flex-1"
-                                        onClick={() => handleAction("reject")}
+                                        onClick={() => handleAction(ActionType.REJECT)}
                                         disabled={actionLoading}
                                     >
                                         {actionLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : "Reject"}

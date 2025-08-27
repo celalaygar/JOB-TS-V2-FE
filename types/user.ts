@@ -119,11 +119,10 @@ export interface EmailChangeResponse {
 
 
 
-
-
 export interface ValidateEmailTokenResponse {
   token: string;
   newEmailPending: string;
   currentEmail: string;
   valid: boolean;
 }
+

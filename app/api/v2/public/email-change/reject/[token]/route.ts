@@ -5,7 +5,7 @@ import RouteBaseService from '@/lib/service/RouteBaseService';
 import { NextRequest } from 'next/server';
 
 const URL = process.env.BASE_V2_URL
-const EMAIL_CHANGE_PATH = "email-change-public/validate-token"
+const EMAIL_CHANGE_PATH = "public/email-change/reject"
 
 
 export async function GET(req: NextRequest,
@@ -17,6 +17,6 @@ export async function GET(req: NextRequest,
     return RouteBaseService.request(URL + EMAIL_CHANGE_PATH + "/" + t, {
         method: httpMethods.GET,
         clientIp: clientIp, // ✅ IP'yi servise ilet
-        // withAuth default: true
+        withAuth: false
     });
 }

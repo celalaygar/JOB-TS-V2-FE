@@ -95,7 +95,7 @@ export async function apiCall<T>(config: ApiOperationConfig<T>): Promise<T | nul
         title: successToastTitle || "Success",
         description: successMessage,
         variant: "default",
-        duration: 200, // 2 seconds
+        duration: 2000, // 2 seconds
       });
     }
 

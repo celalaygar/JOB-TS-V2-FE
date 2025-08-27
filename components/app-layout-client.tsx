@@ -16,7 +16,8 @@ export function AppLayoutClient({ children }: { children: React.ReactNode }) {
   // Check if the current route is an auth route
   const isAuthRoute =
     authRoutes.includes(pathname) ||
-    /^\/register\/invite\/[^/]+$/.test(pathname)
+    /^\/register\/invite\/[^/]+$/.test(pathname) ||
+    /^\/public\/change-mail\/token\/[^/]+$/.test(pathname)
 
   if (isAuthRoute) {
     // For auth routes, render only the content without sidebar and header
