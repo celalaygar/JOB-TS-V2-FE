@@ -126,3 +126,16 @@ export interface ValidateEmailTokenResponse {
   valid: boolean;
 }
 
+
+export interface ChangePasswordResponse {
+  success: boolean;
+  message: string;
+  newPassword: string;
+  newToken: string;
+}
+
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+  confirmNewPassword: string;
+}

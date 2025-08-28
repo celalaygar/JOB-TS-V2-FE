@@ -8,6 +8,9 @@ import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
 import { Progress } from "@/components/ui/progress"
 import { useLanguage } from "@/lib/i18n/context"
+import { updateMyPasswordHelper } from "@/lib/service/helper/user-helper"
+import { ChangePasswordRequest, ChangePasswordResponse } from "@/types/user"
+import { useAuthUser, useUpdateAuthToken } from "@/lib/hooks/useAuthUser"
 
 const activeSessions = [
   {
@@ -39,8 +42,11 @@ const activeSessions = [
 
 
 export function ProfileSecurity() {
+  const authUser = useAuthUser();
+  const user = authUser?.user;
   const { translations } = useLanguage()
   const t = translations.profile.security
+  const updateAuthToken = useUpdateAuthToken(); // Yeni hook'u çağırın
 
   // Form state
   const [formData, setFormData] = useState({
@@ -83,13 +89,13 @@ export function ProfileSecurity() {
   const validateForm = (): boolean => {
     const newErrors: Partial<typeof formData> = {}
     if (!formData.currentPassword || formData.currentPassword.length < 6) {
-      newErrors.currentPassword = t.changePassword.errors.currentPassword
+      newErrors.currentPassword = t.changePassword.errors.currentPasswordRequired
     }
     if (formData.newPassword.length < 8) {
-      newErrors.newPassword = t.changePassword.errors.newPassword
+      newErrors.newPassword = t.changePassword.errors.newPasswordRequired
     }
     if (formData.newPassword !== formData.confirmNewPassword) {
-      newErrors.confirmNewPassword = t.changePassword.errors.confirmPassword
+      newErrors.confirmNewPassword = t.changePassword.errors.confirmPasswordRequired
     }
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -109,13 +115,32 @@ export function ProfileSecurity() {
       setMessage({ text: t.changePassword.errors.general, type: "error" })
       return
     }
+    let body: ChangePasswordRequest = {
+      currentPassword: formData.currentPassword,
+      newPassword: formData.newPassword,
+      confirmNewPassword: formData.confirmNewPassword,
+    };
 
-    setIsLoading(true)
-    await new Promise((resolve) => setTimeout(resolve, 1500)) // fake API
-    setMessage({ text: t.changePassword.passwordUpdated, type: "success" })
-    setFormData({ currentPassword: "", newPassword: "", confirmNewPassword: "" })
-    setPasswordStrength(0)
-    setIsLoading(false)
+
+    const response: ChangePasswordResponse | null = await updateMyPasswordHelper(body, { setLoading: setIsLoading });
+    if (!!response) {
+      if (response?.success) {
+        // ✅ Session token'ını güncelle
+        if (response.newToken) {
+          console.log("Updating auth token:", response.newToken);
+          await updateAuthToken(response.newToken)
+        }
+
+        setMessage({ text: t.changePassword.passwordUpdated, type: "success" })
+        setFormData({ currentPassword: "", newPassword: "", confirmNewPassword: "" })
+        setPasswordStrength(0)
+      } else {
+        setMessage({ text: response?.message, type: "error" })
+        return;
+      }
+    }
+
+
   }
 
   const toggleTwoFactor = () => {
@@ -133,6 +158,9 @@ export function ProfileSecurity() {
         <CardHeader>
           <CardTitle>{t.changePassword.title}</CardTitle>
           <CardDescription>{t.changePassword.description}</CardDescription>
+          <div className="text-wrap break-all text-sm text-muted-foreground mt-2">
+            {authUser?.token}
+          </div>
         </CardHeader>
         <CardContent>
           {message.text && (

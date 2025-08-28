@@ -61,27 +61,30 @@ export const authOptions: AuthOptions = {
     ],
     callbacks: {
         async jwt({ token, user, trigger, session }) {
-            // 1. Yeni Giriş (Sign-in)
-            if (user && 'token' in user) {
-                token.accessToken = user.token;
-                token.user = (user as AuthUser).user;
-            }
-            // 2. Oturum Güncelleme (Update)
-            // `trigger` değeri "update" ise bu blok çalışır.
-            // `update` metoduna gönderilen veriler `session` objesi içinde gelir.
-            if (trigger === "update" && session?.user) {
-                // `session.user` objesini yeni verilerle güncelle
-                token.user = { ...token.user, ...session.user };
+            // 1. Yeni giriş (sign-in)
+            if (user && "token" in user) {
+                token.accessToken = user.token
+                token.user = (user as AuthUser).user
             }
 
-            return token;
+            // 2. Session güncelleme (update)
+            if (trigger === "update") {
+                if (session?.user) {
+                    token.user = { ...token.user, ...session.user }
+                }
+                if (session?.accessToken) {
+                    token.accessToken = session.accessToken as string
+                }
+            }
+
+            return token
         },
         async session({ session, token }) {
             if (token.user) {
-                session.user = token.user as AuthenticationUser;
-                session.accessToken = token.accessToken as string;
+                session.user = token.user as AuthenticationUser
+                session.accessToken = token.accessToken as string
             }
-            return session;
+            return session
         },
     },
     secret: process.env.SECRET_KEY,

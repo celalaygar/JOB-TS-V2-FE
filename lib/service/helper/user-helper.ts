@@ -1,4 +1,4 @@
-import { RegisterRequest, UserDto } from "@/types/user";
+import { ChangePasswordRequest, ChangePasswordResponse, RegisterRequest, UserDto } from "@/types/user";
 import { apiCall, FetchEntitiesOptions } from "../api-helpers";
 import {
     USER_UPDATE_ME_PASSWORD_URL,
@@ -21,8 +21,8 @@ export const updateMyInformationHelper = async (body: RegisterRequest, options: 
 };
 
 
-export const updateMyPasswordHelper = async (body: any, options: FetchEntitiesOptions): Promise<Boolean | null> => {
-    return apiCall<Boolean>({
+export const updateMyPasswordHelper = async (body: ChangePasswordRequest, options: FetchEntitiesOptions): Promise<ChangePasswordResponse | null> => {
+    return apiCall<ChangePasswordResponse>({
         url: `${USER_UPDATE_ME_PASSWORD_URL}`,
         method: httpMethods.PATCH,
         body: body,

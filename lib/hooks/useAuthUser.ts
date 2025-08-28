@@ -57,3 +57,21 @@ export function useUpdateAuthUser() {
 
     return updateAuthUser;
 }
+
+
+// ✅ Yeni export: Token güncelleme fonksiyonu
+export function useUpdateAuthToken() {
+    const { update } = useSession()
+
+    const updateAuthToken = async (newToken: string) => {
+        if (!newToken) {
+            console.error("Yeni token boş geldi, güncellenemiyor.")
+            return
+        }
+        await update({
+            accessToken: newToken, // ✅ jwt callback’te yakalanacak
+        })
+    }
+
+    return updateAuthToken
+}

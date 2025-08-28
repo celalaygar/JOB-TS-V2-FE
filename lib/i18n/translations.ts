@@ -98,6 +98,16 @@ export const en = {
         updatePassword: "Update Password",
         passwordUpdated: "Password updated",
         passwordUpdatedDesc: "Your password has been updated successfully.",
+        errors: {
+          general: "An error occurred while updating the password. Please try again.",
+          currentPasswordRequired: "Current password is required",
+          newPasswordRequired: "New password is required",
+          confirmPasswordRequired: "Confirming new password is required",
+          newPasswordLength: "New password must be at least 8 characters",
+          newPasswordWeak:
+            "New password must include uppercase, lowercase, number, and special character",
+          passwordsMatch: "New passwords do not match",
+        },
       },
       twoFactor: {
         title: "Two-Factor Authentication",
@@ -1216,6 +1226,16 @@ export const tr = {
         updatePassword: "Şifreyi Güncelle",
         passwordUpdated: "Şifre güncellendi",
         passwordUpdatedDesc: "Şifreniz başarıyla güncellendi.",
+        errors: {
+          general: "Şifre güncellenirken bir hata oluştu. Lütfen tekrar deneyin.",
+          currentPasswordRequired: "Mevcut şifre gereklidir",
+          newPasswordRequired: "Yeni şifre gereklidir",
+          confirmPasswordRequired: "Yeni şifreyi onaylamak gereklidir",
+          passwordLength: "Şifre en az 8 karakter olmalıdır",
+          passwordsMatch: "Şifreler eşleşmiyor",
+          newPasswordWeak: "Yeni şifre zayıf",
+          newPasswordLength: "Yeni şifre en az 8 karakter olmalıdır",
+        },
       },
       twoFactor: {
         title: "İki Faktörlü Kimlik Doğrulama",
