@@ -9,7 +9,7 @@ import { Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuthUser } from "@/lib/hooks/useAuthUser"
 import EmailChangeForm from "@/components/profile/Email-change-form"
-import ProfileSecurity from "@/components/profile/profile-security"
+import { ProfileSecurity } from "@/components/profile/profile-security"
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<"information" | "changeEmail" | "security" | "notifications">("information")
