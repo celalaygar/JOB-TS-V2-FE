@@ -4,22 +4,17 @@ import type React from "react";
 import { useState, useCallback, useMemo } from "react";
 import { useDispatch } from "react-redux";
 import Select from "react-select";
-import { format } from "date-fns";
-import { CalendarIcon, Loader2, Upload, X } from "lucide-react";
+import { Loader2, Upload, X } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "@/components/ui/use-toast";
 import { useLanguage } from "@/lib/i18n/context";
 import { useAuthUser, useUpdateAuthUser } from "@/lib/hooks/useAuthUser";
-import { updateMyInformationHelper } from "@/lib/service/api-helpers";
+import { updateMyInformationHelper } from "@/lib/service/helper/user-helper";
 import { RegisterRequest, UserDto } from "@/types/user";
-import DatePicker from "react-datepicker";
 
 // Form verileri için state tipi
 interface ProfileFormState {

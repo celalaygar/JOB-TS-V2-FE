@@ -8,7 +8,7 @@ import { Info, Loader2 } from "lucide-react";
 import BaseService from "@/lib/service/BaseService";
 import { httpMethods } from "@/lib/service/HttpService";
 import { EmailChangeResponse, ValidateEmailTokenResponse } from "@/types/user";
-import { confirmEmailChangeHelper, rejectEmailChangeHelper, validateEmailTokenHelper } from "@/lib/service/email-change-helper";
+import { confirmEmailChangeHelper, rejectEmailChangeHelper, validateEmailTokenHelper } from "@/lib/service/helper/email-change-helper";
 import { signOut } from "next-auth/react";
 import { useAuthUser } from "@/lib/hooks/useAuthUser";
 

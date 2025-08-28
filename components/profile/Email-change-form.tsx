@@ -4,7 +4,7 @@ import { Loader2 } from "lucide-react";
 import * as Label from "@radix-ui/react-label";
 import { useAuthUser } from "@/lib/hooks/useAuthUser";
 import { AuthenticationUser, EmailChangeRequest, EmailChangeResponse } from "@/types/user";
-import { changeEmailRequestHelper, sendCodeToCurrentEmailHelper } from "@/lib/service/email-change-helper";
+import { changeEmailRequestHelper, sendCodeToCurrentEmailHelper } from "@/lib/service/helper/email-change-helper";
 
 const EmailChangeForm: React.FC = () => {
     const authUser = useAuthUser();

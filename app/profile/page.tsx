@@ -2,17 +2,14 @@
 
 import { useState } from "react"
 import { ProfileInformation } from "@/components/profile/profile-information"
-import { ProfileSecurity } from "@/components/profile/profile-security"
 import { ProfileNotifications } from "@/components/profile/profile-notifications"
 import { useSelector } from "react-redux"
 import type { RootState } from "@/lib/redux/store"
 import { Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { AuthUser } from "../api/auth/[...nextauth]/authOptions"
-import { useSession } from "next-auth/react"
-import { AuthenticationUser } from "@/types/user"
 import { useAuthUser } from "@/lib/hooks/useAuthUser"
 import EmailChangeForm from "@/components/profile/Email-change-form"
+import ProfileSecurity from "@/components/profile/profile-security"
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<"information" | "changeEmail" | "security" | "notifications">("information")

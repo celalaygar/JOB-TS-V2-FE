@@ -25,11 +25,7 @@ import {
   UPDATE_PROJECT_TASK_STATUS_URL,
   INVITATION_BY_PROJECTID,
   INVITE_TO_PROJECT,
-  SPRINT_TASK_URL,
   USER_URL,
-  USER_UPDATE_ME_URL,
-  USER_UPDATE_ME_PASSWORD_URL,
-  SPRINT_USER_URL,
   PROJECT_TASK_COMMENT_ADD_URL,
   SPRINT_TASK_ADD_URL,
   SPRINT_TASK_REMOVE_URL,
@@ -951,33 +947,8 @@ export const getMyInformationHelper = async (options: FetchEntitiesOptions): Pro
 
 
 
-export const updateMyInformationHelper = async (body: RegisterRequest, options: FetchEntitiesOptions): Promise<UserDto | null> => {
-  return apiCall<UserDto>({
-    url: `${USER_UPDATE_ME_URL}`,
-    method: httpMethods.PATCH,
-    body: body,
-    setLoading: options.setLoading,
-    successMessage: `My İnformation has been updated.`,
-    errorMessagePrefix: "Failed to update My İnformation",
-    successToastTitle: "My İnformation Updated",
-    errorToastTitle: "Error Updating My İnformation",
-  });
-};
 
 
-
-export const updateMyPasswordHelper = async (body: any, options: FetchEntitiesOptions): Promise<Boolean | null> => {
-  return apiCall<Boolean>({
-    url: `${USER_UPDATE_ME_PASSWORD_URL}`,
-    method: httpMethods.PATCH,
-    body: body,
-    setLoading: options.setLoading,
-    successMessage: `My password has been updated.`,
-    errorMessagePrefix: "Failed to update My password",
-    successToastTitle: "My password Updated",
-    errorToastTitle: "Error Updating My password",
-  });
-};
 
 
 
