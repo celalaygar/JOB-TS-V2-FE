@@ -105,7 +105,7 @@ export default function EmailChangePage() {
             <div className="w-full max-w-md">
                 <Card>
                     <CardHeader>
-                        <CardTitle>Email Change Request {tokenValid + ""}  </CardTitle>
+                        <CardTitle>Email Change Request  </CardTitle>
                         <CardDescription>Confirm or reject the requested email change.</CardDescription>
                     </CardHeader>
                     <CardContent>
