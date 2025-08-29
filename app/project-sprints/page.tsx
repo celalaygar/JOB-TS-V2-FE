@@ -14,7 +14,8 @@ import { Project } from "@/types/project"
 import { Loader2 } from "lucide-react"
 import { Sprint } from "@/types/sprint"
 import { setSprints } from "@/lib/redux/features/sprints-slice"
-import { getAllProjectsHelper, getAllSprintsGlobalHelper } from "@/lib/service/api-helpers"
+import { getAllProjectsHelper } from "@/lib/service/api-helpers"
+import { getAllSprintsGlobalHelper } from "@/lib/service/helper/sprint-helper"
 
 export default function ProjectSprints() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)

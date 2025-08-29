@@ -289,9 +289,9 @@ export function ProjectUsersTab({
                         {user.projectSystemRole === ProjectSystemRole.PROJECT_REMOVED_USER
                           ? "Removed from project"
                           : user.projectSystemRole === ProjectSystemRole.PROJECT_OWNER
-                            ? "Project Owner"
+                            ? "🏆 " + "Project Owner"
                             : user.projectSystemRole === ProjectSystemRole.PROJECT_ADMIN
-                              ? "Project Admin"
+                              ? "🏆 " + "Project Admin"
                               : user.projectSystemRole === ProjectSystemRole.PROJECT_DELETED_USER ?
                                 "Deleted User"
                                 : user.projectSystemRole === ProjectSystemRole.PROJECT_PASSIVE_USER ?

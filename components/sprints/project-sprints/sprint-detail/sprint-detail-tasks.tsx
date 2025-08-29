@@ -26,12 +26,13 @@ import { getTaskTypeIcon, getTaskTypeIconClassName, getTypeColor } from "@/lib/u
 import { getPriorityClassName } from "@/lib/utils/priority-utils"
 
 interface SprintDetailTasksProps {
+  fetchData?: () => void
   sprintId: string
   tasks: ProjectTask[] | []
   projectList: Project[]
 }
 
-export function SprintDetailTasks({ sprintId, tasks, projectList }: SprintDetailTasksProps) {
+export function SprintDetailTasks({ sprintId, tasks, projectList, fetchData }: SprintDetailTasksProps) {
   const users = useSelector((state: RootState) => state.users.users)
 
   const [searchQuery, setSearchQuery] = useState("")
@@ -376,6 +377,7 @@ export function SprintDetailTasks({ sprintId, tasks, projectList }: SprintDetail
         <>
 
           <EditTaskDialog
+            fetchData={fetchData}
             projectList={projectList}
             open={editTaskDialogOpen}
             onOpenChange={setEditTaskDialogOpen}

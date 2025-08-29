@@ -17,9 +17,10 @@ interface SprintDetailHeaderProps {
   tasks: any[] // Using any for simplicity, but should be properly typed
   onEdit: () => void
   onDelete: () => void
+  fetchData?: () => void
 }
 
-export function SprintDetailHeader({ tasks, onEdit, onDelete }: SprintDetailHeaderProps) {
+export function SprintDetailHeader({ tasks, onEdit, onDelete, fetchData }: SprintDetailHeaderProps) {
   const [isCompleteDialogOpen, setIsCompleteDialogOpen] = useState(false)
   const [changeSprintStatusDialogOpen, setChangeSprintStatusDialogOpen] = useState(false)
   const { translations } = useLanguage()
@@ -124,6 +125,7 @@ export function SprintDetailHeader({ tasks, onEdit, onDelete }: SprintDetailHead
 
       {/* Complete Sprint Dialog */}
       <CompleteSprintDialog
+        fetchData={fetchData}
         sprint={sprint}
         open={isCompleteDialogOpen}
         onOpenChange={setIsCompleteDialogOpen}

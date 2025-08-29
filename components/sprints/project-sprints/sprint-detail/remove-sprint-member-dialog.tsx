@@ -19,10 +19,11 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent } from "@/components/ui/card"
 import { Search, UserMinus, Loader2 } from "lucide-react"
 import { CreatedProject } from "@/types/project"
-import { RemoveUserFromSprintRequest, SprintUser } from "@/types/sprint"
-import { removeBulkUserFromSprintHelper } from "@/lib/service/api-helpers"
+import { RemoveUserFromSprintRequest, Sprint, SprintUser, SprintUserSystemRole } from "@/types/sprint"
+import { removeBulkUserFromSprintHelper } from "@/lib/service/helper/sprint-helper"
 
 interface RemoveSprintMemberDialogProps {
+  sprint?: Sprint
   sprintUsers?: SprintUser[]
   project?: CreatedProject
   sprintId: string
@@ -31,7 +32,7 @@ interface RemoveSprintMemberDialogProps {
   fetchData: () => void
 }
 
-export function RemoveSprintMemberDialog({ sprintUsers, project, sprintId, open, onOpenChange, fetchData }: RemoveSprintMemberDialogProps) {
+export function RemoveSprintMemberDialog({ sprintUsers, sprint, project, sprintId, open, onOpenChange, fetchData }: RemoveSprintMemberDialogProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedUsers, setSelectedUsers] = useState<string[]>([])
   const [selectAll, setSelectAll] = useState(false)
@@ -161,16 +162,17 @@ export function RemoveSprintMemberDialog({ sprintUsers, project, sprintId, open,
                               Select Individual Members ({filteredUsers.length} available)
                             </div>
                             {filteredUsers.map((user: SprintUser) => (
-                              <Card key={user.id} className="cursor-pointer hover:bg-muted/50">
+                              <Card key={user.id} className={"cursor-pointer hover:bg-muted/50 "}>
                                 <CardContent className="p-3 sm:p-4">
-                                  <div className="flex items-center space-x-3">
+                                  <div className={"flex items-center space-x-2 "}>
                                     <Checkbox
+                                      disabled={user.sprintUserSystemRole === SprintUserSystemRole.SPRINT_ADMIN}
                                       checked={selectedUsers.includes(user.createdBy.id)}
                                       onCheckedChange={() => handleUserToggle(user.createdBy.id)}
                                     />
                                     <Avatar className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0">
-                                      <AvatarImage src={"/placeholder.svg"} alt={user.createdBy.firstname + " " + user.createdBy.lastname} />
-                                      <AvatarFallback className="text-xs sm:text-sm">
+                                      {/* <AvatarImage src={"/placeholder.svg"} alt={user.createdBy.firstname + " " + user.createdBy.lastname} /> */}
+                                      {/* <AvatarFallback className="text-xs sm:text-sm">
                                         {user.createdBy.firstname
                                           .split(" ")
                                           .map((n) => n[0])
@@ -179,10 +181,16 @@ export function RemoveSprintMemberDialog({ sprintUsers, project, sprintId, open,
                                             .split(" ")
                                             .map((n) => n[0])
                                             .join("")}
-                                      </AvatarFallback>
+                                      </AvatarFallback> */}
+                                      <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                                        {user.createdBy.firstname.charAt(0).toUpperCase() +
+                                          " " +
+                                          user.createdBy.lastname.charAt(0).toUpperCase()}
+                                      </div>
                                     </Avatar>
                                     <div className="flex-1 min-w-0">
                                       <div className="font-medium text-sm sm:text-base truncate">
+                                        {user.sprintUserSystemRole === SprintUserSystemRole.SPRINT_ADMIN ? "🏆 " : "  "}
                                         {user.createdBy.firstname + " " + user.createdBy.lastname}
                                       </div>
                                       <div className="text-xs sm:text-sm text-muted-foreground truncate">
@@ -239,6 +247,6 @@ export function RemoveSprintMemberDialog({ sprintUsers, project, sprintId, open,
           </>
         )}
       </DialogContent>
-    </Dialog>
+    </Dialog >
   )
 }

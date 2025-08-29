@@ -90,6 +90,14 @@ export interface SprintTaskRemoveRequest {
   projectId: string;
 }
 
+export interface CompletionResponseDto {
+  success: boolean;
+  message: string;
+  sprint: Sprint;
+}
+
+
+
 export interface SprintTaskGetAllRequest {
   sprintId: string;
   projectId: string;
@@ -108,6 +116,10 @@ export interface RemoveUserFromSprintRequest {
   userIds: string[]
 }
 
+export enum SprintUserSystemRole {
+  SPRINT_ADMIN = "SPRINT_ADMIN",
+  SPRINT_MEMBER = "SPRINT_MEMBER"
+}
 
 export interface SprintUser {
   id: string;

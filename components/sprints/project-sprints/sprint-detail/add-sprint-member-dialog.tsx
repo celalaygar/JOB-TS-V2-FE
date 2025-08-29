@@ -19,7 +19,8 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent } from "@/components/ui/card"
 import { Search, Users, User, UserCheck, Plus, Loader2 } from "lucide-react"
 import { CreatedProject, Project, ProjectUser } from "@/types/project"
-import { addBulkUserToSprintHelper, getActiveProjectUsersHelper } from "@/lib/service/api-helpers"
+import { getActiveProjectUsersHelper } from "@/lib/service/api-helpers"
+import { addBulkUserToSprintHelper } from "@/lib/service/helper/sprint-helper"
 import { AddUserToSprintRequest, SprintUser } from "@/types/sprint"
 
 interface AddSprintMemberDialogProps {

@@ -132,6 +132,7 @@ export function SprintDetailInfo({ sprintUsers, fetchData }: SprintDetailInfoPro
           fetchData={fetchData}
           sprintUsers={sprintUsers}
           project={sprint.createdProject}
+          sprint={sprint}
           sprintId={sprint.id}
           open={isRemoveMemberDialogOpen}
           onOpenChange={setIsRemoveMemberDialogOpen}

@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
-import { updateSprint } from "@/lib/redux/features/sprints-slice"
+import { updateSingleSprint, updateSprint } from "@/lib/redux/features/sprints-slice"
 import { useDispatch } from "react-redux"
 import {
   Dialog,
@@ -25,35 +25,50 @@ import {
 } from "@/components/ui/select"
 import { Progress } from "@/components/ui/progress"
 import { CheckCircle, AlertCircle, Loader2 } from "lucide-react"
-import { Sprint, SprintStatus } from "@/types/sprint"
-import { toast } from "@/hooks/use-toast"
+import { CompletionResponseDto, Sprint, SprintStatus, UpdateSprintStatusRequest } from "@/types/sprint"
 import { getNonCompletedSprintsHelper } from "@/lib/service/api-helpers" // Import the new helper
-import { saveUpdateSprintHelper } from "@/lib/service/api-helpers" // Import saveUpdateSprintHelper for dispatching updates
 import { useLanguage } from "@/lib/i18n/context"
 import { ProjectTask } from "@/types/task"
+import { completeSprintHelper } from "@/lib/service/helper/sprint-helper"
 
 
 interface CompleteSprintDialogProps {
   sprint: Sprint // Using any for simplicity, but should be properly typed
   open: boolean
   onOpenChange: (open: boolean) => void
-  tasks: any[] // Using any for simplicity, but should be properly typed
+  tasks: ProjectTask[] // Using any for simplicity, but should be properly typed
+  fetchData?: () => void
 }
 
-export function CompleteSprintDialog({ sprint, open, onOpenChange, tasks }: CompleteSprintDialogProps) {
+export function CompleteSprintDialog({ sprint, open, onOpenChange, tasks, fetchData }: CompleteSprintDialogProps) {
   const dispatch = useDispatch()
   const { translations } = useLanguage()
-
+  const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' | '' }>({ text: '', type: '' });
   const [destination, setDestination] = useState<"backlog" | "sprint">("backlog")
   const [targetSprintId, setTargetSprintId] = useState<string>("")
+  const [completedTasks, setCompletedTasks] = useState(0)
+  const [incompleteTasks, setIncompleteTasks] = useState(0)
+  const [completionPercentage, setCompletionPercentage] = useState(0)
 
-  // Calculate task statistics
-  const completedTasks = tasks.filter(
-    (task: ProjectTask) => task.projectTaskStatus.id === sprint.taskStatusOnCompletion.id,
-  ).length
-  const incompleteTasks = tasks.length - completedTasks
-  const completionPercentage = tasks.length > 0 ? Math.round((completedTasks / tasks.length) * 100) : 0
+  const controlCompletion = useCallback(() => {
+    // Calculate task statistics
+    const comp = tasks.filter(
+      (task: ProjectTask) => task.projectTaskStatus.id === sprint.taskStatusOnCompletion.id,
+    ).length
+    setCompletedTasks(comp)
+    const incomp = tasks.length - comp
+    const compPercentage = tasks.length > 0 ? Math.round((comp / tasks.length) * 100) : 0
+    setCompletionPercentage(compPercentage)
+    setIncompleteTasks(incomp)
+    setDestination(comp === tasks.length ? "sprint" : "backlog") // If all tasks are complete, default to backlog
 
+  }, [])
+
+  useEffect(() => {
+    if (open) { // Only calculate when dialog is open
+      controlCompletion()
+    }
+  }, [open, controlCompletion])
 
   const [loading, setLoading] = useState(false);
   const [sprintList, setSprintList] = useState<Sprint[] | []>([]);
@@ -82,60 +97,26 @@ export function CompleteSprintDialog({ sprint, open, onOpenChange, tasks }: Comp
 
 
   const handleCompleteSprint = async () => {
-    setLoading(true); // Start loading for the completion process
 
-    try {
-      // Update sprint status to completed
-      const updatedSprintData = {
-        ...sprint,
-        status: "completed" as SprintStatus, // Explicitly cast to SprintStatus
-        updatedAt: new Date().toISOString(),
-      };
-
-      const response = await saveUpdateSprintHelper(updatedSprintData, { setLoading });
-
-      if (response) {
-        dispatch(updateSprint(response));
-        // Logic for moving incomplete tasks would go here
-        // This part currently uses dummy data/logic, would need actual API calls for tasks
-        // if (destination === "backlog") {
-        //   incompleteTasks.forEach(task => {
-        //     dispatch(updateTask({
-        //       id: task.id,
-        //       changes: { sprint: null, backlog: true }
-        //     }))
-        //   })
-        // } else if (destination === "sprint" && targetSprintId) {
-        //   incompleteTasks.forEach(task => {
-        //     dispatch(updateTask({
-        //       id: task.id,
-        //       changes: { sprint: targetSprintId }
-        //     }))
-        //   })
-        // }
-
-        toast({
-          title: "Sprint Completed",
-          description: `Sprint "${sprint.name}" has been successfully completed.`,
-        });
+    let body: UpdateSprintStatusRequest = {
+      sprintId: sprint.id,
+      newStatus: SprintStatus.COMPLETED
+    };
+    const response: CompletionResponseDto | null = await completeSprintHelper(body, { setLoading }
+    );
+    if (response) {
+      if (response.success) {
+        setMessage({ text: response.message || "Sprint completed successfully.", type: "success" });
+        dispatch(updateSingleSprint(response.sprint));
         onOpenChange(false);
-      } else {
-        toast({
-          title: "Completion Failed",
-          description: "There was an error completing the sprint.",
-          variant: "destructive",
-        });
       }
-    } catch (error: any) {
-      console.error("Failed to complete sprint:", error);
-      toast({
-        title: "Completion Failed",
-        description: error.message || "An unexpected error occurred during sprint completion.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
+      else {
+        setMessage({ text: response.message || "Failed to complete sprint.", type: "error" });
+      }
+      //onOpenChange(false);
     }
+
+
   }
 
 
@@ -148,6 +129,15 @@ export function CompleteSprintDialog({ sprint, open, onOpenChange, tasks }: Comp
             This will mark the sprint as completed and move incomplete tasks according to your selection.
           </DialogDescription>
         </DialogHeader>
+        {message.text && (
+          <div
+            className={
+              `p-3 rounded mb-4 text-sm ${message.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+              }`}
+          >
+            {message.text}
+          </div>
+        )}
         {
           loading ?
             <div className="grid gap-4 py-4">
@@ -170,16 +160,35 @@ export function CompleteSprintDialog({ sprint, open, onOpenChange, tasks }: Comp
                   <Progress value={completionPercentage} className="h-2" />
 
                   <div className="flex items-center gap-2 mt-3">
+                    {
+                      tasks.length === 0 && (
+                        <div className="text-sm text-muted-foreground">No tasks in this sprint.</div>
+                      )
+                    }
+                    {tasks.length > 0 && completedTasks === tasks.length && (
+                      <div className="text-sm text-green-600 flex items-center">
+                        <CheckCircle className="h-4 w-4 mr-1" />
+                        All tasks completed!
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 mt-3">
+                    <div className="flex items-center text-sm text-green-600">
+                      <CheckCircle className="h-4 w-4 mr-1" />
+                      <span>{tasks.length} total tasks</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 mt-3">
                     <div className="flex items-center text-sm text-green-600">
                       <CheckCircle className="h-4 w-4 mr-1" />
                       <span>{completedTasks} completed tasks</span>
                     </div>
-                    {incompleteTasks > 0 && (
-                      <div className="flex items-center text-sm text-amber-600">
-                        <AlertCircle className="h-4 w-4 mr-1" />
-                        <span>{incompleteTasks} incomplete tasks</span>
-                      </div>
-                    )}
+                  </div>
+                  <div className="flex items-center gap-2 mt-3">
+                    <div className="flex items-center text-sm text-amber-600">
+                      <AlertCircle className="h-4 w-4 mr-1" />
+                      <span>{incompleteTasks} incomplete tasks</span>
+                    </div>
                   </div>
                 </div>
 
@@ -235,7 +244,9 @@ export function CompleteSprintDialog({ sprint, open, onOpenChange, tasks }: Comp
                   Cancel
                 </Button>
                 {destination === "sprint" && !targetSprintId && incompleteTasks > 0 ? (
-                  <Button disabled>Complete Sprint</Button>
+                  <Button
+
+                  >Complete Sprint</Button>
                 ) : (
                   <Button onClick={handleCompleteSprint} className="bg-green-600 hover:bg-green-700">
                     {destination === "backlog"

@@ -1,7 +1,7 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
-import { updateSingleSprint, updateSprint } from "@/lib/redux/features/sprints-slice"
+import { useState } from "react"
+import { updateSingleSprint } from "@/lib/redux/features/sprints-slice"
 import { useDispatch } from "react-redux"
 import {
   Dialog,
@@ -12,25 +12,19 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import {
   Select,
   SelectContent,
   SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Progress } from "@/components/ui/progress"
 import { CheckCircle, AlertCircle, Loader2 } from "lucide-react"
 import { Sprint, SprintStatus, UpdateSprintStatusRequest } from "@/types/sprint"
-import { toast } from "@/hooks/use-toast"
-import { getNonCompletedSprintsHelper, updateSprintStatustHelper } from "@/lib/service/api-helpers" // Import the new helper
-import { saveUpdateSprintHelper } from "@/lib/service/api-helpers" // Import saveUpdateSprintHelper for dispatching updates
 import { useLanguage } from "@/lib/i18n/context"
-import { ProjectTask } from "@/types/task"
+import { updateSprintStatustHelper } from "@/lib/service/helper/sprint-helper"
 
 
 interface ChangeSprintStatusDailogProps {

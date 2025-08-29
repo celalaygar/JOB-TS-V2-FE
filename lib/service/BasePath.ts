@@ -68,10 +68,12 @@ export const SPRINT_URL = BASE_PATH_V2 + "sprint";
 export const SPRINT_GET_ALL_URL = SPRINT_URL + "/getAll";
 export const SPRINT_NON_COMPLETED_GET_ALL_URL = SPRINT_URL + "/non-completed/project";
 export const UPDATE_STATUS_URL = SPRINT_URL + "/status";
+export const SPRINT_STATUS_COMPLETE_URL = SPRINT_URL + "/status/complete";
 
 
 
-// sprint
+
+// sprint user
 export const SPRINT_USER_URL = BASE_PATH_V2 + "sprint-user";
 export const SPRINT_GET_ALL_USER_URL = SPRINT_USER_URL + "/users";
 export const SPRINT_BULK_ADD_URL = SPRINT_USER_URL + "/bulk-add";

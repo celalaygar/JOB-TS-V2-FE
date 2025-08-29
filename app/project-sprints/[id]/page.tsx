@@ -10,13 +10,13 @@ import { SprintDetailTasks } from "@/components/sprints/project-sprints/sprint-d
 import { EditSprintDialog } from "@/components/sprints/project-sprints/edit-sprint-dialog"
 import { DeleteSprintDialog } from "@/components/sprints/project-sprints/delete-sprint-dialog"
 import { useCallback, useEffect, useState } from "react"
-import { tasks as dummyTasks } from "@/data/tasks"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { AlertCircle, Loader2 } from "lucide-react"
-import { toast } from "@/hooks/use-toast"
 import { Sprint, SprintRequest, SprintTaskGetAllRequest, SprintUser, UpdateSprintStatusRequest } from "@/types/sprint"
 import { Project } from "@/types/project"
-import { getSprintHelper, getAllProjectsHelper, getAllSprintTasksHelper, getAllSprintUsersHelper } from "@/lib/service/api-helpers" // Import the new helpers
+import { getSprintHelper, getAllProjectsHelper } from "@/lib/service/api-helpers"
+import { getAllSprintTasksHelper } from "@/lib/service/helper/sprint-helper"
+import { getAllSprintUsersHelper } from "@/lib/service/helper/sprint-helper"
 import { ProjectTask } from "@/types/task"
 import { setSingleSprint } from "@/lib/redux/features/sprints-slice"
 
@@ -119,13 +119,15 @@ export default function SprintDetailPage() {
       {sprint ?
         <>
           <div className="container mx-auto p-6 space-y-8">
-            <SprintDetailHeader
-              sprint={sprint}
-              tasks={sprintTasks}
-              onEdit={() => setIsEditDialogOpen(true)}
-              onDelete={() => setIsDeleteDialogOpen(true)}
-            />
-
+            {sprint &&
+              <SprintDetailHeader
+                fetchData={fetchSprint}
+                sprint={sprint}
+                tasks={sprintTasks}
+                onEdit={() => setIsEditDialogOpen(true)}
+                onDelete={() => setIsDeleteDialogOpen(true)}
+              />
+            }
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="md:col-span-2 space-y-6">
                 <SprintDetailInfo
@@ -133,10 +135,11 @@ export default function SprintDetailPage() {
                   sprintUsers={sprintUsers} />
 
                 {/* Add non-null assertion */}
-                <SprintDetailTasks
+                {sprint && <SprintDetailTasks
+                  fetchData={() => fetchAllSprintTasks(sprint.createdProject.id)}
                   sprintId={sprint?.id}
                   tasks={sprintTasks}
-                  projectList={projectList} />
+                  projectList={projectList} />}
               </div>
               <div>
                 <SprintDetailProgress sprint={sprint!} tasks={sprintTasks} /> {/* Add non-null assertion */}
