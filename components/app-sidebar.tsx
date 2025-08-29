@@ -36,7 +36,6 @@ import type { SidebarRoutes } from "@/types/sidebarRoute" // Declare the Sidebar
 import { signOut, useSession } from "next-auth/react"
 import { useAuthUser } from "@/lib/hooks/useAuthUser"
 import { InvitationStatus } from "@/types/invitation"
-import { get } from "http"
 import { getAllInvitationsCountByInvitationStatusHelper } from "@/lib/service/api-helpers"
 
 function AppSidebar() {

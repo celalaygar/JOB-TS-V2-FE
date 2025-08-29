@@ -139,3 +139,27 @@ export interface ChangePasswordRequest {
   newPassword: string;
   confirmNewPassword: string;
 }
+
+export interface PasswordResetRequest {
+  email: string;
+}
+
+export interface PasswordResetResponse {
+  message: string;
+  success: boolean;
+}
+export interface PasswordResetValidateRequest {
+  token: string;
+}
+export interface PasswordResetConfirmRequest {
+  token: string;
+  newPassword: string;
+  confirmNewPassword: string;
+}
+
+export interface PasswordResetValidateResponse {
+  token: string;
+  email: string;
+  valid: boolean;
+  message: string;
+}

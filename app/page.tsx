@@ -16,6 +16,7 @@ import { login, clearError } from "@/lib/redux/features/auth-slice"
 import { useLanguage } from "@/lib/i18n/context"
 import { signIn } from 'next-auth/react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { ForgotPasswordDialog } from "@/components/users/forgot-password-dialog"
 
 export default function LoginPage() {
   const { language, translations, setLanguage } = useLanguage()
@@ -24,6 +25,7 @@ export default function LoginPage() {
   //const { loading, error } = useSelector((state: any) => state.auth)
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [openForgotPasswordDialog, setOpenForgotPasswordDialog] = useState(false);
 
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -132,7 +134,9 @@ export default function LoginPage() {
                 <div className="grid gap-2">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="password">Password</Label>
-                    <Link href="#" className="text-sm text-[var(--fixed-primary)]">
+                    <Link href="#" className="text-sm text-[var(--fixed-primary)]"
+                      onClick={() => setOpenForgotPasswordDialog(true)}
+                    >
                       Forgot password?
                     </Link>
                   </div>
@@ -179,6 +183,8 @@ export default function LoginPage() {
           </CardFooter>
         </Card>
       </div>
+
+      <ForgotPasswordDialog open={openForgotPasswordDialog} onOpenChange={setOpenForgotPasswordDialog} />
     </div>
   )
 }

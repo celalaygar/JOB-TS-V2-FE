@@ -90,12 +90,20 @@ export const USER_UPDATE_ME_URL = USER_URL + "/me";
 export const USER_UPDATE_ME_PASSWORD_URL = USER_UPDATE_ME_URL + "/password";
 
 
+// public password-reset
+export const PASSWORD_RESET_PUBLIC_URL = BASE_PATH_V2 + "public/password-reset";
+export const PASSWORD_RESET_PUBLIC_VALIDATE_TOKEN_URL = PASSWORD_RESET_PUBLIC_URL + "/validate-reset-token";
+export const FORGOT_PASSWORD_URL = PASSWORD_RESET_PUBLIC_URL + "/forgot-password";
+export const PASSWORD_RESET_URL = PASSWORD_RESET_PUBLIC_URL + "/reset-password";
+
+
+
 // EMAİL CHANGE
 export const EMAIL_CHANGE_URL = BASE_PATH_V2 + "email-change";
 export const SEND_CODE_URL = EMAIL_CHANGE_URL + "/send-code";
 export const VERIFY_AND_SEND_LINK_URL = EMAIL_CHANGE_URL + "/verify-and-send-link";
 
-// 
+//  public email-change
 export const EMAIL_CHANGE_PUBLIC_URL = BASE_PATH_V2 + "public/email-change";
 export const EMAIL_CHANGE_PUBLIC_CONFIRM_URL = EMAIL_CHANGE_PUBLIC_URL + "/confirm";
 export const EMAIL_CHANGE_PUBLIC_REJECT_URL = EMAIL_CHANGE_PUBLIC_URL + "/reject";
