@@ -74,7 +74,6 @@ export default function ResetPasswordPage() {
 
         if (response?.success) {
             setMessage({ text: response.message || "Password has been reset successfully.", type: "success" });
-            setTokenValid(false);
         } else {
             setMessage({ text: response?.message || "Failed to reset password.", type: "error" });
         }
@@ -98,23 +97,21 @@ export default function ResetPasswordPage() {
                     </CardHeader>
 
                     <CardContent>
+                        <div className="space-y-4">
+                            {/* Message */}
+                            {message.text && (
+                                <div className={`text-center p-3 rounded-md mb-6 ${message.type === 'error' ? 'bg-red-100 text-red-700 dark:bg-red-800 dark:text-red-200' : 'bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-200'}`}>
+                                    <p>{message.text}</p>
+                                </div>
+                            )}
+                        </div>
                         {loading ? (
                             <div className="flex justify-center py-8">
                                 <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
                             </div>
-                        ) : tokenValid ? (
+                        ) : tokenValid && (
                             <div className="space-y-4">
-                                {/* Message */}
-                                {message.text && (
-                                    <div
-                                        className={`p-3 rounded-md ${message.type === "error"
-                                            ? "bg-red-100 text-red-700"
-                                            : "bg-green-100 text-green-700"
-                                            }`}
-                                    >
-                                        {message.text}
-                                    </div>
-                                )}
+
 
                                 {/* Password Input */}
                                 <div className="grid gap-2">
@@ -170,8 +167,6 @@ export default function ResetPasswordPage() {
                                     </Button>
                                 </div>
                             </div>
-                        ) : (
-                            <p className="text-red-500 text-center">Invalid or expired token.</p>
                         )}
                     </CardContent>
 
