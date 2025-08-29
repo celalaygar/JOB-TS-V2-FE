@@ -53,11 +53,7 @@ export function ForgotPasswordDialog({ open, onOpenChange }: ForgotPasswordDialo
         if (response) {
             if (response.success) {
                 setMessage("Reset email has been sent.")
-                // 🔹 burada API isteği yapılabilir (örnek olarak sadece bekletiyoruz)
-                await new Promise((res) => setTimeout(res, 1500))
-
-                setMessage("Reset email has been sent.")
-                setTimer(60) // 60 seconds countdown
+                setTimer(120) // 120 seconds countdown
                 setEmail("")
             } else {
                 setMessage(response.message || "Something went wrong. Please try again.")
