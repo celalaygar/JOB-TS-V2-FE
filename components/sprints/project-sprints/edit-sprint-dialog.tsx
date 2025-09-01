@@ -179,7 +179,7 @@ export function EditSprintDialog({ open, onOpenChange, sprint, projectList, fetc
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>{translations.sprint.editSprint}</DialogTitle>
@@ -269,7 +269,7 @@ export function EditSprintDialog({ open, onOpenChange, sprint, projectList, fetc
               )}
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label className="text-right">
-                  {translations.sprint.tasks.noTaskCompleted}
+                  {translations.sprint.form.taskStatusCompletion}
                 </Label>
                 <div className="col-span-3">
                   {

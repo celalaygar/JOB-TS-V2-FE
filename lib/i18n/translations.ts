@@ -1035,15 +1035,27 @@ export const en = {
       selectIndividualMembers: "Select Individual Members ({count} available)",
       usersSelected: "{count} user{plural} selected",
       remove: "Remove",
-
       addUser: "Add User",
       removeUser: "Remove User",
       teamMembers: "Team Members",
       projectWideSprint: "Project-wide Sprint",
       noSprintUser: "No Sprint User",
       sprintCode: "Sprint Code",
-      createdBy: "Created By"
+      createdBy: "Created By",
+
+      sprintType: "Sprint Type",
+      taskStatusCompletion: "Task Status required for Sprint Completion",
+      selectProjectPlaceholder: "Select a project",
+      selectTeamPlaceholder: "Select a team",
+      selectSprintTypePlaceholder: "Select Sprint Type",
+      selectTaskStatusPlaceholder: "Select status for tasks",
+      noTeamsAvailable: "No teams available for this project",
+      noTaskStatusesAvailable: "No task statuses available for this project. Please select a project first.",
+
+
+
     },
+
     progress: {
       title: "Sprint Progress",
       description: "Track the progress of this sprint",
@@ -1163,7 +1175,9 @@ export const en = {
         teamMembers: "Members",
         actions: "Actions",
       }
-    }
+    },
+    projectWideSprint: "Projeye özel Sprint",
+    tasksLabel: "görev"
   },
   projects: {
     title: "Projects",
@@ -2104,6 +2118,7 @@ export const tr = {
       completed: "Tamamlandı",
       cancelled: "İptal Edildi",
     },
+
     sprintCreated: "Sprint başarıyla oluşturuldu",
     sprintUpdated: "Sprint başarıyla güncellendi",
     sprintDeleted: "Sprint başarıyla silindi",
@@ -2296,15 +2311,23 @@ export const tr = {
       selectIndividualMembers: "Bireysel Üyeleri Seç ({count} mevcut)",
       usersSelected: "{count} kullanıcı seçildi",
       remove: "Kaldır",
-
-
       addUser: "Kullanıcı Ekle",
       removeUser: "Kullanıcı Çıkar",
       teamMembers: "Takım Üyeleri",
       projectWideSprint: "Proje Genel Sprint",
       noSprintUser: "Sprint Kullanıcısı Yok",
       sprintCode: "Sprint Kodu",
-      createdBy: "Oluşturan"
+      createdBy: "Oluşturan",
+
+      sprintType: "Sprint Türü",
+      taskStatusCompletion: "Sprint Tamamlanması için gerekli olan Görev Durumu",
+      selectProjectPlaceholder: "Bir proje seçin",
+      selectTeamPlaceholder: "Bir takım seçin",
+      selectSprintTypePlaceholder: "Sprint türü seçin",
+      selectTaskStatusPlaceholder: "Görev durumu seçin",
+      noTeamsAvailable: "Bu proje için mevcut takım yok",
+      noTaskStatusesAvailable: "Bu proje için mevcut görev durumu yok. Lütfen önce bir proje seçin.",
+
     },
     progress: {
       title: "Sprint İlerlemesi",
@@ -2427,7 +2450,9 @@ export const tr = {
         teamMembers: "Üyeler",
         actions: "Eylemler",
       }
-    }
+    },
+    projectWideSprint: "Project-wide Sprint",
+    tasksLabel: "tasks"
   },
   projects: {
     title: "Projeler",

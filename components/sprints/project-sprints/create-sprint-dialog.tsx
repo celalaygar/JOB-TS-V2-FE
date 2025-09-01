@@ -21,13 +21,11 @@ import { Project, ProjectTaskStatus } from "@/types/project"
 import { toast } from "@/hooks/use-toast"
 import { Sprint, SprintType } from "@/types/sprint"
 import Select from "react-select"
-
-// react-datepicker imports
 import DatePicker from "react-datepicker"
-import "react-datepicker/dist/react-datepicker.css" // Don't forget to import the CSS!
+import "react-datepicker/dist/react-datepicker.css"
 import { Label } from "@/components/ui/label"
 import { getAllProjectTaskStatusHelper, saveSprintHelper } from "@/lib/service/api-helpers"
-
+import { useLanguage } from "@/lib/i18n/context"
 
 interface CreateSprintDialogProps {
   open: boolean
@@ -48,12 +46,14 @@ const sprintTypeOptions: SelectOption[] = [
 
 export function CreateSprintDialog({ projectList, open, onOpenChange, projectId }: CreateSprintDialogProps) {
   const dispatch = useDispatch()
+  const { translations } = useLanguage()
+  const t = translations.sprint.form
 
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(projectId || null)
-  const [startDate, setStartDate] = useState<Date | null>(new Date()) // Change to Date | null
-  const [endDate, setEndDate] = useState<Date | null>(new Date(new Date().setDate(new Date().getDate() + 14))) // Change to Date | null
+  const [startDate, setStartDate] = useState<Date | null>(new Date())
+  const [endDate, setEndDate] = useState<Date | null>(new Date(new Date().setDate(new Date().getDate() + 14)))
   const [projectTaskStatusId, setProjectTaskStatusId] = useState<string | null>(null)
   const [sprintType, setSprintType] = useState<string>(SprintType.PROJECT)
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null)
@@ -62,59 +62,41 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
   const [loadingTaskStatuses, setLoadingTaskStatuses] = useState(false);
 
   const projectTeams = useMemo(() => teams.filter((team) => team.projectId === selectedProjectId), [selectedProjectId])
-
-  const projectOptions = useMemo(() => projectList.map(project => ({ value: project.id, label: project.name })), [projectList]);
-  const teamOptions = useMemo(() => projectTeams.map(team => ({ value: team.id, label: team.name })), [projectTeams]);
-  const taskStatusOptions = useMemo(() => taskStatuses.map(status => ({ value: status.id, label: status.name })), [taskStatuses]);
+  const projectOptions = useMemo(() => projectList.map(project => ({ value: project.id, label: project.name })), [projectList])
+  const teamOptions = useMemo(() => projectTeams.map(team => ({ value: team.id, label: team.name })), [projectTeams])
+  const taskStatusOptions = useMemo(() => taskStatuses.map(status => ({ value: status.id, label: status.name })), [taskStatuses])
 
   useEffect(() => {
-    if (projectId) {
-      setSelectedProjectId(projectId);
-    }
-  }, [projectId]);
+    if (projectId) setSelectedProjectId(projectId)
+  }, [projectId])
 
   const fetchProjectTaskStatuses = useCallback(async (currentProjectId: string) => {
-    setTaskStatuses([]); // Clear existing statuses
-    const statusesData = await getAllProjectTaskStatusHelper(currentProjectId, { setLoading: setLoadingTaskStatuses });
+    setTaskStatuses([])
+    const statusesData = await getAllProjectTaskStatusHelper(currentProjectId, { setLoading: setLoadingTaskStatuses })
     if (statusesData) {
-      setTaskStatuses(statusesData);
-      // Automatically select the first status if available and none is selected
-      if (statusesData.length > 0 && !projectTaskStatusId) {
-        setProjectTaskStatusId(statusesData[0].id);
-      }
-    } else {
-      setProjectTaskStatusId(null);
-    }
-  }, [projectTaskStatusId]);
-
+      setTaskStatuses(statusesData)
+      if (statusesData.length > 0 && !projectTaskStatusId) setProjectTaskStatusId(statusesData[0].id)
+    } else setProjectTaskStatusId(null)
+  }, [projectTaskStatusId])
 
   useEffect(() => {
-    if (selectedProjectId && selectedProjectId !== "all") {
-      fetchProjectTaskStatuses(selectedProjectId);
-    } else {
-      setTaskStatuses([]);
-      setProjectTaskStatusId(null);
+    if (selectedProjectId && selectedProjectId !== "all") fetchProjectTaskStatuses(selectedProjectId)
+    else {
+      setTaskStatuses([])
+      setProjectTaskStatusId(null)
     }
-  }, [selectedProjectId, fetchProjectTaskStatuses]);
+  }, [selectedProjectId, fetchProjectTaskStatuses])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (!name || !selectedProjectId || !startDate || !endDate) {
-      toast({
-        title: "Missing Information",
-        description: "Please fill in all required fields.",
-        variant: "destructive",
-      });
+      toast({ title: "Missing Information", description: "Please fill in all required fields.", variant: "destructive" })
       return
     }
 
     if (sprintType === SprintType.TEAM && !selectedTeamId) {
-      toast({
-        title: "Missing Team",
-        description: "Please select a project team for 'Project Team Sprint' type.",
-        variant: "destructive",
-      });
+      toast({ title: "Missing Team", description: "Please select a project team for 'Project Team Sprint' type.", variant: "destructive" })
       return
     }
 
@@ -125,15 +107,14 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
       projectId: selectedProjectId,
       startDate: startDate.toISOString(),
       endDate: endDate.toISOString(),
-      //status: "planning",
-      projectTaskStatusId: projectTaskStatusId,
-      sprintType: SprintType.PROJECT,
+      projectTaskStatusId,
+      sprintType,
       projectTeamId: sprintType === SprintType.TEAM ? selectedTeamId : undefined,
       tasks: [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }
-    const response = await saveSprintHelper(newSprint, { setLoading });
+    const response = await saveSprintHelper(newSprint, { setLoading })
     if (response) {
       dispatch(addSprint(response))
       resetForm()
@@ -152,14 +133,13 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
     setSelectedTeamId(null)
   }, [projectId])
 
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Create New Sprint</DialogTitle>
-            <DialogDescription>Create a new sprint for your project.</DialogDescription>
+            <DialogTitle>{t.create}</DialogTitle>
+            <DialogDescription>{t.sprintDescription}</DialogDescription>
           </DialogHeader>
           {
             loading ?
@@ -172,38 +152,22 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
               <>
                 <div className="grid gap-4 py-4">
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <Label className="text-right">
-                      Name
-                    </Label>
-                    <Input id="name" value={name} onChange={(e) => setName(e.target.value)} className="col-span-3" required />
+                    <Label className="text-right">{t.sprintName}</Label>
+                    <Input value={name} onChange={(e) => setName(e.target.value)} className="col-span-3" required />
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <Label className="text-right">
-                      Description
-                    </Label>
-                    <Textarea
-                      id="description"
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      className="col-span-3"
-                    />
+                    <Label className="text-right">{t.sprintDescription}</Label>
+                    <Textarea value={description} onChange={(e) => setDescription(e.target.value)} className="col-span-3" />
                   </div>
 
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <Label className="text-right">
-                      Project
-                    </Label>
+                    <Label className="text-right">{t.project}</Label>
                     <div className="col-span-3">
-                      <Select className="border-red-500"
-                        id="project"
+                      <Select
                         options={projectOptions}
                         value={projectOptions.find(option => option.value === selectedProjectId)}
-                        onChange={(option) => {
-                          setSelectedProjectId(option ? option.value : null);
-                          setProjectTaskStatusId(null);
-                          setTaskStatuses([]);
-                        }}
-                        placeholder="Select a project"
+                        onChange={(option) => { setSelectedProjectId(option ? option.value : null); setProjectTaskStatusId(null); setTaskStatuses([]) }}
+                        placeholder={t.selectProjectPlaceholder}
                         isDisabled={!!projectId}
                         isClearable
                       />
@@ -211,124 +175,92 @@ export function CreateSprintDialog({ projectList, open, onOpenChange, projectId 
                   </div>
 
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <Label className="text-right">
-                      Sprint Type
-                    </Label>
+                    <Label className="text-right">{t.sprintType}</Label>
                     <div className="col-span-3">
                       <Select
-                        id="sprintType"
                         value={sprintTypeOptions.find(option => option.value === sprintType)}
                         onChange={(option) => setSprintType(option?.value || SprintType.PROJECT)}
                         options={sprintTypeOptions}
-                        placeholder="Select Sprint Type"
+                        placeholder={t.selectSprintTypePlaceholder}
                       />
                     </div>
                   </div>
 
                   {sprintType === SprintType.TEAM && selectedProjectId && (
                     <div className="grid grid-cols-4 items-center gap-4">
-                      <Label className="text-right">
-                        Project Team
-                      </Label>
+                      <Label className="text-right">{t.projectTeam}</Label>
                       <div className="col-span-3">
                         <Select
-                          id="team"
                           options={teamOptions}
                           value={teamOptions.find(option => option.value === selectedTeamId)}
                           onChange={(option) => setSelectedTeamId(option ? option.value : null)}
-                          placeholder="Select a team"
+                          placeholder={t.selectTeamPlaceholder}
                           isClearable
-                          noOptionsMessage={() => "No teams available for this project"}
+                          noOptionsMessage={() => t.noTeamsAvailable}
                         />
                       </div>
                     </div>
                   )}
 
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <Label className="text-right">
-                      Task Status on Completion
-                    </Label>
+                    <Label className="text-right">{t.taskStatusCompletion}</Label>
                     <div className="col-span-3">
                       {
                         loadingTaskStatuses ?
-                          <div className="grid gap-4 py-4">
-                            <div className="flex items-center justify-center">
-                              <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
-                            </div>
+                          <div className="flex items-center justify-center">
+                            <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
                           </div>
                           :
-                          <>
-                            <Select
-                              id="projectTaskStatusId"
-                              options={taskStatusOptions}
-                              value={taskStatusOptions.find(option => option.value === projectTaskStatusId)}
-                              onChange={(option) => setProjectTaskStatusId(option ? option.value : null)}
-                              placeholder="Select status for tasks"
-                              isClearable
-                              isDisabled={!selectedProjectId || taskStatuses.length === 0}
-                              noOptionsMessage={() => "No task statuses available for this project. Please select a project first."}
-                            />
-                          </>
+                          <Select
+                            options={taskStatusOptions}
+                            value={taskStatusOptions.find(option => option.value === projectTaskStatusId)}
+                            onChange={(option) => setProjectTaskStatusId(option ? option.value : null)}
+                            placeholder={t.selectTaskStatusPlaceholder}
+                            isClearable
+                            isDisabled={!selectedProjectId || taskStatuses.length === 0}
+                            noOptionsMessage={() => t.noTaskStatusesAvailable}
+                          />
                       }
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label className="text-right">
-                      Start Date
-                    </Label>
-                    <div className="col-span-3">
-                      <div className="relative">
-                        <DatePicker
-                          selected={startDate}
-                          onChange={(date: Date | null) => setStartDate(date)}
-                          dateFormat="PPP" // Consistent with format(date, "PPP")
-                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                          wrapperClassName="w-full"
-                          placeholderText="Pick a date"
-                          showPopperArrow={false} // Hides the arrow on the popover
-                          popperPlacement="bottom-start" // Adjust placement if needed
-                        // You can add minDate and maxDate props if you need date restrictions
-                        // minDate={new Date()} // Example: disable past dates
-                        />
-                        <CalendarIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none" />
-                      </div>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <Label className="text-right">
-                      End Date
-                    </Label>
-                    <div className="col-span-3">
-                      <div className="relative">
-                        <DatePicker
-                          selected={endDate}
-                          onChange={(date: Date | null) => setEndDate(date)}
-                          dateFormat="PPP"
-                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                          wrapperClassName="w-full"
-                          placeholderText="Pick a date"
-                          showPopperArrow={false}
-                          popperPlacement="bottom-start"
-                        // minDate={startDate || new Date()} // Example: End date must be after start date
-                        />
-                        <CalendarIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none" />
-                      </div>
+                    <Label className="text-right">{t.startDate}</Label>
+                    <div className="col-span-3 relative">
+                      <DatePicker
+                        selected={startDate}
+                        onChange={(date) => setStartDate(date)}
+                        dateFormat="PPP"
+                        className="flex h-10 w-full rounded-md border px-3 py-2 text-sm"
+                        placeholderText={t.startDate}
+                      />
+                      <CalendarIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none" />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label className="text-right">{t.endDate}</Label>
+                    <div className="col-span-3 relative">
+                      <DatePicker
+                        selected={endDate}
+                        onChange={(date) => setEndDate(date)}
+                        dateFormat="PPP"
+                        className="flex h-10 w-full rounded-md border px-3 py-2 text-sm"
+                        placeholderText={t.endDate}
+                      />
+                      <CalendarIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none" />
                     </div>
                   </div>
                 </div>
+
                 <DialogFooter>
-                  <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                    Cancel
-                  </Button>
-                  <Button type="submit" disabled={sprintType === SprintType.TEAM && !selectedTeamId}>
-                    Create Sprint
-                  </Button>
+                  <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>{t.cancel}</Button>
+                  <Button type="submit" disabled={sprintType === SprintType.TEAM && !selectedTeamId}>{t.create}</Button>
                 </DialogFooter>
               </>
           }
         </form>
       </DialogContent>
-    </Dialog >
+    </Dialog>
   )
 }
