@@ -103,22 +103,23 @@ export function ProjectUsersTab({
 
 
   return loading ? (
-    <>
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
-      </div>
-    </>
+    <div className="flex items-center justify-center min-h-screen">
+      <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+    </div>
   ) : (
+
     <>
       <div className="space-y-6">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          <h2 className="text-xl font-semibold tracking-tight">{translations.projects.users} ({projectUsers && projectUsers.length})</h2>
+          <h2 className="text-xl font-semibold tracking-tight">
+            {translations.projects.users} ({projectUsers?.length || 0})
+          </h2>
           <div className="flex items-center gap-2 w-full md:w-auto">
             <div className="relative flex-1 md:w-64">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 type="search"
-                placeholder="Search users..."
+                placeholder={translations.projects.searchUsers}
                 className="pl-8"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -132,47 +133,43 @@ export function ProjectUsersTab({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <div className="p-2">
-                  <p className="text-sm font-medium mb-2">Role</p>
+                  <p className="text-sm font-medium mb-2">{translations.projects.role}</p>
                   <Select value={roleFilter} onValueChange={setRoleFilter}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Filter by role" />
+                      <SelectValue placeholder={translations.projects.filterByRole} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Roles</SelectItem>
-                      {uniqueRoles && uniqueRoles.map((role) => (
-                        <SelectItem key={role} value={role}>
-                          {role}
-                        </SelectItem>
+                      <SelectItem value="all">{translations.projects.allRoles}</SelectItem>
+                      {uniqueRoles?.map((role) => (
+                        <SelectItem key={role} value={role}>{role}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="p-2">
-                  <p className="text-sm font-medium mb-2">Status</p>
+                  <p className="text-sm font-medium mb-2">{translations.projects.status}</p>
                   <Select value={statusFilter} onValueChange={setStatusFilter}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Filter by status" />
+                      <SelectValue placeholder={translations.projects.filterByStatus} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Statuses</SelectItem>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="inactive">Inactive</SelectItem>
-                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="all">{translations.projects.allStatuses}</SelectItem>
+                      <SelectItem value="active">{translations.projects.active}</SelectItem>
+                      <SelectItem value="inactive">{translations.projects.inactive}</SelectItem>
+                      <SelectItem value="pending">{translations.projects.pending}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="p-2">
-                  <p className="text-sm font-medium mb-2">Department</p>
+                  <p className="text-sm font-medium mb-2">{translations.projects.department}</p>
                   <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Filter by department" />
+                      <SelectValue placeholder={translations.projects.filterByDepartment} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Departments</SelectItem>
-                      {uniqueDepartments && uniqueDepartments.map((dept) => (
-                        <SelectItem key={dept} value={dept}>
-                          {dept}
-                        </SelectItem>
+                      <SelectItem value="all">{translations.projects.allDepartments}</SelectItem>
+                      {uniqueDepartments?.map((dept) => (
+                        <SelectItem key={dept} value={dept}>{dept}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -186,7 +183,7 @@ export function ProjectUsersTab({
                 className="rounded-r-none"
                 onClick={() => setViewMode("grid")}
               >
-                Grid
+                {translations.projects.grid}
               </Button>
               <Button
                 variant={viewMode === "list" ? "default" : "ghost"}
@@ -194,12 +191,12 @@ export function ProjectUsersTab({
                 className="rounded-l-none"
                 onClick={() => setViewMode("list")}
               >
-                List
+                {translations.projects.list}
               </Button>
             </div>
             <Button onClick={onInviteClick}>
               <UserPlus className="mr-2 h-4 w-4" />
-              Invite User
+              {translations.projects.inviteUser}
             </Button>
           </div>
         </div>
@@ -254,15 +251,15 @@ export function ProjectUsersTab({
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem>
                           <Eye className="mr-2 h-4 w-4" />
-                          View Profile
+                          {translations.projects.viewDetails}
                         </DropdownMenuItem>
                         <DropdownMenuItem>
                           <Edit className="mr-2 h-4 w-4" />
-                          Edit Role
+                          {translations.projects.edit}
                         </DropdownMenuItem>
                         <DropdownMenuItem className="text-destructive" onClick={() => openRemoveUserDialogForm(user)}>
                           <Trash2 className="mr-2 h-4 w-4" />
-                          Remove from Project
+                          {translations.projects.remove}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -323,7 +320,7 @@ export function ProjectUsersTab({
                   <div className="mt-4 pt-4 border-t">
                     <Button variant="outline" size="sm" className="w-full" onClick={() => { }}>
                       <Eye className="mr-2 h-4 w-4" />
-                      View Profile
+                      {translations.projects.viewDetails}
                     </Button>
                   </div>
                 </div>
@@ -336,12 +333,12 @@ export function ProjectUsersTab({
               <table className="w-full">
                 <thead>
                   <tr className="bg-muted/50">
-                    <th className="text-left p-3 font-medium">User</th>
-                    <th className="text-left p-3 font-medium">Role</th>
+                    <th className="text-left p-3 font-medium">{translations.projects.users}</th>
+                    <th className="text-left p-3 font-medium">{translations.projects.role}</th>
                     <th className="text-left p-3 font-medium hidden md:table-cell">Department</th>
                     <th className="text-left p-3 font-medium hidden lg:table-cell">Skills</th>
-                    <th className="text-left p-3 font-medium">Status</th>
-                    <th className="text-left p-3 font-medium">Actions</th>
+                    <th className="text-left p-3 font-medium">{translations.projects.status}</th>
+                    <th className="text-left p-3 font-medium">{translations.projects.actions}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -412,14 +409,14 @@ export function ProjectUsersTab({
                               ? "Inactive"
                               : user.status === "pending"
                                 ? "Pending"
-                                : "Unknown"}
+                                : user.status}
                         </Badge>
                       </td>
                       <td className="p-3">
                         <div className="flex items-center gap-2">
                           <Button variant="outline" size="sm">
                             <Eye className="mr-2 h-4 w-4" />
-                            View
+                            {translations.projects.viewDetails}
                           </Button>
                           <Button variant="ghost" size="icon">
                             <Edit className="h-4 w-4" />
@@ -437,20 +434,17 @@ export function ProjectUsersTab({
           </div>
         )}
 
-        {projectUsers && projectUsers.length === 0 && (
+
+        {projectUsers?.length === 0 && (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <div className="rounded-full bg-muted p-3 mb-4">
               <UserPlus className="h-6 w-6 text-muted-foreground" />
             </div>
-            <h3 className="text-lg font-medium mb-1">No users found</h3>
-            <p className="text-muted-foreground mb-4">
-              {searchQuery || roleFilter !== "all" || statusFilter !== "all" || departmentFilter !== "all"
-                ? "Try adjusting your search or filters"
-                : "This project doesn't have any users yet"}
-            </p>
+            <h3 className="text-lg font-medium mb-1">{translations.projects.noUsersFound}</h3>
+            <p className="text-muted-foreground mb-4">{translations.projects.tryAdjustingSearch}</p>
             <Button onClick={onInviteClick}>
               <UserPlus className="mr-2 h-4 w-4" />
-              Invite Users
+              {translations.projects.inviteUsers}
             </Button>
           </div>
         )}

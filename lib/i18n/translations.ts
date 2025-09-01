@@ -1340,6 +1340,22 @@ export const en = {
     members: "Members",
     focusAreas: "Focus Areas",
     meetingSchedule: "Meeting Schedule",
+
+    searchUsers: "Search users...",
+    role: "Role",
+    filterByRole: "Filter by role",
+    allRoles: "All Roles",
+    filterByStatus: "Filter by status",
+    allStatuses: "All Statuses",
+    active: "Active",
+    inactive: "Inactive",
+    pending: "Pending",
+    department: "Department",
+    filterByDepartment: "Filter by department",
+    allDepartments: "All Departments",
+    inviteUsers: "Invite Users",
+    noUsersFound: "No users found",
+    tryAdjustingSearch: "Try adjusting your search or filters",
   }
 };
 
@@ -2686,6 +2702,22 @@ export const tr = {
     members: "Üyeler",
     focusAreas: "Odak Alanları",
     meetingSchedule: "Toplantı Programı",
+
+    searchUsers: "Kullanıcı ara...",
+    role: "Rol",
+    filterByRole: "Role göre filtrele",
+    allRoles: "Tüm Roller",
+    filterByStatus: "Duruma göre filtrele",
+    allStatuses: "Tüm Durumlar",
+    active: "Aktif",
+    inactive: "Pasif",
+    pending: "Beklemede",
+    department: "Departman",
+    filterByDepartment: "Departmana göre filtrele",
+    allDepartments: "Tüm Departmanlar",
+    inviteUsers: "Kullanıcıları Davet Et",
+    noUsersFound: "Kullanıcı bulunamadı",
+    tryAdjustingSearch: "Aramanızı veya filtrelerinizi ayarlamayı deneyin",
   }
 
 }
