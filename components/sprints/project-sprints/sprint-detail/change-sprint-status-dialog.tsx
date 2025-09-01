@@ -63,16 +63,16 @@ export function ChangeSprintStatusDailog({ sprint, open, onOpenChange }: ChangeS
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>
-            Change Sprint Status to do Active or Planned
+            {translations.sprint.form.changeStatusTitle}
 
           </DialogTitle>
         </DialogHeader>
         <DialogDescription>
-          Are you sure you want to change the sprint status to Active? This action cannot be undone.
+          {translations.sprint.form.changeStatusDescription}
         </DialogDescription>
         <div className="mt-4">
           <Label className="text-sm font-medium">
-            Sprint Name
+            {translations.sprint.form.name}
           </Label>
           <div className="mt-2">
             <div className="flex items-center justify-between">
@@ -94,7 +94,7 @@ export function ChangeSprintStatusDailog({ sprint, open, onOpenChange }: ChangeS
             <>
               <div className="mt-4">
                 <Label className="text-sm font-medium">
-                  Sprint Status
+                  {translations.sprint.form.status}
                 </Label>
                 <Select value={sprintStatus} onValueChange={setSprintStatus}>
                   <SelectTrigger className="w-full mt-2">
@@ -121,7 +121,7 @@ export function ChangeSprintStatusDailog({ sprint, open, onOpenChange }: ChangeS
             onClick={() => onOpenChange(false)}
             className="mr-2"
           >
-            Cancel
+            {translations.sprint.form.cancel}
           </Button>
           <Button
             onClick={handleCompleteSprint}
