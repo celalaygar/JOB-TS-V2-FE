@@ -1,12 +1,8 @@
 "use client"
 
-import { EditProjectDialog } from "@/components/projects/edit-project-dialog"
-import { CreateTeamDialog } from "./create-team-dialog"
 import type { Project } from "@/types/project"
-import type { Task } from "@/types/task"
 import { DeleteProjectDialog } from "./dialogs/delete-project-dialog"
 import { DeleteTaskDialog } from "./dialogs/delete-task-dialog"
-import { InviteUserDialog } from "./dialogs/invite-user-dialog"
 
 interface ProjectDialogsProps {
   project?: Project

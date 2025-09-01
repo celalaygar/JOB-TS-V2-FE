@@ -14,9 +14,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Loader2 } from "lucide-react"
-import { toast } from "@/hooks/use-toast"
 import { ProjectTeam } from "@/types/project"
-import { createUpdateProjectTeamHelper } from "@/lib/service/api-helpers" // Import the new helper
+import { createUpdateProjectTeamHelper } from "@/lib/service/api-helpers"
+import { useLanguage } from "@/lib/i18n/context"
 
 interface CreateTeamDialogProps {
   projectId: string
@@ -25,7 +25,7 @@ interface CreateTeamDialogProps {
   onCreateTeam: (team: ProjectTeam) => void
   projectTeams: ProjectTeam[]
   setProjectTeams: (teams: ProjectTeam[]) => void
-  team?: ProjectTeam// Optional prop for editing
+  team?: ProjectTeam
   setSelectedProjectTeam: (team: ProjectTeam | undefined | null) => void
 }
 
@@ -42,6 +42,7 @@ export function CreateTeamDialog({
   const [teamName, setTeamName] = useState("")
   const [teamDescription, setTeamDescription] = useState("")
   const [loading, setLoading] = useState(false)
+  const { translations } = useLanguage()
 
   const isEditMode = !!team?.id
 
@@ -65,7 +66,7 @@ export function CreateTeamDialog({
       description: teamDescription,
     }
 
-    const response = await createUpdateProjectTeamHelper(payload, isEditMode, { setLoading });
+    const response = await createUpdateProjectTeamHelper(payload, isEditMode, { setLoading })
 
     if (response) {
       if (isEditMode) {
@@ -80,7 +81,6 @@ export function CreateTeamDialog({
     onOpenChange(false)
   }
 
-
   const resetForm = () => {
     setTeamName("")
     setTeamDescription("")
@@ -90,51 +90,58 @@ export function CreateTeamDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[525px]">
         <DialogHeader>
-          <DialogTitle>{isEditMode ? "Edit Team" : "Create New Team"}</DialogTitle>
+          <DialogTitle>
+            {isEditMode
+              ? translations.projects.editTeamTitle
+              : translations.projects.createTeamTitle}
+          </DialogTitle>
           <DialogDescription>
-            {isEditMode ? "Edit team details." : "Create a new team for this project."}
+            {isEditMode
+              ? translations.projects.editTeamDescription
+              : translations.projects.createTeamDescription}
           </DialogDescription>
         </DialogHeader>
-        {
-          loading ?
+        {loading ? (
+          <div className="grid gap-4 py-4">
+            <div className="flex items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+            </div>
+          </div>
+        ) : (
+          <>
             <div className="grid gap-4 py-4">
-              <div className="flex items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+              <div className="grid gap-2">
+                <Label htmlFor="team-name">{translations.projects.teamNameLabel}</Label>
+                <Input
+                  id="team-name"
+                  placeholder={translations.projects.teamNamePlaceholder}
+                  value={teamName}
+                  onChange={(e) => setTeamName(e.target.value)}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="team-description">{translations.projects.teamDescriptionLabel}</Label>
+                <Textarea
+                  id="team-description"
+                  placeholder={translations.projects.teamDescriptionPlaceholder}
+                  value={teamDescription}
+                  onChange={(e) => setTeamDescription(e.target.value)}
+                  rows={3}
+                />
               </div>
             </div>
-            :
-            <>
-              <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="team-name">Team Name</Label>
-                  <Input
-                    id="team-name"
-                    placeholder="Enter team name"
-                    value={teamName}
-                    onChange={(e) => setTeamName(e.target.value)}
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="team-description">Description</Label>
-                  <Textarea
-                    id="team-description"
-                    placeholder="Enter team description"
-                    value={teamDescription}
-                    onChange={(e) => setTeamDescription(e.target.value)}
-                    rows={3}
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => onOpenChange(false)}>
-                  Cancel
-                </Button>
-                <Button onClick={handleCreateOrUpdateProjectTeam} disabled={!teamName}>
-                  {isEditMode ? "Update Team" : "Create Team"}
-                </Button>
-              </DialogFooter>
-            </>
-        }
+            <DialogFooter>
+              <Button variant="outline" onClick={() => onOpenChange(false)}>
+                {translations.projects.cancel}
+              </Button>
+              <Button onClick={handleCreateOrUpdateProjectTeam} disabled={!teamName}>
+                {isEditMode
+                  ? translations.projects.updateTeam
+                  : translations.projects.createTeam}
+              </Button>
+            </DialogFooter>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   )

@@ -1,18 +1,22 @@
 "use client"
 
+import { useLanguage } from "@/lib/i18n/context"
+
 interface ProjectTabNavigationProps {
   activeTab: string
   onTabChange: (tab: string) => void
 }
 
 export function ProjectTabNavigation({ activeTab, onTabChange }: ProjectTabNavigationProps) {
+  const { translations } = useLanguage()
+
   const tabs = [
-    { id: "overview", label: "Overview" },
-    { id: "users", label: "Users" },
-    { id: "team", label: "Team" },
-    { id: "roles", label: "User Roles" },
-    { id: "status", label: "Task Status Management" },
-    { id: "sent-invitations", label: "Sent Invitations" },
+    { id: "overview", label: translations.projects.projectOverview },
+    { id: "users", label: translations.projects.users },
+    { id: "team", label: translations.projects.team },
+    { id: "roles", label: translations.projects.roles },
+    { id: "status", label: translations.projects.taskStatusManagement },
+    { id: "sent-invitations", label: translations.projects.sentInvitations },
   ]
 
   return (

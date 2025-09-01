@@ -28,6 +28,7 @@ import { ProjectSystemRole, type Project, type ProjectUser, type RemoveProjectUs
 import { InviteUserDialog } from "./dialogs/invite-user-dialog"
 import { getActiveProjectUsersHelper, getAllProjectUsersHelper, removeProjectUserHelper } from "@/lib/service/api-helpers"
 import { RemoveUserDialog } from "./dialogs/remove-user-dialog copy"
+import { useLanguage } from "@/lib/i18n/context"
 
 interface ProjectUsersTabProps {
   project: Project
@@ -42,6 +43,7 @@ export function ProjectUsersTab({
   inviteDialogOpen = false,
   setInviteDialogOpen = () => { },
 }: ProjectUsersTabProps) {
+  const { translations } = useLanguage()
 
   const [searchQuery, setSearchQuery] = useState("")
   const [roleFilter, setRoleFilter] = useState("all")
@@ -110,7 +112,7 @@ export function ProjectUsersTab({
     <>
       <div className="space-y-6">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          <h2 className="text-xl font-semibold tracking-tight">Project Users ({projectUsers && projectUsers.length})</h2>
+          <h2 className="text-xl font-semibold tracking-tight">{translations.projects.users} ({projectUsers && projectUsers.length})</h2>
           <div className="flex items-center gap-2 w-full md:w-auto">
             <div className="relative flex-1 md:w-64">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
