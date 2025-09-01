@@ -1,8 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { useSelector } from "react-redux"
-import type { RootState } from "@/lib/redux/store"
 import {
   Dialog,
   DialogContent,
@@ -13,7 +11,7 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Avatar } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent } from "@/components/ui/card"
@@ -21,6 +19,7 @@ import { Search, UserMinus, Loader2 } from "lucide-react"
 import { CreatedProject } from "@/types/project"
 import { RemoveUserFromSprintRequest, Sprint, SprintUser, SprintUserSystemRole } from "@/types/sprint"
 import { removeBulkUserFromSprintHelper } from "@/lib/service/helper/sprint-helper"
+import { useLanguage } from "@/lib/i18n/context"
 
 interface RemoveSprintMemberDialogProps {
   sprint?: Sprint
@@ -32,13 +31,13 @@ interface RemoveSprintMemberDialogProps {
   fetchData: () => void
 }
 
-export function RemoveSprintMemberDialog({ sprintUsers, sprint, project, sprintId, open, onOpenChange, fetchData }: RemoveSprintMemberDialogProps) {
+export function RemoveSprintMemberDialog({ sprintUsers, project, sprintId, open, onOpenChange, fetchData }: RemoveSprintMemberDialogProps) {
+  const { translations } = useLanguage()
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedUsers, setSelectedUsers] = useState<string[]>([])
   const [selectAll, setSelectAll] = useState(false)
   const [loading, setLoading] = useState(false)
 
-  // Sprint'ten çıkarılacak kullanıcılar (sprintUsers)
   const usersToRemove = sprintUsers || []
 
   const handleUserToggle = (userId: string) => {
@@ -69,7 +68,6 @@ export function RemoveSprintMemberDialog({ sprintUsers, sprint, project, sprintI
     }
 
     if (usersToRemoveIds.length > 0 && !!sprintId && !!project) {
-
       let body: RemoveUserFromSprintRequest = {
         projectId: project.id,
         sprintId: sprintId,
@@ -84,21 +82,18 @@ export function RemoveSprintMemberDialog({ sprintUsers, sprint, project, sprintI
         onOpenChange(false)
         fetchData()
       }
-
     }
   }
 
-  const getTotalSelectedCount = () => {
-    return selectedUsers.length
-  }
+  const getTotalSelectedCount = () => selectedUsers.length
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
         <DialogHeader className="flex-shrink-0">
-          <DialogTitle>Remove Members from Sprint</DialogTitle>
+          <DialogTitle>{translations.sprint.form.removeMembersTitle}</DialogTitle>
           <DialogDescription>
-            Select individual users to remove from this sprint.
+            {translations.sprint.form.removeMembersDescription}
           </DialogDescription>
         </DialogHeader>
 
@@ -112,7 +107,7 @@ export function RemoveSprintMemberDialog({ sprintUsers, sprint, project, sprintI
               <div className="relative mb-4">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
-                  placeholder="Search sprint members..."
+                  placeholder={translations.sprint.form.searchMembersPlaceholder}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -131,19 +126,21 @@ export function RemoveSprintMemberDialog({ sprintUsers, sprint, project, sprintI
                           />
                           <UserMinus className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground flex-shrink-0" />
                           <div className="flex-1 min-w-0">
-                            <div className="font-medium text-sm sm:text-base">Remove All Sprint Members</div>
+                            <div className="font-medium text-sm sm:text-base">
+                              {translations.sprint.form.removeAllMembers}
+                            </div>
                             <div className="text-xs sm:text-sm text-muted-foreground">
-                              Remove all {usersToRemove.length} members from this sprint
+                              {translations.sprint.form.removeAllMembersDescription.replace("{count}", String(usersToRemove.length))}
                             </div>
                           </div>
                           <Badge variant="outline" className="text-xs flex-shrink-0">
-                            {usersToRemove.length} members
+                            {usersToRemove.length} {translations.sprint.form.members}
                           </Badge>
                         </div>
                         {selectAll && (
                           <div className="mt-3 p-3 bg-red-50 dark:bg-red-950/20 rounded-lg border border-red-200 dark:border-red-800">
                             <div className="text-xs sm:text-sm text-red-800 dark:text-red-200">
-                              <strong>Warning:</strong> This will remove all members from the sprint team.
+                              <strong>{translations.sprint.form.warning}</strong> {translations.sprint.form.removeAllWarning}
                             </div>
                           </div>
                         )}
@@ -154,34 +151,25 @@ export function RemoveSprintMemberDialog({ sprintUsers, sprint, project, sprintI
                       <div className="space-y-2">
                         {filteredUsers.length === 0 ? (
                           <div className="text-center py-8 text-muted-foreground">
-                            {searchTerm ? "No users found matching your search." : "No members in this sprint."}
+                            {searchTerm
+                              ? translations.sprint.form.noUsersFound
+                              : translations.sprint.form.noMembersInSprint}
                           </div>
                         ) : (
                           <>
                             <div className="text-sm font-medium text-muted-foreground px-1">
-                              Select Individual Members ({filteredUsers.length} available)
+                              {translations.sprint.form.selectIndividualMembers.replace("{count}", String(filteredUsers.length))}
                             </div>
                             {filteredUsers.map((user: SprintUser) => (
-                              <Card key={user.id} className={"cursor-pointer hover:bg-muted/50 "}>
+                              <Card key={user.id} className="cursor-pointer hover:bg-muted/50 ">
                                 <CardContent className="p-3 sm:p-4">
-                                  <div className={"flex items-center space-x-2 "}>
+                                  <div className="flex items-center space-x-2">
                                     <Checkbox
                                       disabled={user.sprintUserSystemRole === SprintUserSystemRole.SPRINT_ADMIN}
                                       checked={selectedUsers.includes(user.createdBy.id)}
                                       onCheckedChange={() => handleUserToggle(user.createdBy.id)}
                                     />
                                     <Avatar className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0">
-                                      {/* <AvatarImage src={"/placeholder.svg"} alt={user.createdBy.firstname + " " + user.createdBy.lastname} /> */}
-                                      {/* <AvatarFallback className="text-xs sm:text-sm">
-                                        {user.createdBy.firstname
-                                          .split(" ")
-                                          .map((n) => n[0])
-                                          .join("") +
-                                          user.createdBy.lastname
-                                            .split(" ")
-                                            .map((n) => n[0])
-                                            .join("")}
-                                      </AvatarFallback> */}
                                       <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
                                         {user.createdBy.firstname.charAt(0).toUpperCase() +
                                           " " +
@@ -190,7 +178,7 @@ export function RemoveSprintMemberDialog({ sprintUsers, sprint, project, sprintI
                                     </Avatar>
                                     <div className="flex-1 min-w-0">
                                       <div className="font-medium text-sm sm:text-base truncate">
-                                        {user.sprintUserSystemRole === SprintUserSystemRole.SPRINT_ADMIN ? "🏆 " : "  "}
+                                        {user.sprintUserSystemRole === SprintUserSystemRole.SPRINT_ADMIN ? "🏆 " : ""}
                                         {user.createdBy.firstname + " " + user.createdBy.lastname}
                                       </div>
                                       <div className="text-xs sm:text-sm text-muted-foreground truncate">
@@ -219,7 +207,9 @@ export function RemoveSprintMemberDialog({ sprintUsers, sprint, project, sprintI
                   <div className="text-xs sm:text-sm text-muted-foreground">
                     {getTotalSelectedCount() > 0 && (
                       <span>
-                        {getTotalSelectedCount()} user{getTotalSelectedCount() !== 1 ? "s" : ""} selected
+                        {translations.sprint.form.usersSelected
+                          .replace("{count}", String(getTotalSelectedCount()))
+                          .replace("{plural}", getTotalSelectedCount() !== 1 ? "s" : "")}
                       </span>
                     )}
                   </div>
@@ -231,7 +221,7 @@ export function RemoveSprintMemberDialog({ sprintUsers, sprint, project, sprintI
                     className="min-w-[80px]"
                     disabled={loading}
                   >
-                    Cancel
+                    {translations.sprint.form.cancel}
                   </Button>
                   <Button
                     onClick={handleRemoveMembers}
@@ -239,7 +229,7 @@ export function RemoveSprintMemberDialog({ sprintUsers, sprint, project, sprintI
                     className="min-w-[100px]"
                     variant="destructive"
                   >
-                    Remove
+                    {translations.sprint.form.remove}
                   </Button>
                 </div>
               </div>
@@ -247,6 +237,6 @@ export function RemoveSprintMemberDialog({ sprintUsers, sprint, project, sprintI
           </>
         )}
       </DialogContent>
-    </Dialog >
+    </Dialog>
   )
 }

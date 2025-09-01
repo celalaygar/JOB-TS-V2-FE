@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
+import { useLanguage } from "@/lib/i18n/context"
 import { Sprint } from "@/types/sprint"
 import { ProjectTask } from "@/types/task"
 import { CheckCircle2, Clock, AlertCircle, BarChart2 } from "lucide-react"
@@ -12,16 +13,16 @@ interface SprintDetailProgressProps {
 }
 
 export function SprintDetailProgress({ sprint, tasks }: SprintDetailProgressProps) {
-  // Calculate task statistics
+  const { translations } = useLanguage()
+  const t = translations.sprint.progress
+
   const totalTasks = tasks.length
   const completedTasks = tasks.filter((task: ProjectTask) => task.status === "done").length
   const inProgressTasks = tasks.filter((task) => task.status === "in-progress").length
   const blockedTasks = tasks.filter((task) => task.status === "blocked").length
 
-  // Calculate completion percentage
   const completionPercentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
 
-  // Calculate days remaining
   const today = new Date()
   const endDate = new Date(sprint.endDate)
   const startDate = new Date(sprint.startDate)
@@ -30,10 +31,7 @@ export function SprintDetailProgress({ sprint, tasks }: SprintDetailProgressProp
   const daysRemaining = Math.max(0, Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)))
   const daysElapsed = Math.min(totalDays, totalDays - daysRemaining)
 
-  // Calculate ideal burndown (what percentage of tasks should be done by now)
   const idealPercentage = Math.min(100, Math.round((daysElapsed / totalDays) * 100))
-
-  // Calculate if sprint is on track, ahead, or behind
   let sprintStatus = "on-track"
   const difference = completionPercentage - idealPercentage
 
@@ -47,43 +45,41 @@ export function SprintDetailProgress({ sprint, tasks }: SprintDetailProgressProp
     <Card>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle>Sprint Progress</CardTitle>
+          <CardTitle>{t.title}</CardTitle>
           <BarChart2 className="h-4 w-4 text-muted-foreground" />
         </div>
-        <CardDescription>Track the progress of this sprint</CardDescription>
+        <CardDescription>{t.description}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Overall Progress */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium">Overall Completion</h3>
+            <h3 className="text-sm font-medium">{t.overallCompletion}</h3>
             <span className="text-sm font-medium">{completionPercentage}%</span>
           </div>
           <Progress value={completionPercentage} className="h-2" />
           <div className="flex justify-between mt-1 text-xs text-muted-foreground">
-            <span>
-              {completedTasks} of {totalTasks} tasks completed
-            </span>
-            <span>{totalTasks - completedTasks} remaining</span>
+            <span>{t.tasksCompleted.replace("{completed}", String(completedTasks)).replace("{total}", String(totalTasks))}</span>
+            <span>{t.tasksRemaining.replace("{remaining}", String(totalTasks - completedTasks))}</span>
           </div>
         </div>
 
         {/* Sprint Status */}
         <div className="space-y-3">
-          <h3 className="text-sm font-medium">Sprint Status</h3>
+          <h3 className="text-sm font-medium">{t.sprintStatus}</h3>
 
           <div className="grid grid-cols-3 gap-2">
             <div className="bg-muted p-3 rounded-md text-center">
               <div className="text-2xl font-bold">{completedTasks}</div>
-              <div className="text-xs text-muted-foreground mt-1">Completed</div>
+              <div className="text-xs text-muted-foreground mt-1">{t.completed}</div>
             </div>
             <div className="bg-muted p-3 rounded-md text-center">
               <div className="text-2xl font-bold">{inProgressTasks}</div>
-              <div className="text-xs text-muted-foreground mt-1">In Progress</div>
+              <div className="text-xs text-muted-foreground mt-1">{t.inProgress}</div>
             </div>
             <div className="bg-muted p-3 rounded-md text-center">
               <div className="text-2xl font-bold">{blockedTasks}</div>
-              <div className="text-xs text-muted-foreground mt-1">Blocked</div>
+              <div className="text-xs text-muted-foreground mt-1">{t.blocked}</div>
             </div>
           </div>
 
@@ -92,24 +88,24 @@ export function SprintDetailProgress({ sprint, tasks }: SprintDetailProgressProp
               <>
                 <CheckCircle2 className="h-5 w-5 text-green-500" />
                 <div>
-                  <div className="text-sm font-medium">Ahead of Schedule</div>
-                  <div className="text-xs text-muted-foreground">{difference}% ahead of ideal progress</div>
+                  <div className="text-sm font-medium">{t.ahead}</div>
+                  <div className="text-xs text-muted-foreground">{t.aheadDescription.replace("{difference}", String(difference))}</div>
                 </div>
               </>
             ) : sprintStatus === "behind" ? (
               <>
                 <AlertCircle className="h-5 w-5 text-amber-500" />
                 <div>
-                  <div className="text-sm font-medium">Behind Schedule</div>
-                  <div className="text-xs text-muted-foreground">{Math.abs(difference)}% behind ideal progress</div>
+                  <div className="text-sm font-medium">{t.behind}</div>
+                  <div className="text-xs text-muted-foreground">{t.behindDescription.replace("{difference}", String(Math.abs(difference)))}</div>
                 </div>
               </>
             ) : (
               <>
                 <Clock className="h-5 w-5 text-blue-500" />
                 <div>
-                  <div className="text-sm font-medium">On Track</div>
-                  <div className="text-xs text-muted-foreground">Progress is aligned with timeline</div>
+                  <div className="text-sm font-medium">{t.onTrack}</div>
+                  <div className="text-xs text-muted-foreground">{t.onTrackDescription}</div>
                 </div>
               </>
             )}
@@ -118,28 +114,28 @@ export function SprintDetailProgress({ sprint, tasks }: SprintDetailProgressProp
 
         {/* Time Remaining */}
         <div className="space-y-3">
-          <h3 className="text-sm font-medium">Timeline</h3>
+          <h3 className="text-sm font-medium">{t.timeline}</h3>
 
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span>Days Elapsed:</span>
+              <span>{t.daysElapsed}</span>
               <span className="font-medium">{daysElapsed} days</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span>Days Remaining:</span>
+              <span>{t.daysRemaining}</span>
               <span className="font-medium">{daysRemaining} days</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span>Total Duration:</span>
+              <span>{t.totalDuration}</span>
               <span className="font-medium">{totalDays} days</span>
             </div>
           </div>
 
           <div>
             <div className="flex items-center justify-between mb-2">
-              <h4 className="text-xs text-muted-foreground">Sprint Timeline</h4>
+              <h4 className="text-xs text-muted-foreground">{t.sprintTimeline}</h4>
               <span className="text-xs text-muted-foreground">
-                {Math.round((daysElapsed / totalDays) * 100)}% elapsed
+                {t.elapsedPercentage.replace("{percentage}", String(Math.round((daysElapsed / totalDays) * 100)))}
               </span>
             </div>
             <Progress value={(daysElapsed / totalDays) * 100} className="h-2" />

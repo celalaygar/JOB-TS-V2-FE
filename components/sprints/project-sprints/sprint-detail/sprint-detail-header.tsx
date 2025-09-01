@@ -100,7 +100,7 @@ export function SprintDetailHeader({ tasks, onEdit, onDelete, fetchData }: Sprin
               onClick={() => setIsCompleteDialogOpen(true)}
             >
               <CheckCircle className="h-4 w-4 mr-1" />
-              Complete Sprint
+              {translations.sprint.form.completeSprint}
             </Button>
           )}
           <Button
