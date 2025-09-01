@@ -19,29 +19,20 @@ interface ProjectSprintsListProps {
 
 export function ProjectSprintsList({ sprints, onEditSprint, onDeleteSprint }: ProjectSprintsListProps) {
   const { translations } = useLanguage()
-  // Helper function to get status badge
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "active":
         return <Badge className="bg-green-500 hover:bg-green-600 text-white">{translations.sprint.statusOptions.active}</Badge>
       case "planned":
-        return (
-          <Badge variant="outline" className="border-[var(--fixed-card-border)]">
-            {translations.sprint.statusOptions.planned}
-          </Badge>
-        )
+        return <Badge variant="outline" className="border-[var(--fixed-card-border)]">{translations.sprint.statusOptions.planned}</Badge>
       case "completed":
-        return (
-          <Badge variant="secondary" className="bg-[var(--fixed-secondary)] text-[var(--fixed-secondary-fg)]">
-            {translations.sprint.statusOptions.completed}
-          </Badge>
-        )
+        return <Badge variant="secondary" className="bg-[var(--fixed-secondary)] text-[var(--fixed-secondary-fg)]">{translations.sprint.statusOptions.completed}</Badge>
       default:
         return <Badge variant="outline">{status}</Badge>
     }
   }
 
-  // If no sprints, show empty state
   if (sprints.length === 0) {
     return (
       <div className="text-center py-12 bg-[var(--fixed-card-bg)] border border-[var(--fixed-card-border)] rounded-lg">
@@ -57,9 +48,7 @@ export function ProjectSprintsList({ sprints, onEditSprint, onDeleteSprint }: Pr
         <Card key={sprint.id} className="fixed-card hover:shadow-lg">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="truncate" title={sprint.name}>
-                {sprint.name}
-              </CardTitle>
+              <CardTitle className="truncate" title={sprint.name}>{sprint.name}</CardTitle>
               {getStatusBadge(sprint.status)}
             </div>
             <CardDescription className="text-[var(--fixed-sidebar-muted)] flex items-center">
@@ -70,31 +59,24 @@ export function ProjectSprintsList({ sprints, onEditSprint, onDeleteSprint }: Pr
               <CalendarDays className="h-4 w-4 mr-1" />
               {sprint.createdProject.name}
             </CardDescription>
-            <CardDescription className="text-[var(--fixed-sidebar-muted)] flex items-center">
-              <CalendarDays className="h-4 w-4 mr-1" />
-              {sprint.sprintStatus}
-            </CardDescription>
           </CardHeader>
 
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <div>Progress</div>
+                <div>{translations.sprint.form.view}</div>
                 <div className="font-medium">
                   {Math.round((sprint.completedIssues / (sprint.totalIssues || 1)) * 100)}%
                 </div>
               </div>
-              <Progress
-                value={(sprint.completedIssues / (sprint.totalIssues || 1)) * 100}
-                className="h-2 bg-[var(--fixed-secondary)]"
-              />
+              <Progress value={(sprint.completedIssues / (sprint.totalIssues || 1)) * 100} className="h-2 bg-[var(--fixed-secondary)]" />
             </div>
 
             <div className="flex items-center justify-between">
               <div className="text-sm">
                 {sprint.team && sprint.team.length > 0 ? (
                   <div className="flex items-center">
-                    <span className="mr-2">Team:</span>
+                    <span className="mr-2">{translations.sprint.form.edit}:</span>
                     <div className="flex -space-x-2">
                       {sprint.team.slice(0, 3).map((member, i) => (
                         <Avatar key={i} className="h-6 w-6 border-2 border-[var(--fixed-card-bg)]">
@@ -110,10 +92,10 @@ export function ProjectSprintsList({ sprints, onEditSprint, onDeleteSprint }: Pr
                     </div>
                   </div>
                 ) : (
-                  <span className="text-[var(--fixed-sidebar-muted)]">Project-wide Sprint</span>
+                  <span className="text-[var(--fixed-sidebar-muted)]">{translations.sprint.projectWideSprint}</span>
                 )}
               </div>
-              <div className="text-sm text-[var(--fixed-sidebar-muted)]">{sprint.totalIssues} tasks</div>
+              <div className="text-sm text-[var(--fixed-sidebar-muted)]">{sprint.totalIssues} {translations.sprint.tasksLabel}</div>
             </div>
           </CardContent>
 
@@ -125,21 +107,11 @@ export function ProjectSprintsList({ sprints, onEditSprint, onDeleteSprint }: Pr
               </Link>
             </Button>
             <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-[var(--fixed-card-border)] text-sm"
-                onClick={() => onEditSprint(sprint)}
-              >
+              <Button variant="outline" size="sm" className="border-[var(--fixed-card-border)] text-sm" onClick={() => onEditSprint(sprint)}>
                 <Edit className="h-4 w-4" />
                 <span className="sr-only md:not-sr-only md:ml-1">{translations.sprint.form.edit}</span>
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-[var(--fixed-danger)] text-[var(--fixed-danger)] text-sm"
-                onClick={() => onDeleteSprint(sprint.id)}
-              >
+              <Button variant="outline" size="sm" className="border-[var(--fixed-danger)] text-[var(--fixed-danger)] text-sm" onClick={() => onDeleteSprint(sprint.id)}>
                 <Trash2 className="h-4 w-4" />
                 <span className="sr-only md:not-sr-only md:ml-1">{translations.sprint.form.delete}</span>
               </Button>
