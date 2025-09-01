@@ -23,6 +23,7 @@ import { toast } from "@/hooks/use-toast"
 import { ProjectRole, ProjectRolePermission, ProjectRoleRequest } from "@/types/project-role"
 import { Loader2 } from "lucide-react"
 import { createProjectUserRoleHelper } from "@/lib/service/api-helpers" // Import the new helper
+import { useLanguage } from "@/lib/i18n/context"
 
 interface AddRoleDialogProps {
   open: boolean
@@ -39,6 +40,7 @@ interface ValidationErrors {
 }
 
 export function AddRoleDialog({ open, onOpenChange, projectId, permissionList }: AddRoleDialogProps) {
+  const { translations } = useLanguage()
   const dispatch = useDispatch()
   const [roleName, setRoleName] = useState("")
   const [roleDescription, setRoleDescription] = useState("")
@@ -183,7 +185,7 @@ export function AddRoleDialog({ open, onOpenChange, projectId, permissionList }:
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                       <Label htmlFor="description" className="text-right">
-                        Description
+                        {translations.projects.description}
                       </Label>
                       <div className="col-span-3">
 
@@ -251,7 +253,7 @@ export function AddRoleDialog({ open, onOpenChange, projectId, permissionList }:
                   </div>
                   <DialogFooter>
                     <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                      Cancel
+                      {translations.projects.cancel}
                     </Button>
                     <Button type="submit">Create Role</Button>
                   </DialogFooter>
