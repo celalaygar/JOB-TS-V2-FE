@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge"
 import { getPriorityClassName } from "@/lib/utils/priority-utils"
 import { useRouter } from "next/navigation"
 import { useAuthUser } from "@/lib/hooks/useAuthUser"
+import { formatDateTime } from "@/lib/utils/date-format"
 
 export function RecentTasks() {
   const allTasks: ProjectTask[] | null = useSelector((state: RootState) => state.tasks.tasks)
@@ -28,7 +29,7 @@ export function RecentTasks() {
     projectId: "all",
     projectTaskStatusId: "all",
     priority: "all",
-    assigneeId: authUser?.user.id,
+    assigneeId: "",
     taskType: "all",
     taskNumber: "",
     title: "",
@@ -37,30 +38,24 @@ export function RecentTasks() {
 
 
 
-  const fetchAllProjectTasks = useCallback(async (filters: ProjectTaskFilterRequest) => {
-    if (!!filters) {
-      filters["assigneeId"] = authUser?.user?.id ?? "";
-    }
-
-    const response: TaskResponse | null = await getAllProjectTaskHelper(0, 10, filters, { setLoading });
-    if (response) {
-      setTaskResponse(response);
-      dispatch(setTasks(response.content))
-    }
-  }, []);
-
-  const fetchData = useCallback(() => {
+  const fetchAllProjectTasks = useCallback(async () => {
     let filter = Object.fromEntries(
       Object.entries(filters).map(([key, value]) => [
         key,
         value === "all" || value === "" ? null : value,
       ])
     ) as unknown as ProjectTaskFilterRequest;
-    fetchAllProjectTasks(filter);
+
+    const response: TaskResponse | null = await getAllProjectTaskHelper(0, 10, filter, { setLoading });
+    if (response) {
+      setTaskResponse(response);
+      dispatch(setTasks(response.content))
+    }
   }, []);
 
+
   useEffect(() => {
-    fetchData();
+    fetchAllProjectTasks();
   }, [fetchAllProjectTasks])
 
 
@@ -95,7 +90,7 @@ export function RecentTasks() {
                 >
                   <p className="text-sm font-medium leading-none">{singleTask.title}</p>
                   <p className="text-sm text-[var(--fixed-sidebar-muted)]">
-                    {singleTask.createdProject.name} · {new Date(singleTask.createdAt).toLocaleDateString()}
+                    {singleTask.createdProject.name} · {formatDateTime(new Date(singleTask.createdAt).toLocaleDateString())}
                   </p>
                 </div>
               </div>
