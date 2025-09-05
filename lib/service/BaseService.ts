@@ -48,11 +48,13 @@ class BaseService {
         } catch (error: any) {
             console.error("BaseService url catch: " + url)
             console.error('BaseService API Request Error:', error);
-            throw {
+            let body = {
                 status: error?.status,
                 message: error?.message || 'Unexpected error',
-                raw: error?.raw || error,
+                raw: error?.raw?.raw || error,
             };
+            console.error('BaseService API Request Error body:', body);
+            throw body;
         }
     }
 }

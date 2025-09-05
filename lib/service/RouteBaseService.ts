@@ -35,7 +35,7 @@ class RouteBaseService {
             if (!session || !session.accessToken) {
                 throw {
                     status: 401,
-                    message: 'Unauthorized',
+                    message: 'Unauthorized yy',
                 };
             }
             headers['Authorization'] = session.accessToken;
@@ -66,7 +66,7 @@ class RouteBaseService {
         try {
             headers = await this.buildHeaders(withAuth, customHeaders, clientIp); // clientIp buildHeaders'a iletildi
         } catch (error: any) {
-            return NextResponse.json({ error: error.message || 'Unauthorized' }, { status: error.status || 401 });
+            return NextResponse.json({ error: error.message || 'Unauthorized xx' }, { status: error.status || 401 });
         }
 
         const config: RequestInit = {
@@ -93,7 +93,12 @@ class RouteBaseService {
             return NextResponse.json(data, { status: 200 });
         } catch (error: any) {
             console.error('RouteBaseService Error:', error);
-            return NextResponse.json({ error: error.message || 'Unexpected error' }, { status: error.status || 500 });
+            return NextResponse.json(
+                {
+                    raw: error.raw || error,
+                    error: error.message || 'Unexpected error'
+                },
+                { status: error.status || 500 });
         }
     }
 }

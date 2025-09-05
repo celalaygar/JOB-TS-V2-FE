@@ -1,3 +1,6 @@
+// authOptions.ts
+
+
 import { AuthOptions, User as NextAuthUser, DefaultSession } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import axios from "axios";

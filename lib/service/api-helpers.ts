@@ -4,12 +4,11 @@ import BaseService from "@/lib/service/BaseService";
 import { httpMethods } from "@/lib/service/HttpService";
 import { toast } from "@/hooks/use-toast";
 import type { ProjectUser, RemoveProjectUserRequest } from "@/types/project";
-import type { AddUserToSprintRequest, RemoveUserFromSprintRequest, Sprint, SprintRequest, SprintTaskAddRequest, SprintTaskGetAllRequest, SprintTaskRemoveRequest, SprintUser, UpdateSprintStatusRequest } from "@/types/sprint";
+import type { Sprint } from "@/types/sprint";
 import type { ProjectTeam, Project, ProjectTaskStatus } from "@/types/project";
 import type { ProjectRole, ProjectRolePermission, ProjectRoleRequest } from "@/types/project-role";
 import type { Invitation } from "@/lib/redux/features/invitations-slice";
 import {
-  SEND_CODE_URL,
   GET_ACTIVE_PROJECT_USERS,
   GET_ALL_PROJECT_USERS,
   REMOVE_PROJECT_USERS_URL,
@@ -17,8 +16,6 @@ import {
   PROJECT_TEAM_URL,
   TEAM_ALL_URL,
   PROJECT_URL,
-  SPRINT_GET_ALL_URL,
-  UPDATE_STATUS_URL,
   PROJECT_USER_ROLES_URL,
   PERMISSIONS,
   PROJECT_TASK_STATUS_URL,
@@ -27,8 +24,6 @@ import {
   INVITE_TO_PROJECT,
   USER_URL,
   PROJECT_TASK_COMMENT_ADD_URL,
-  SPRINT_TASK_ADD_URL,
-  SPRINT_TASK_REMOVE_URL,
   BACKLOG_URL,
   SPRINT_URL, // Import SPRINT_URL
   TEAM_DETAIL_URL,
@@ -43,16 +38,37 @@ import {
   TEAM_USER_NOT_IN_URL,
   TEAM_USER_IN_URL,
   KANBAN_URL,
-  SPRINT_TASK_GET_ALL_URL,
-  SPRINT_GET_ALL_USER_URL,
-  SPRINT_BULK_ADD_URL,
-  SPRINT_BULK_REMOVE_URL,
   PROJECT_TASK_COMMENT
 } from "@/lib/service/BasePath";
 import { ProjectTask, ProjectTaskComment, ProjectTaskFilterRequest, TaskCommentRequest, TaskResponse, TaskUpdateRequest } from "@/types/task";
 import { BacklogFilterRequest } from "@/types/backlog";
 import { ProjectTaskStatusRequest } from "@/types/project-task-status";
-import { RegisterRequest, UserDto } from "@/types/user";
+import { signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
+
+
+interface status401Body {
+  status: 401;
+  message: string;
+  raw?: status401raw;
+}
+
+interface status401raw {
+  error: string
+  message: string
+  tokenExpired: boolean
+}
+
+const handleLogout = async () => {
+  try {
+    const currentOrigin = window.location.origin;
+    await signOut({ callbackUrl: currentOrigin + "/" });
+    const router = useRouter()
+    router.push("/"); // Manuel olarak anasayfaya yönlendir
+  } catch (error) {
+    console.error("Logout error:", error);
+  }
+};
 
 interface ApiOperationConfig<T> {
   url: string;
@@ -107,6 +123,29 @@ export async function apiCall<T>(config: ApiOperationConfig<T>): Promise<T | nul
     if (error.status === 400) {
       displayErrorTitle = "Bad Request (400)";
       displayErrorDescription = error.message || "Bad Request";
+    } else if (error.status === 401) {
+      console.log("error 401 catch : ")
+      console.log(error)
+      let body: status401Body = error;
+      if (body && body.raw) {
+        if (body.raw.tokenExpired) {
+
+          await handleLogout(); // Call the logout function
+
+
+          displayErrorTitle = "Session Expired (401)";
+          displayErrorDescription = "Your session has expired. Please log in again. " + body.raw.message || "";
+        } else {
+
+          displayErrorTitle = "Unauthorized (401)";
+          displayErrorDescription = body.raw.message || "You are not authorized to perform this action.";
+        }
+      } else {
+        displayErrorTitle = "Unauthorized (401)";
+        displayErrorDescription = error.message || "You are not authorized to perform this action.";
+      }
+
+
     } else if (error.status === 500) {
       displayErrorTitle = "Server Error (500)";
       displayErrorDescription = "There was a server error. Please try again later.";
