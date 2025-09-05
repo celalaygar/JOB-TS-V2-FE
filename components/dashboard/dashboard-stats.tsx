@@ -2,10 +2,11 @@
 
 import { useState } from "react"
 import { AlertCircle, CheckCircle2, Clock, Folder } from "lucide-react"
+import { useSelector } from "react-redux"
+import { RootState } from "@/lib/redux/store"
 
 export function DashboardStats() {
-  // Use useState for all variables instead of Redux
-  const totalProjects = 0
+  const allProjects = useSelector((state: RootState) => state.projects.projects)
   const openIssues = 0
   const inProgressIssues = 0
   const completedIssues = 0
@@ -23,7 +24,7 @@ export function DashboardStats() {
           <Folder className="h-4 w-4 text-[var(--fixed-primary)]" />
         </div>
         <div>
-          <div className="text-2xl font-bold">{totalProjects}</div>
+          <div className="text-2xl font-bold">{allProjects.length}</div>
           <p className="text-xs text-[var(--fixed-sidebar-muted)]">+{projectsChange} from last month</p>
         </div>
       </div>
