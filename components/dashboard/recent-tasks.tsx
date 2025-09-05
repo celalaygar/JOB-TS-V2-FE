@@ -46,7 +46,7 @@ export function RecentTasks() {
       ])
     ) as unknown as ProjectTaskFilterRequest;
 
-    const response: TaskResponse | null = await getAllProjectTaskHelper(0, 10, filter, { setLoading });
+    const response: TaskResponse | null = await getAllProjectTaskHelper(0, 20, filter, { setLoading });
     if (response) {
       dispatch(setTasks(response.content))
     }
