@@ -48,7 +48,6 @@ export function RecentTasks() {
 
     const response: TaskResponse | null = await getAllProjectTaskHelper(0, 10, filter, { setLoading });
     if (response) {
-      setTaskResponse(response);
       dispatch(setTasks(response.content))
     }
   }, []);
