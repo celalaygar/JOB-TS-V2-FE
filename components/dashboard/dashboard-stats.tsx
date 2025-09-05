@@ -26,7 +26,7 @@ export function DashboardStats() {
         </div>
         <div>
           <div className="text-2xl font-bold">{allProjects.length}</div>
-          <p className="text-xs text-[var(--fixed-sidebar-muted)]">+{allProjects.length} from last month</p>
+          <p className="text-xs text-[var(--fixed-sidebar-muted)]">+{allProjects.length} from last 20 task</p>
         </div>
       </div>
       <div className="fixed-card rounded-lg p-4">
@@ -36,7 +36,7 @@ export function DashboardStats() {
         </div>
         <div>
           <div className="text-2xl font-bold">{allTasks?.length}</div>
-          <p className="text-xs text-[var(--fixed-sidebar-muted)]">+{allTasks?.length} from last week</p>
+          <p className="text-xs text-[var(--fixed-sidebar-muted)]">+{allTasks?.length} from last 20 task</p>
         </div>
       </div>
       <div className="fixed-card rounded-lg p-4">
@@ -46,7 +46,7 @@ export function DashboardStats() {
         </div>
         <div>
           <div className="text-2xl font-bold">{criticalTasksCount}</div>
-          <p className="text-xs text-[var(--fixed-sidebar-muted)]">+{criticalTasksCount} from last week</p>
+          <p className="text-xs text-[var(--fixed-sidebar-muted)]">+{criticalTasksCount} from last 20 task</p>
         </div>
       </div>
       <div className="fixed-card rounded-lg p-4">
@@ -56,7 +56,7 @@ export function DashboardStats() {
         </div>
         <div>
           <div className="text-2xl font-bold">{highTasksCount}</div>
-          <p className="text-xs text-[var(--fixed-sidebar-muted)]">+{highTasksCount} from last week</p>
+          <p className="text-xs text-[var(--fixed-sidebar-muted)]">+{highTasksCount} from last 20 task</p>
         </div>
       </div>
       <div className="fixed-card rounded-lg p-4">
@@ -66,7 +66,7 @@ export function DashboardStats() {
         </div>
         <div>
           <div className="text-2xl font-bold">{mediumTasksCount}</div>
-          <p className="text-xs text-[var(--fixed-sidebar-muted)]">+{mediumTasksCount} from last week</p>
+          <p className="text-xs text-[var(--fixed-sidebar-muted)]">+{mediumTasksCount} from last 20 task</p>
         </div>
       </div>
       <div className="fixed-card rounded-lg p-4">
@@ -76,7 +76,7 @@ export function DashboardStats() {
         </div>
         <div>
           <div className="text-2xl font-bold">{lowTasksCount}</div>
-          <p className="text-xs text-[var(--fixed-sidebar-muted)]">+{lowTasksCount} from last week</p>
+          <p className="text-xs text-[var(--fixed-sidebar-muted)]">+{lowTasksCount} from last 20 task</p>
         </div>
       </div>
     </div>

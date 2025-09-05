@@ -89,6 +89,9 @@ export function RecentTasks() {
                 >
                   <p className="text-sm font-medium leading-none">{singleTask.title}</p>
                   <p className="text-sm text-[var(--fixed-sidebar-muted)]">
+                    {singleTask.taskNumber}
+                  </p>
+                  <p className="text-sm text-[var(--fixed-sidebar-muted)]">
                     {singleTask.createdProject.name} · {formatDateTime(new Date(singleTask.createdAt).toLocaleDateString())}
                   </p>
                 </div>
