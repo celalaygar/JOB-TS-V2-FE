@@ -65,7 +65,7 @@ export function RecentTasks() {
         <div>
           <CardTitle>Recent Tasks</CardTitle>
           <CardDescription className="text-[var(--fixed-sidebar-muted)]">
-            Latest singleTasks across all projects
+            Latest 20 Tasks across all projects
           </CardDescription>
         </div>
         <Link href="/tasks" className="fixed-secondary-button h-9 px-3 py-2 rounded-md text-sm font-medium">
