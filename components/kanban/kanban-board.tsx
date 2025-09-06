@@ -38,7 +38,7 @@ export default function KanbanBoard({
   const allTasks = useSelector((state: RootState) => state.tasks.tasks)
 
   useEffect(() => {
-    if (allTasks.length > 0 && projectTaskStatus && projectTaskStatus.length > 0) {
+    if (!!allTasks && allTasks.length > 0 && projectTaskStatus && projectTaskStatus.length > 0) {
       const newStatusTasks: { [key: string]: ProjectTask[] } = {}
       projectTaskStatus.forEach((status) => {
         newStatusTasks[status.id] = allTasks.filter(

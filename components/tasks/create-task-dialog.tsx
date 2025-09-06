@@ -104,12 +104,12 @@ export function CreateTaskDialog({ open, onOpenChange, parentTask, projectList, 
 
 
   const parentTaskOptions: SelectOption[] = useMemo(() => {
-    const filteredTasks = allTasks.filter(
+    const filteredTasks = allTasks?.filter(
       (task) => task.taskType !== "SUBTASK" && (formData.project ? task.createdProject.id === formData.project : true)
     );
 
     // parentTaskOptions'ı oluştur
-    let options = filteredTasks.map(task => ({
+    let options = filteredTasks?.map(task => ({
       value: task.id,
       label: `${task.taskNumber} - ${task.title}`
     }));
