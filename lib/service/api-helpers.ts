@@ -102,6 +102,7 @@ export async function apiCall<T>(config: ApiOperationConfig<T>): Promise<T | nul
     // console.log(body)
     const response: T = await BaseService.request(url, { method, body });
 
+    /*
     if (successMessage) {
       toast({
         title: successToastTitle || "Success",
@@ -110,7 +111,7 @@ export async function apiCall<T>(config: ApiOperationConfig<T>): Promise<T | nul
         duration: 2000, // 2 seconds
       });
     }
-
+*/
     return response;
   } catch (error: any) {
     console.error(`${errorMessagePrefix}:`, error);
