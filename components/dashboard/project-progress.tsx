@@ -4,34 +4,45 @@ import Link from "next/link"
 import { useSelector } from "react-redux"
 import type { RootState } from "@/lib/redux/store"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useLanguage } from "@/lib/i18n/context"
+import { Project } from "@/types/project"
 
 export function ProjectProgress() {
   const allProjects = useSelector((state: RootState) => state.projects.projects)
+  const { translations } = useLanguage()
 
-  // Sort projects by progress (highest first) and take the first 5
-  const topProjects = [...allProjects].sort((a, b) => b.progress - a.progress).slice(0, 5)
 
   return (
     <Card className="col-span-1 fixed-card">
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
-          <CardTitle>Project Progress</CardTitle>
-          <CardDescription className="text-[var(--fixed-sidebar-muted)]">Track your active projects</CardDescription>
+          <CardTitle>{translations.dashboard.projectProgress}</CardTitle>
+          <CardDescription className="text-[var(--fixed-sidebar-muted)]">
+            {translations.dashboard.projectProgressDescription}
+          </CardDescription>
         </div>
-        <Link href="/projects" className="fixed-secondary-button h-9 px-3 py-2 rounded-md text-sm font-medium">
-          View All
+        <Link
+          href="/projects"
+          className="fixed-secondary-button h-9 px-3 py-2 rounded-md text-sm font-medium"
+        >
+          {translations.dashboard.viewAll}
         </Link>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {topProjects.map((project) => (
+          {allProjects.map((project: Project) => (
             <div key={project.id} className="space-y-2">
               <div className="flex items-center justify-between">
-                <Link href={`/projects/${project.id}`} className="text-sm font-medium leading-none hover:underline">
+                <Link
+                  href={`/projects/${project.id}`}
+                  className="text-sm font-medium leading-none hover:underline"
+                >
                   {project.name}
                 </Link>
                 <div className="flex items-center">
-                  <span className="text-sm text-[var(--fixed-sidebar-muted)] mr-2">{0}%</span>
+                  <span className="text-sm text-[var(--fixed-sidebar-muted)] mr-2">
+                    {project.progress}%
+                  </span>
                   <span
                     className={`
                       text-xs py-0.5 px-1.5 rounded-full
@@ -43,7 +54,9 @@ export function ProjectProgress() {
                       }
                     `}
                   >
-                    {project.status}
+                    {project.status === "Completed" && translations.dashboard.statusCompleted}
+                    {project.status === "In Progress" && translations.dashboard.statusInProgress}
+                    {project.status !== "Completed" && project.status !== "In Progress" && translations.dashboard.statusPending}
                   </span>
                 </div>
               </div>
@@ -54,15 +67,17 @@ export function ProjectProgress() {
                 />
               </div>
               <div className="flex justify-between items-center text-xs text-[var(--fixed-sidebar-muted)]">
-                <span>{0} Tasks</span>
-                <span>{0} team members</span>
+                <span>{0} {translations.dashboard.tasks}</span>
+                <span>{0} {translations.dashboard.teamMembers}</span>
               </div>
             </div>
           ))}
 
-          {topProjects.length === 0 && (
+          {allProjects.length === 0 && (
             <div className="text-center py-6">
-              <p className="text-[var(--fixed-sidebar-muted)]">No projects found.</p>
+              <p className="text-[var(--fixed-sidebar-muted)]">
+                {translations.dashboard.noProjects}
+              </p>
             </div>
           )}
         </div>

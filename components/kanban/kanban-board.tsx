@@ -1,17 +1,16 @@
 "use client"
 
-import { tasks } from "@/data/tasks"
 import { useState, useEffect } from "react"
 import KanbanColumn from "./kanban-column"
 import type { ProjectTask, Task, TaskResponse } from "@/types/task"
 import { KanbanFilterRequest } from "@/types/kanban"
-import { Project, ProjectTaskStatus } from "@/types/project"
+import { ProjectTaskStatus } from "@/types/project"
 import { updateProjectTaskStatusHelper } from "@/lib/service/api-helpers"
 import { ProjectTaskStatusRequest } from "@/types/project-task-status"
 import { useDispatch, useSelector } from "react-redux"
-import { updateProject } from "@/lib/redux/features/projects-slice"
 import { updateTask } from "@/lib/redux/features/tasks-slice"
 import { RootState } from "@/lib/redux/store"
+import { useLanguage } from "@/lib/i18n/context"
 
 
 
@@ -33,7 +32,7 @@ export default function KanbanBoard({
   projectTaskStatus
 }: KanbanBoardProps) {
   const [loadingKanbanBoard, setLoadingKanbanBoard] = useState(false)
-  const [statusTasks, setStatusTasks] = useState<{ [key: string]: Task[] }>({})
+  const [statusTasks, setStatusTasks] = useState<{ [key: string]: ProjectTask[] }>({})
   const dispatch = useDispatch()
   const allTasks = useSelector((state: RootState) => state.tasks.tasks)
 

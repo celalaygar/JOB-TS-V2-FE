@@ -8,9 +8,9 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Calendar, Clock, CalendarDays } from "lucide-react"
-import type { LeaveApprovalRequest } from "@/data/approval-requests"
 import { useLanguage } from "@/lib/i18n/context"
 import { UserDetailCard } from "../shared/user-detail-card"
+import { LeaveApprovalRequest } from "@/types/approval-request"
 
 interface LeaveApprovalDetailModalProps {
   request: LeaveApprovalRequest

@@ -4,6 +4,7 @@ import { PlusIcon } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
 import { CreateTaskDialog } from "../tasks/create-task-dialog"
+import { useLanguage } from "@/lib/i18n/context"
 
 
 interface KanbanHeaderProps {
@@ -14,12 +15,14 @@ interface KanbanHeaderProps {
 
 export default function KanbanHeader({ projectList, loading, fetchData }: KanbanHeaderProps) {
 
+  const { translations } = useLanguage()
+
   const [openDialog, setOpenDialog] = useState(false)
   return (
     <div className="flex items-center justify-between p-4 border-b">
       <div>
-        <h1 className="text-2xl font-bold">Kanban Board</h1>
-        <p className="text-muted-foreground">Manage your tasks with drag and drop</p>
+        <h1 className="text-2xl font-bold">{translations.kanban.title}</h1>
+        <p className="text-muted-foreground">{translations.kanban.description}</p>
       </div>
       <div className="flex items-center gap-2">
         <Button
@@ -27,7 +30,7 @@ export default function KanbanHeader({ projectList, loading, fetchData }: Kanban
           onClick={() => setOpenDialog(true)}
         >
           <PlusIcon className="h-4 w-4 mr-2" />
-          New Task
+          {translations.kanban.newTask}
         </Button>
       </div>
 

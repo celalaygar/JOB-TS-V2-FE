@@ -9,7 +9,6 @@ import { Search, X } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { useLanguage } from "@/lib/i18n/context"
 
-import { Label } from "../ui/label"
 import { ProjectTaskType } from "@/types/task"
 import { Sprint } from "@/types/sprint"
 
@@ -39,24 +38,20 @@ export function KanbanFilters({
 }: KanbanFiltersProps) {
 
   const { translations } = useLanguage()
-  const t = translations.backlog.filters
   const taskTypes = [
-    { value: ProjectTaskType.BUG, label: t.bug },
-    { value: ProjectTaskType.FEATURE, label: t.feature },
-    { value: ProjectTaskType.STORY, label: t.story },
-    { value: ProjectTaskType.SUBTASK, label: t.subtask },
+    { value: ProjectTaskType.BUG, label: translations.kanban.filters.bug },
+    { value: ProjectTaskType.FEATURE, label: translations.kanban.filters.feature },
+    { value: ProjectTaskType.STORY, label: translations.kanban.filters.story },
+    { value: ProjectTaskType.SUBTASK, label: translations.kanban.filters.subtask },
   ]
-
 
   const handleFilterChange = (key: string, value: string) => {
     handleChange(key, value);
-
   }
 
   const clearInputs = () => {
     clearFilters();
   }
-
 
   return (
     <div className="p-4 border-b">
@@ -70,7 +65,7 @@ export function KanbanFilters({
                 disabled={loadingFilter}
                 id="search-input"
                 type="text"
-                placeholder="Search by task number or title..."
+                placeholder={translations.kanban.filters.searchPlaceholder}
                 className="pl-8"
                 value={filters.searchText}
                 onChange={(e) => handleFilterChange("searchText", e.target.value)}
@@ -85,10 +80,10 @@ export function KanbanFilters({
               value={filters.projectId}
               onValueChange={(value) => handleFilterChange("projectId", value)}>
               <SelectTrigger className="border-[var(--fixed-card-border)]">
-                <SelectValue placeholder="All Projects" />
+                <SelectValue placeholder={translations.kanban.filters.allProjects} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Projects</SelectItem>
+                <SelectItem value="all">{translations.kanban.filters.allProjects}</SelectItem>
                 {projects.map((project: Project) => (
                   <SelectItem key={project.id} value={project.id || ""}>
                     {project.name}
@@ -105,10 +100,10 @@ export function KanbanFilters({
               value={filters.sprintId}
               onValueChange={(value) => handleFilterChange("sprintId", value)}>
               <SelectTrigger className="border-[var(--fixed-card-border)]">
-                <SelectValue placeholder="All Sprints" />
+                <SelectValue placeholder={translations.kanban.filters.allSprints} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Sprints </SelectItem>
+                <SelectItem value="all">{translations.kanban.filters.allSprints}</SelectItem>
                 {!!sprintList && sprintList.map((sp: Sprint) => (
                   <SelectItem key={sp.id} value={sp.id}>
                     {sp.name + " - " + sp.sprintStatus}
@@ -125,10 +120,10 @@ export function KanbanFilters({
               value={filters.assigneeId}
               onValueChange={(value) => handleFilterChange("assigneeId", value)}>
               <SelectTrigger className="border-[var(--fixed-card-border)]">
-                <SelectValue placeholder="All Assignees" />
+                <SelectValue placeholder={translations.kanban.filters.allAssignees} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Assignees</SelectItem>
+                <SelectItem value="all">{translations.kanban.filters.allAssignees}</SelectItem>
                 {projectUsers?.map((user: ProjectUser) => (
                   <SelectItem key={user.id} value={user.userId || ""}>
                     {user.email}
@@ -138,6 +133,7 @@ export function KanbanFilters({
             </Select>
           </div>
 
+          {/* Search Button */}
           <div className="space-y-1">
             <Button
               className="w-full  h-9 border-[var(--fixed-card-border)]"
@@ -146,11 +142,12 @@ export function KanbanFilters({
               }}
               disabled={loadingFilter}
             >
-              Search
+              {translations.kanban.filters.searchButton}
               <Search className="ml-2 h-4 w-4" />
             </Button>
           </div>
 
+          {/* Clear Filters */}
           <div className="space-y-1">
             <Button
               variant="outline"
@@ -160,19 +157,12 @@ export function KanbanFilters({
               }}
               disabled={loadingFilter}
             >
-              Clear Filters
-              <X className="ml-2 MT- h-4 w-4" />
+              {translations.kanban.filters.clearFilters}
+              <X className="ml-2 h-4 w-4" />
             </Button>
           </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-
         </div>
       </div>
     </div>
   )
 }
-
-
-

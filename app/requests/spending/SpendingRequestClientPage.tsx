@@ -6,11 +6,12 @@ import { SpendingRequestTable } from "@/components/requests/spending/spending-re
 import { CreateSpendingRequestDialog } from "@/components/requests/spending/create-spending-request-dialog"
 import { EditSpendingRequestDialog } from "@/components/requests/spending/edit-spending-request-dialog"
 import { DeleteSpendingRequestDialog } from "@/components/requests/spending/delete-spending-request-dialog"
-import { spendingRequests, type SpendingRequest } from "@/data/spending-requests"
+import { spendingRequests, } from "@/data/spending-requests"
 import { Card, CardContent } from "@/components/ui/card"
 import { CalendarIcon, Clock } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "@/hooks/use-toast"
+import { SpendingRequest } from "@/types/spending-request"
 
 export default function SpendingRequestClientPage() {
   const { translations, language } = useLanguage()
