@@ -1,40 +1,86 @@
-# JOB TRACKING SYSTEM V2 - Frontend  
-_The Next Generation of Project Management_
+# 🎨 JOB TRACKING SYSTEM V2 - Frontend (Next.js + TypeScript)
 
-![Job TS Screenshot](https://raw.githubusercontent.com/celalaygar/main/refs/heads/main/project/job-tracking-system-v2/job-ts-1.png)
-
-## 🌍 Overview
-The **Frontend** of **JOB TRACKING SYSTEM V2** is a modern, responsive web application built with **Next.js, TypeScript, and TailwindCSS**.  
-It provides a sleek user experience, responsive design, and seamless interaction with the backend API.
-
-This frontend is responsible for delivering an intuitive project management interface, where users can manage projects, tasks, teams, sprints, and more.
+The **frontend** of Job Tracking System V2 is a **modern, responsive, and high-performance web app** designed for seamless project management.
 
 ---
 
-## 🚀 Features
-- Responsive UI with **TailwindCSS**  
-- **Next.js** with SSR (Server-Side Rendering) & SSG (Static Site Generation)  
-- **TypeScript** for type safety and maintainability  
-- **Redux Toolkit** for state management  
-- **Axios** for API integration  
-- **Radix UI** for accessible components  
-- Multi-language support (EN / TR)  
-- Kanban board with drag & drop  
-- Weekly work logs and reporting views  
+## 🛠️ Technology Stack
+
+- **Next.js 14** (SSR & SSG for performance)
+- **TypeScript** (strict typing for maintainability)
+- **Tailwind CSS** (utility-first, responsive design)
+- **Radix UI** (accessible UI primitives)
+- **Redux Toolkit** (state management)
+- **Axios** (API requests)
+- **Framer Motion** (animations)
+- **React Hook Form + Zod** (forms & validation)
 
 ---
 
-## 🛠️ Tech Stack
-- **Framework:** [Next.js](https://nextjs.org/)  
-- **Language:** [TypeScript](https://www.typescriptlang.org/)  
-- **Styling:** [Tailwind CSS](https://tailwindcss.com/)  
-- **UI Components:** [Radix UI](https://www.radix-ui.com/)  
-- **State Management:** [Redux Toolkit](https://redux-toolkit.js.org/)  
-- **HTTP Client:** [Axios](https://axios-http.com/)  
+## 📂 Project Structure
+
+```
+job-ts-v2-fe/
+│── src/
+│   ├── app/                # Next.js App Router pages
+│   ├── components/         # UI components (Navbar, Sidebar, Cards)
+│   ├── features/           # Redux slices (projects, tasks, auth, sprints)
+│   ├── hooks/              # Custom React hooks
+│   ├── lib/                # Axios setup, interceptors, helpers
+│   ├── store/              # Redux store setup
+│   ├── styles/             # Tailwind CSS config
+│   └── types/              # TypeScript interfaces
+│
+└── package.json
+```
 
 ---
 
-## 📦 Installation & Setup
+## 🎯 Features
+
+### 🔑 Authentication
+- Login & Register forms
+- JWT token storage in Redux
+- Protected routes & role-based access
+- Forgot password flow
+
+### 📂 Project Management
+- Create, edit, delete projects
+- Invite members via email
+- Manage teams & roles
+
+### ✅ Task Management
+- Create & assign tasks
+- Subtasks & comments
+- Automatic backlog handling
+
+### 🌀 Sprint & Agile Support
+- Create & manage sprints
+- Assign/remove tasks
+- Mark sprint as complete
+
+### 📊 Kanban Board
+- Drag & drop tasks between statuses
+- Filter by sprint/project
+- Real-time updates
+
+### ⏱️ Weekly Tracking
+- Enter & view weekly work hours
+- Weekly board view
+- Weekly list view
+
+---
+
+## 📸 Screenshots
+
+![Login](https://raw.githubusercontent.com/celalaygar/main/refs/heads/main/project/job-tracking-system-v2/job-ts-10.png)
+![Dashboard](https://raw.githubusercontent.com/celalaygar/main/refs/heads/main/project/job-tracking-system-v2/job-ts-11.png)
+![Kanban](https://raw.githubusercontent.com/celalaygar/main/refs/heads/main/project/job-tracking-system-v2/job-ts-12.png)
+
+---
+
+## ⚙️ Local Setup
+
 ```bash
 # Clone repository
 git clone https://github.com/celalaygar/JOB-TS-V2-FE.git
@@ -45,39 +91,45 @@ npm install
 
 # Run development server
 npm run dev
-
-# Build for production
-npm run build
-npm run start
 ```
 
-Frontend runs by default on:  
-👉 [http://localhost:3000](http://localhost:3000)
+**Environment Variables**
 
----
-
-## 📸 Screenshots
-| Dashboard | Kanban | Weekly |
-|-----------|--------|--------|
-| ![1](https://raw.githubusercontent.com/celalaygar/main/refs/heads/main/project/job-tracking-system-v2/job-ts-2.png) | ![2](https://raw.githubusercontent.com/celalaygar/main/refs/heads/main/project/job-tracking-system-v2/job-ts-3.png) | ![3](https://raw.githubusercontent.com/celalaygar/main/refs/heads/main/project/job-tracking-system-v2/job-ts-20.png) |
-
-_For the full gallery, check the `screenshots` folder._  
-
----
-
-## 📂 Project Structure
-```
-JOB-TS-V2-FE
-├── public/             # Static assets
-├── src/
-│   ├── components/     # Reusable UI components
-│   ├── pages/          # Next.js pages
-│   ├── store/          # Redux store & slices
-│   ├── services/       # API integrations (Axios)
-│   └── styles/         # Global styles
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8080/api
 ```
 
 ---
 
-## 🔗 Related Repositories
-- **Backend:** [JOB-TS-V2-BE](https://github.com/celalaygar/JOB-TS-V2-BE)  
+## 📡 API Integration
+
+The frontend consumes the backend REST APIs (WebFlux) via Axios.
+
+- **Auth APIs** → `/api/auth`
+- **Project APIs** → `/api/projects`
+- **Task APIs** → `/api/tasks`
+- **Sprint APIs** → `/api/sprints`
+- **Weekly APIs** → `/api/weekly`
+
+---
+
+## 📱 Responsive Design
+
+- **Desktop First**: Optimized for 1920x1080 screens
+- **Mobile Friendly**: Responsive navbar & sidebar
+- **Sticky Menus**: Easy navigation on all devices
+
+---
+
+## 🚀 Deployment
+
+- Built with `next build`
+- Served with **Vercel**, **Docker**, or **Nginx**
+- Uses **environment variables** for API endpoints
+- CI/CD with GitHub Actions (optional)
+
+---
+
+## 📜 License
+
+MIT License © 2025 [Celal Aygar](https://celalaygar.github.io)
