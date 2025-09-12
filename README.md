@@ -9,6 +9,7 @@ The **frontend** of Job Tracking System V2 is a **modern, responsive, and high-p
 - **Next.js 14** (SSR & SSG for performance)
 - **TypeScript** (strict typing for maintainability)
 - **Tailwind CSS** (utility-first, responsive design)
+- **NextAuth.js** (authentication & session management with providers like Google/GitHub)
 - **Radix UI** (accessible UI primitives)
 - **Redux Toolkit** (state management)
 - **Axios** (API requests)
