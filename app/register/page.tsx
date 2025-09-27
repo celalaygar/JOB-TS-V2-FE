@@ -126,8 +126,7 @@ export default function RegisterPage() {
     if (!formData.username.trim()) { errors.username = translations.register.errors.usernameRequired }
     if (!formData.email.trim()) { errors.email = translations.register.errors.emailRequired }
     else if (!/\S+@\S+\.\S+/.test(formData.email)) { errors.email = translations.register.errors.emailInvalid }
-    if (!formData.phone.trim()) { errors.phone = translations.register.errors.phoneRequired }
-    else if (!/^\+?[0-9\s-()]{10,15}$/.test(formData.phone)) { errors.phone = translations.register.errors.phoneInvalid }
+
     if (!formData.dateOfBirth) { errors.dateOfBirth = translations.register.errors.dateRequired }
     if (!formData.password) { errors.password = translations.register.errors.passwordRequired }
     else if (formData.password.length < 6) { errors.password = translations.register.errors.passwordLength }
